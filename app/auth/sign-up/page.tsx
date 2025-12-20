@@ -12,18 +12,26 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Lock } from "lucide-react"
 import { GitHubAuthButton } from "@/components/github-auth-button"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [fullName, setFullName] = useState("")
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!agreedToTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy.")
+      return
+    }
+
     const supabase = createClient()
     setIsLoading(true)
     setError(null)
@@ -48,6 +56,7 @@ export default function SignUpPage() {
           emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
           data: {
             full_name: fullName,
+            terms_accepted: agreedToTerms,
           },
         },
       })
@@ -62,7 +71,7 @@ export default function SignUpPage() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <Lock className="h-6 w-6 text-primary" />
@@ -123,8 +132,28 @@ export default function SignUpPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                 </div>
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(c) => setAgreedToTerms(!!c.valueOf())} />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    I agree to the{" "}
+                    <Link href="/terms" className="text-primary underline-offset-4 hover:underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="text-primary underline-offset-4 hover:underline">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </label>
+                </div>
+
                 {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+
+                <Button type="submit" className="w-full" disabled={isLoading || !agreedToTerms}>
                   {isLoading ? "Creating account..." : "Create account"}
                 </Button>
               </div>
@@ -145,7 +174,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <GitHubAuthButton />
+            <GitHubAuthButton disabled={!agreedToTerms} />
           </CardContent>
         </Card>
       </div>

@@ -16,7 +16,7 @@ export function Header({ isAuthenticated }: HeaderProps) {
 
   const baseNavItems = [
     { label: "Features", href: "/#features" },
-    { label: "How it works", href: "/#features" },
+    { label: "How it works", href: "/#howItworks" },
     { label: "About", href: "/about" },
   ];
 

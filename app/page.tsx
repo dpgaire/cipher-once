@@ -14,7 +14,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header isAuthenticated={!!user} />
+      {/* <Header isAuthenticated={!!user} /> */}
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -124,7 +124,7 @@ export default async function HomePage() {
         </section>
 
         {/* How It Works */}
-        <section className="border-y bg-muted/30 py-24 md:py-32">
+        <section id="howItworks" className="border-y bg-muted/30 py-24 md:py-32">
           <div className="container">
             <div className="mx-auto mb-16 max-w-3xl text-center">
               <h2 className="mb-4 text-balance text-3xl font-bold md:text-4xl">Three Steps to Perfect Security</h2>
@@ -200,7 +200,7 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <Footer />
+   
     </div>
   )
 }

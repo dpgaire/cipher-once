@@ -21,19 +21,22 @@ const GitHubIcon = (props: React.ComponentProps<"svg">) => (
   </svg>
 )
 
-export function GitHubAuthButton() {
+export function GitHubAuthButton({ disabled }: { disabled?: boolean }) {
   const handleGitHubLogin = async () => {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          terms_accepted: true,
+        },
       },
     })
   }
 
   return (
-    <Button variant="outline" className="w-full" onClick={handleGitHubLogin}>
+    <Button variant="outline" className="w-full" onClick={handleGitHubLogin} disabled={disabled}>
       <GitHubIcon className="mr-2 h-4 w-4" />
       Sign in with GitHub
     </Button>
