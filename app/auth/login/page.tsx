@@ -27,13 +27,25 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.signInWithPassword({
         email,
         password,
-        redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
       })
+
       if (error) throw error
-      router.push("/dashboard")
+      if (!user) throw new Error("Login failed, user not found.")
+
+      // Check if the user is an admin
+      const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single()
+
+      if (profile?.is_admin) {
+        router.push("/admin")
+      } else {
+        router.push("/dashboard")
+      }
       router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")

@@ -4,9 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ClientHeader } from "@/components/client-header"
-import { Footer } from "@/components/footer"
 import { createClient } from "@/lib/supabase/server"
+import { HeaderFooterWrapper } from "@/components/header-footer-wrapper" // Import new component
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -126,9 +125,9 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex min-h-screen flex-col">
-            <ClientHeader isAuthenticated={isAuthenticated} />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <HeaderFooterWrapper isAuthenticated={isAuthenticated}>
+              {children}
+            </HeaderFooterWrapper>
           </div>
         </ThemeProvider>
         <Analytics />
