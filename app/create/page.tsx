@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import type { Metadata } from "next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Lock, Shield, Clock, Eye } from "lucide-react"
+import { Lock, Shield, Clock, Eye, Users, Globe, Tag } from "lucide-react" // Added Users, Globe, Tag icons
 import {
   generateKey,
   exportKey,
@@ -27,6 +28,28 @@ import {
   validatePassphrase,
 } from "@/lib/secret-utils"
 import { createClient } from "@/lib/supabase/client"
+import type { SecretMetadata } from "@/lib/types/secrets" // Import SecretMetadata
+
+export const metadata: Metadata = {
+  title: "Create a Secure, Self-Destructing Secret",
+  description: "Create a new secure secret on CipherOnce. Encrypt your sensitive information and share it via a self-destructing link that burns after reading.",
+  keywords: [
+    "create one-time secret",
+    "new encrypted message",
+    "secure link generator",
+    "self-destructing link",
+    "share encrypted data",
+  ],
+  openGraph: {
+    title: "Create a Secure, Self-Destructing Secret",
+    description: "Encrypt sensitive information and share it via a link that burns after reading.",
+    url: "/create",
+  },
+  twitter: {
+    title: "Create a Secure, Self-Destructing Secret",
+    description: "Encrypt sensitive information and share it via a link that burns after reading.",
+  },
+}
 
 export default function CreateSecretPage() {
   const router = useRouter()
@@ -37,6 +60,11 @@ export default function CreateSecretPage() {
   const [passphrase, setPassphrase] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // New states for V2 rules
+  const [requireAuth, setRequireAuth] = useState(false);
+  const [allowedDomainsInput, setAllowedDomainsInput] = useState(''); // Comma-separated string
+  const [customLabelsInput, setCustomLabelsInput] = useState(''); // Comma-separated string
 
   const handleCreateSecret = async () => {
     setError(null)
@@ -87,6 +115,19 @@ export default function CreateSecretPage() {
         data: { user },
       } = await supabase.auth.getUser()
 
+      // Parse allowed domains and custom labels
+      const allowed_domains = allowedDomainsInput.split(',').map(d => d.trim()).filter(Boolean);
+      const custom_labels = customLabelsInput.split(',').map(l => l.trim()).filter(Boolean);
+
+      // Construct metadata object
+      const secretMetadata: SecretMetadata = {
+        ...(salt && { salt }), // Conditionally add salt
+        has_passphrase: requirePassphrase,
+        require_auth: requireAuth,
+        allowed_domains: allowed_domains.length > 0 ? allowed_domains : undefined,
+        custom_labels: custom_labels.length > 0 ? custom_labels : undefined,
+      };
+
       // Store in database
       const { data, error: dbError } = await supabase
         .from("secrets")
@@ -98,10 +139,7 @@ export default function CreateSecretPage() {
           max_views: maxViews,
           expires_at: expiresAt.toISOString(),
           user_id: user?.id || null,
-          metadata: {
-            salt: salt,
-            has_passphrase: requirePassphrase,
-          },
+          metadata: secretMetadata, // Use the constructed metadata
         })
         .select()
         .single()
@@ -226,6 +264,62 @@ export default function CreateSecretPage() {
                   </p>
                 </div>
               )}
+            </div>
+
+            {/* New: Access Rules (Metadata-based) */}
+            <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+              <h3 className="font-semibold text-base mb-2 flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Access Rules (Optional)
+              </h3>
+
+              {/* Require Authentication */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="require-auth-toggle" className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Require Authentication
+                  </Label>
+                  <p className="text-xs text-muted-foreground">Only logged-in users can view this secret.</p>
+                </div>
+                <Switch id="require-auth-toggle" checked={requireAuth} onCheckedChange={setRequireAuth} />
+              </div>
+
+              {/* Allowed Domains */}
+              <div className="space-y-2">
+                <Label htmlFor="allowed-domains" className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Allowed Domains
+                </Label>
+                <Input
+                  id="allowed-domains"
+                  type="text"
+                  placeholder="e.g., example.com, secure.example.org"
+                  value={allowedDomainsInput}
+                  onChange={(e) => setAllowedDomainsInput(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Comma-separated list of domains that can access this secret. Leave empty for any domain.
+                </p>
+              </div>
+
+              {/* Custom Labels */}
+              <div className="space-y-2">
+                <Label htmlFor="custom-labels" className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Custom Labels
+                </Label>
+                <Input
+                  id="custom-labels"
+                  type="text"
+                  placeholder="e.g., project-x, client-a"
+                  value={customLabelsInput}
+                  onChange={(e) => setCustomLabelsInput(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Comma-separated labels for organizing your secrets (e.g., Project X, Client A).
+                </p>
+              </div>
             </div>
 
             {/* Error Message */}

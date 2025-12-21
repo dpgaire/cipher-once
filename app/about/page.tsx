@@ -5,6 +5,24 @@ export const metadata: Metadata = {
   title: "About CipherOnce - Our Mission for Secure Sharing",
   description:
     "Learn about CipherOnce, the problem of insecure secret sharing it solves, and how our zero-knowledge, end-to-end encrypted platform works to protect your privacy.",
+  keywords: [
+    "about cipheronce",
+    "secure sharing mission",
+    "zero-knowledge",
+    "end-to-end encryption",
+    "data privacy",
+    "cybersecurity",
+    "ephemeral messaging",
+  ],
+  openGraph: {
+    title: "About CipherOnce - Our Mission for Secure Sharing",
+    description: "Learn how CipherOnce's zero-knowledge platform solves the problem of insecure secret sharing.",
+    url: "/about",
+  },
+  twitter: {
+    title: "About CipherOnce - Our Mission for Secure Sharing",
+    description: "Learn how CipherOnce's zero-knowledge platform solves the problem of insecure secret sharing.",
+  },
 }
 
 export default function AboutPage() {

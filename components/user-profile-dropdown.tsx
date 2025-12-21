@@ -41,7 +41,7 @@ export function UserProfileDropdown({ user }: UserProfileDropdownProps) {
               {name
                 ? name
                     .split(" ")
-                    .map((n) => n[0])
+                    .map((n: string) => n[0]) // Fixed: explicitly typed 'n'
                     .join("")
                 : <UserIcon className="h-5 w-5" />}
             </AvatarFallback>

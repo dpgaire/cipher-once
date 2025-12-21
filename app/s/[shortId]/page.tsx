@@ -22,22 +22,8 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { decrypt, importKey, hashPassphrase, deriveKeyFromPassphrase } from "@/lib/encryption"
 import { formatTimeRemaining } from "@/lib/secret-utils"
-
-interface Secret {
-  id: string
-  encrypted_content: string
-  encryption_iv: string
-  short_id: string
-  passphrase_hash: string | null
-  max_views: number
-  view_count: number
-  expires_at: string
-  is_burned: boolean
-  metadata: {
-    salt?: string
-    has_passphrase?: boolean
-  }
-}
+import type { Secret } from "@/lib/types/secrets" // Import Secret from types file
+import type { User } from "@supabase/supabase-js" // Import User type
 
 export default function ViewSecretPage() {
   const params = useParams()
@@ -52,24 +38,46 @@ export default function ViewSecretPage() {
   const [hasViewed, setHasViewed] = useState(false)
   const [missingKey, setMissingKey] = useState(false)
 
+  // Helper function to log access attempts
+  const logAccess = async (currentSecretId: string, status: string, errorMessage?: string, metadata?: Record<string, any>) => {
+    try {
+      await fetch('/api/log-access', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          secret_id: currentSecretId,
+          status,
+          error_message: errorMessage,
+          metadata,
+        }),
+      });
+    } catch (err) {
+      console.error('Failed to log access:', err);
+    }
+  };
+
   useEffect(() => {
-    const checkForKey = () => {
+    const checkForKey = async () => {
       const hash = window.location.hash.substring(1)
       if (!hash && !secret?.passphrase_hash) {
         console.log("[v0] No encryption key found in URL hash")
         setMissingKey(true)
-        setError("Invalid secret link: Encryption key is missing from the URL")
+        const errorMessage = "Invalid secret link: Encryption key is missing from the URL";
+        setError(errorMessage)
         setIsLoading(false)
+        await logAccess(shortId, 'failure', errorMessage);
         return false
       }
       return true
     }
 
-    // Check immediately if key is present
-    if (!checkForKey()) {
-      return
+    // Only run checkForKey if secret is not yet loaded, or if secret is loaded but passphrase is null and hash is missing
+    if (!secret || (!secret.passphrase_hash && !window.location.hash.substring(1))) {
+      checkForKey();
     }
-  }, [secret])
+  }, [secret, shortId])
 
   // Fetch secret metadata
   useEffect(() => {
@@ -77,35 +85,73 @@ export default function ViewSecretPage() {
 
     const fetchSecret = async () => {
       try {
+        await logAccess(shortId, 'attempt');
         const supabase = createClient()
-        const { data, error } = await supabase.from("secrets").select("*").eq("short_id", shortId).single()
+        const { data, error: fetchError } = await supabase.from("secrets").select("*").eq("short_id", shortId).single()
 
-        if (error || !data) {
-          setError("Secret not found or has been deleted")
+        if (fetchError || !data) {
+          const errorMessage = "Secret not found or has been deleted";
+          setError(errorMessage)
+          await logAccess(shortId, 'failure', errorMessage);
           return
         }
 
+        const secretData: Secret = data as Secret; // Cast to new Secret interface
+
         // Check if expired
-        if (new Date(data.expires_at) < new Date()) {
-          setError("This secret has expired")
+        if (new Date(secretData.expires_at) < new Date()) {
+          const errorMessage = "This secret has expired";
+          setError(errorMessage)
+          await logAccess(secretData.id, 'failure', errorMessage);
           return
         }
 
         // Check if already burned
-        if (data.is_burned) {
-          setError("This secret has already been viewed and burned")
+        if (secretData.is_burned) {
+          const errorMessage = "This secret has already been viewed and burned";
+          setError(errorMessage)
+          await logAccess(secretData.id, 'failure', errorMessage);
           return
         }
 
         // Check if max views reached
-        if (data.max_views !== -1 && data.view_count >= data.max_views) {
-          setError("This secret has reached its maximum view count")
+        if (secretData.max_views !== -1 && secretData.view_count >= secretData.max_views) {
+          const errorMessage = "This secret has reached its maximum view count";
+          setError(errorMessage)
+          await logAccess(secretData.id, 'failure', errorMessage);
           return
         }
 
-        setSecret(data)
+        // NEW V2: METADATA-BASED RULE EVALUATION
+        if (secretData.metadata?.require_auth) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            const errorMessage = "Authentication required to view this secret. Please sign in.";
+            setError(errorMessage);
+            await logAccess(secretData.id, 'failure', errorMessage);
+            setIsLoading(false);
+            return;
+          }
+        }
 
-        if (!data.passphrase_hash) {
+        if (secretData.metadata?.allowed_domains && secretData.metadata.allowed_domains.length > 0) {
+          const currentHostname = window.location.hostname;
+          const allowed = secretData.metadata.allowed_domains.some(domain =>
+            currentHostname === domain || currentHostname.endsWith(`.${domain}`)
+          );
+          if (!allowed) {
+            const errorMessage = `Access to this secret is restricted to specific domains. Current domain: ${currentHostname}`;
+            setError(errorMessage);
+            await logAccess(secretData.id, 'failure', errorMessage);
+            setIsLoading(false);
+            return;
+          }
+        }
+        // END NEW V2: METADATA-BASED RULE EVALUATION
+
+        setSecret(secretData)
+
+        if (!secretData.passphrase_hash) {
           const hash = window.location.hash.substring(1)
           if (!hash) {
             setMissingKey(true)
@@ -114,7 +160,9 @@ export default function ViewSecretPage() {
         }
       } catch (err) {
         console.error("[v0] Error fetching secret:", err)
-        setError("Failed to load secret")
+        const errorMessage = err instanceof Error ? err.message : "Failed to load secret";
+        setError(errorMessage)
+        await logAccess(shortId, 'failure', errorMessage);
       } finally {
         setIsLoading(false)
       }
@@ -148,7 +196,7 @@ export default function ViewSecretPage() {
         }
 
         // Derive key from passphrase
-        const salt = secret.metadata.salt
+        const salt = secret.metadata?.salt // Optional chaining
         if (!salt) {
           throw new Error("Salt missing for passphrase-protected secret")
         }
@@ -167,6 +215,7 @@ export default function ViewSecretPage() {
       const decrypted = await decrypt(secret.encrypted_content, secret.encryption_iv, encryptionKey)
       setDecryptedContent(decrypted)
       setHasViewed(true)
+      await logAccess(secret.id, 'success');
 
       // Update view count and burn status
       const supabase = createClient()
@@ -180,9 +229,16 @@ export default function ViewSecretPage() {
           is_burned: shouldBurn,
         })
         .eq("id", secret.id)
+      
+      if (shouldBurn) {
+          await logAccess(secret.id, 'burn');
+      }
+
     } catch (err) {
       console.error("[v0] Error decrypting secret:", err)
-      setError(err instanceof Error ? err.message : "Failed to decrypt secret")
+      const errorMessage = err instanceof Error ? err.message : "Failed to decrypt secret";
+      setError(errorMessage)
+      await logAccess(secret.id, 'failure', errorMessage);
     } finally {
       setIsDecrypting(false)
     }
@@ -243,6 +299,26 @@ export default function ViewSecretPage() {
     )
   }
 
+  // If secret is null even after loading, show a generic error (should ideally not happen if fetchSecret handles all errors)
+  if (!secret) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
+        <div className="w-full max-w-md">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
+            <h1 className="mb-2 text-2xl font-bold">Secret Not Available</h1>
+            <p className="text-muted-foreground">The secret could not be loaded or accessed.</p>
+          </div>
+          <Button asChild className="w-full">
+            <a href="/create">Create Your Own Secret</a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Secret found - show reveal interface
   if (!hasViewed) {
     return (
@@ -280,7 +356,7 @@ export default function ViewSecretPage() {
                     <div>
                       <p className="text-xs text-muted-foreground">Views remaining</p>
                       <p className="font-medium">
-                        {secret.max_views === -1 ? "Unlimited" : secret.max_views - secret.view_count}
+                        {(secret.max_views === -1 || secret.max_views === undefined) ? "Unlimited" : (secret.max_views - secret.view_count)}
                       </p>
                     </div>
                   </div>
@@ -318,7 +394,7 @@ export default function ViewSecretPage() {
 
                 <Button
                   onClick={handleRevealSecret}
-                  disabled={isDecrypting || (secret.passphrase_hash && !passphrase)}
+                  disabled={isDecrypting || (!!secret.passphrase_hash && !passphrase)}
                   className="w-full"
                   size="lg"
                 >
@@ -348,7 +424,7 @@ export default function ViewSecretPage() {
               <CardContent className="space-y-2 text-sm">
                 <p>
                   This secret will be <strong>permanently deleted</strong> after you view it
-                  {secret.max_views > 1 && ` or after ${secret.max_views} total views`}.
+                  {secret.max_views !== undefined && secret.max_views > 1 && ` or after ${secret.max_views} total views`}.
                 </p>
                 <p>Make sure you&apos;re ready to save or copy the information before revealing it.</p>
               </CardContent>

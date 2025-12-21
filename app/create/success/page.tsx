@@ -7,6 +7,7 @@ import { CopyButton } from "@/components/copy-button"
 import { CheckCircle2, AlertTriangle, Share2 } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
+import { QRCodeDisplay } from "@/components/qr-code-display"
 
 function SuccessContent() {
   const searchParams = useSearchParams()
@@ -65,6 +66,7 @@ function SuccessContent() {
                 <code className="break-all text-sm">{secretUrl}</code>
               </div>
               <CopyButton text={secretUrl} label="Copy Secret Link" className="w-full" variant="default" />
+              <QRCodeDisplay value={secretUrl} size={192} />
             </CardContent>
           </Card>
 

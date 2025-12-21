@@ -68,7 +68,7 @@ export async function encrypt(plaintext: string, key: CryptoKey): Promise<{ ciph
 
   return {
     ciphertext: bufferToBase64(encrypted),
-    iv: bufferToBase64(iv),
+    iv: bufferToBase64(iv.buffer),
   }
 }
 
@@ -133,7 +133,7 @@ export async function deriveKeyFromPassphrase(passphrase: string, salt: string):
  */
 export function generateSalt(): string {
   const salt = crypto.getRandomValues(new Uint8Array(16))
-  return bufferToBase64(salt)
+  return bufferToBase64(salt.buffer)
 }
 
 /**

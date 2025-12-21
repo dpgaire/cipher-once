@@ -28,8 +28,8 @@ export function GitHubAuthButton({ disabled }: { disabled?: boolean }) {
       provider: "github",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        data: {
-          terms_accepted: true,
+        queryParams: {
+          terms_accepted: 'true',
         },
       },
     })

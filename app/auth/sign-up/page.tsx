@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -107,6 +106,7 @@ export default function SignUpPage() {
                     placeholder="you@example.com"
                     required
                     value={email}
+                    autoComplete="email"
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
@@ -115,6 +115,7 @@ export default function SignUpPage() {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="new-password"
                     placeholder="Min. 8 characters"
                     required
                     value={password}

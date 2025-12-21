@@ -11,27 +11,74 @@ import { createClient } from "@/lib/supabase/server"
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: "CipherOnce - Secure Secret Sharing with End-to-End Encryption",
+const siteConfig = {
+  name: "CipherOnce",
+  url: "https://cipher-once.vercel.app", // Replace with your actual domain
   description:
-    "Share passwords, API keys, and sensitive data securely with zero-knowledge encryption. Self-destructing links that burn after reading.",
-  generator: "v0.app",
+    "Share secrets, passwords, and API keys securely with end-to-end encrypted, self-destructing links. A zero-knowledge platform for ephemeral and secure data transfer.",
+}
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: `${siteConfig.name} - Secure, Ephemeral, Zero-Knowledge Secret Sharing`,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
   keywords: [
-    "secure sharing",
     "secret sharing",
-    "encryption",
-    "one-time link",
-    "burn after reading",
+    "secure sharing",
+    "one-time secret",
+    "ephemeral sharing",
+    "self-destructing message",
+    "zero-knowledge",
+    "encrypted message",
     "password sharing",
+    "share password securely",
+    "API key sharing",
+    "burn after reading",
+    "secure data transfer",
+    "credential sharing",
+    "privacy",
+    "security",
   ],
+  authors: [{ name: "CipherOnce Team" }],
+  creator: "CipherOnce",
+  
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: `${siteConfig.url}/og-image.svg`,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [`${siteConfig.url}/og-image.svg`],
+    creator: "@your-twitter-handle", // Replace with your Twitter handle
+  },
+  
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: "/icon-light.svg",
+        type: "image/svg+xml",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: "/icon-dark.svg",
+        type: "image/svg+xml",
         media: "(prefers-color-scheme: dark)",
       },
       {
@@ -39,7 +86,10 @@ export const metadata: Metadata = {
         type: "image/svg+xml",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: {
+      url: "/apple-icon.svg",
+      type: "image/svg+xml",
+    },
   },
 }
 
