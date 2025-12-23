@@ -17,7 +17,7 @@ export function AdminNav({ user, toggleSidebar }: { user: User, toggleSidebar: (
   ]
 
   return (
-    <aside className="w-64 flex-shrink-0 flex flex-col bg-card border-r shadow-lg p-4"> {/* Removed h-screen */}
+    <aside className="w-64 flex flex-col bg-card border-r shadow-lg p-4"> {/* Removed h-screen */}
       {/* Header */}
       <div className="flex items-center gap-3 px-2 py-3 border-b bg-primary text-primary-foreground rounded-lg">
         <Shield className="h-6 w-6" />

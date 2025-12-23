@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import type { Metadata } from "next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -29,27 +28,6 @@ import {
 } from "@/lib/secret-utils"
 import { createClient } from "@/lib/supabase/client"
 import type { SecretMetadata } from "@/lib/types/secrets" // Import SecretMetadata
-
-export const metadata: Metadata = {
-  title: "Create a Secure, Self-Destructing Secret",
-  description: "Create a new secure secret on CipherOnce. Encrypt your sensitive information and share it via a self-destructing link that burns after reading.",
-  keywords: [
-    "create one-time secret",
-    "new encrypted message",
-    "secure link generator",
-    "self-destructing link",
-    "share encrypted data",
-  ],
-  openGraph: {
-    title: "Create a Secure, Self-Destructing Secret",
-    description: "Encrypt sensitive information and share it via a link that burns after reading.",
-    url: "/create",
-  },
-  twitter: {
-    title: "Create a Secure, Self-Destructing Secret",
-    description: "Encrypt sensitive information and share it via a link that burns after reading.",
-  },
-}
 
 export default function CreateSecretPage() {
   const router = useRouter()
