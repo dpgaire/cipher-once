@@ -14,7 +14,9 @@ export function Footer() {
               <span>CipherOnce</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Share secrets securely with end-to-end encryption and burn-after-reading.
+              Built for privacy-conscious users.
+               <br />
+              Designed with zero-knowledge from day one.
             </p>
           </div>
 

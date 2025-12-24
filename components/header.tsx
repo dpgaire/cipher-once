@@ -3,8 +3,15 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Lock, Menu } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+  SheetTitle,        // ← Added this
+} from "@/components/ui/sheet"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 
 interface HeaderProps {
   isAuthenticated?: boolean
@@ -13,34 +20,36 @@ interface HeaderProps {
 export function Header({ isAuthenticated }: HeaderProps) {
   const pathname = usePathname()
   const isAuthPage = pathname?.startsWith("/auth")
+  const [open, setOpen] = useState(false)
 
   const baseNavItems = [
     { label: "Features", href: "/#features" },
     { label: "How it works", href: "/#how-it-works" },
     { label: "About", href: "/about" },
-  ];
+  ]
 
   const authNavItems = isAuthenticated
     ? [
         { label: "Dashboard", href: "/dashboard" },
         { label: "Create Secret", href: "/create" },
       ]
-    : [];
+    : []
 
-  const navItems = [...baseNavItems, ...authNavItems];
+  const navItems = [...baseNavItems, ...authNavItems]
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 font-bold transition-opacity hover:opacity-80">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Lock className="h-4.5 w-4.5" />
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur">
+      <div className="container flex h-16 items-center justify-between px-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-3 font-bold transition-opacity hover:opacity-90">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
+            <Lock className="h-5 w-5" />
           </div>
-          <span className="text-xl">CipherOnce</span>
+          <span className="text-xl tracking-tight">CipherOnce</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 md:flex">
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
             <Link
               key={item.label}
@@ -52,14 +61,14 @@ export function Header({ isAuthenticated }: HeaderProps) {
           ))}
         </nav>
 
-        {/* Desktop Actions */}
-        <div className="hidden items-center gap-3 md:flex">
+        {/* Desktop Auth Buttons */}
+        <div className="hidden md:flex items-center gap-4">
           {!isAuthenticated && !isAuthPage && (
             <>
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" size="sm" asChild>
                 <Link href="/auth/login">Sign in</Link>
               </Button>
-              <Button asChild>
+              <Button size="sm" asChild>
                 <Link href="/auth/sign-up">Get Started</Link>
               </Button>
             </>
@@ -67,35 +76,59 @@ export function Header({ isAuthenticated }: HeaderProps) {
         </div>
 
         {/* Mobile Menu */}
-        <Sheet>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Open menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right">
-            <div className="mt-8 flex flex-col gap-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="mt-4 flex flex-col gap-2">
-                {!isAuthenticated && !isAuthPage && (
-                  <>
-                    <Button variant="outline" asChild className="w-full bg-transparent">
+
+          <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-background/95 backdrop-blur-md">
+            {/* REQUIRED: Accessible title */}
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            {/* Alternative: Use VisuallyHidden if you prefer */}
+            {/* <VisuallyHidden asChild><SheetTitle>Navigation Menu</SheetTitle></VisuallyHidden> */}
+
+            <div className="flex flex-col items-center pt-8 pb-12 px-6">
+              {/* Logo at top */}
+              <div className="flex items-center gap-3 mb-12">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <span className="text-2xl font-bold tracking-tight">CipherOnce</span>
+              </div>
+
+              {/* Centered Navigation Links */}
+              <nav className="flex w-full max-w-xs flex-col gap-6">
+                {navItems.map((item) => (
+                  <SheetClose asChild key={item.label}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="text-center text-lg font-medium text-foreground/80 transition-all hover:text-foreground py-2"
+                    >
+                      {item.label}
+                    </Link>
+                  </SheetClose>
+                ))}
+              </nav>
+
+              {/* Auth Buttons (if needed) */}
+              {!isAuthenticated && !isAuthPage && (
+                <div className="mt-12 w-full max-w-xs flex flex-col gap-4">
+                  <SheetClose asChild>
+                    <Button variant="outline" size="lg" asChild className="w-full">
                       <Link href="/auth/login">Sign in</Link>
                     </Button>
-                    <Button asChild className="w-full">
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Button size="lg" asChild className="w-full">
                       <Link href="/auth/sign-up">Get Started</Link>
                     </Button>
-                  </>
-                )}
-              </div>
+                  </SheetClose>
+                </div>
+              )}
             </div>
           </SheetContent>
         </Sheet>
