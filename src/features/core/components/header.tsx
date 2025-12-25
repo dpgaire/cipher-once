@@ -8,18 +8,17 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
-  SheetTitle,        // ← Added this
+  SheetTitle,
 } from "@/components/ui/sheet"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
+import { useAuthSession } from "@/features/auth/hooks/use-auth-session"
+import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
+import { Skeleton } from "@/components/ui/skeleton"
 
-interface HeaderProps {
-  isAuthenticated?: boolean
-}
-
-export function Header({ isAuthenticated }: HeaderProps) {
+export function Header() {
   const pathname = usePathname()
-  const isAuthPage = pathname?.startsWith("/auth")
+  const { isAuthenticated, loading, user } = useAuthSession()
   const [open, setOpen] = useState(false)
 
   const baseNavItems = [
@@ -61,9 +60,13 @@ export function Header({ isAuthenticated }: HeaderProps) {
           ))}
         </nav>
 
-        {/* Desktop Auth Buttons */}
+        {/* Desktop Auth Buttons / User Profile */}
         <div className="hidden md:flex items-center gap-4">
-          {!isAuthenticated && !isAuthPage && (
+          {loading ? (
+            <Skeleton className="h-9 w-20 rounded-md" />
+          ) : isAuthenticated ? (
+            <UserProfileDropdown user={user} />
+          ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/auth/login">Sign in</Link>
@@ -85,10 +88,7 @@ export function Header({ isAuthenticated }: HeaderProps) {
           </SheetTrigger>
 
           <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-background/95 backdrop-blur-md">
-            {/* REQUIRED: Accessible title */}
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            {/* Alternative: Use VisuallyHidden if you prefer */}
-            {/* <VisuallyHidden asChild><SheetTitle>Navigation Menu</SheetTitle></VisuallyHidden> */}
 
             <div className="flex flex-col items-center pt-8 pb-12 px-6">
               {/* Logo at top */}
@@ -115,7 +115,16 @@ export function Header({ isAuthenticated }: HeaderProps) {
               </nav>
 
               {/* Auth Buttons (if needed) */}
-              {!isAuthenticated && !isAuthPage && (
+              {loading ? (
+                <div className="mt-12 w-full max-w-xs flex flex-col gap-4">
+                  <Skeleton className="h-12 w-full rounded-md" />
+                  <Skeleton className="h-12 w-full rounded-md" />
+                </div>
+              ) : isAuthenticated ? (
+                <div className="mt-12 w-full max-w-xs">
+                  <UserProfileDropdown user={user} />
+                </div>
+              ) : (
                 <div className="mt-12 w-full max-w-xs flex flex-col gap-4">
                   <SheetClose asChild>
                     <Button variant="outline" size="lg" asChild className="w-full">

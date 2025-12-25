@@ -18,10 +18,19 @@ import {
   Shield,
   AlertTriangle,
   Loader2,
+  Download, // Added Download icon
+  FileText, // Added FileText icon for generic files
+  Image, // Added Image icon
+  Music, // Added Music icon
+  Video, // Added Video icon
+  File, // Generic file icon
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client" // Stays as shared utility
-import { decrypt, importKey, hashPassphrase, deriveKeyFromPassphrase } from "../services/encryption" // Relative import within feature
-import { formatTimeRemaining } from "@/lib/secret-utils" // Stays in shared lib
+import { decrypt, decryptFile, importKey, hashPassphrase, deriveKeyFromPassphrase, bufferToBase64 } from "../services/encryption" // Added decryptFile, bufferToBase64
+import {
+  formatTimeRemaining,
+  SECRET_EXPIRATION_OPTIONS,
+} from "@/features/secrets/domain/secret-utils"
 import type { Secret } from "../types" // Import Secret from feature types file
 import type { User } from "@supabase/supabase-js" // Import User type
 
@@ -37,6 +46,10 @@ export function ViewSecretPage() {
   const [error, setError] = useState<string | null>(null)
   const [hasViewed, setHasViewed] = useState(false)
   const [missingKey, setMissingKey] = useState(false)
+
+  // New states for decrypted file
+  const [decryptedFileBuffer, setDecryptedFileBuffer] = useState<ArrayBuffer | null>(null);
+  const [decryptedFileUrl, setDecryptedFileUrl] = useState<string | null>(null);
 
   // Helper function to log access attempts
   const logAccess = async (currentSecretId: string, status: string, errorMessage?: string, metadata?: Record<string, any>) => {
@@ -151,12 +164,30 @@ export function ViewSecretPage() {
 
         setSecret(secretData)
 
-        if (!secretData.passphrase_hash) {
-          const hash = window.location.hash.substring(1)
-          if (!hash) {
-            setMissingKey(true)
-            setError("Invalid secret link: Encryption key is missing from the URL")
-          }
+        // Increment view count and update burn status immediately on valid access
+        const newViewCount = secretData.view_count + 1
+        const shouldBurn = secretData.max_views !== -1 && newViewCount >= secretData.max_views
+
+        const { error: updateError } = await supabase.rpc('update_secret_view_and_burn', { p_secret_id: secretData.id });
+
+        if (updateError) {
+          console.error("Error calling RPC to update view count:", updateError)
+          // Log failure but don't block the user from viewing the secret
+          await logAccess(secretData.id, 'failure', `Failed to update view count via RPC: ${updateError.message}`);
+        } else {
+          // The RPC function updates the database. We need to re-fetch the secret to get the updated values,
+          // or we can optimistically update the local state. For simplicity and to reflect the RPC's
+          // internal logic, we'll optimistically update based on the original `secretData` and `newViewCount`
+          // and `shouldBurn` derived earlier.
+          setSecret((prevSecret) => {
+            if (!prevSecret) return null;
+            return {
+              ...prevSecret,
+              view_count: newViewCount,
+              is_burned: shouldBurn,
+            };
+          });
+          await logAccess(secretData.id, 'view'); // Log a successful view
         }
       } catch (err) {
         console.error("[v0] Error fetching secret:", err)
@@ -171,6 +202,21 @@ export function ViewSecretPage() {
     fetchSecret()
   }, [shortId])
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (hasViewed) {
+      timer = setTimeout(() => {
+        window.location.reload();
+      }, 60000); // 60 seconds
+    }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [hasViewed]);
+
   const handleRevealSecret = async () => {
     if (!secret) return
 
@@ -181,7 +227,7 @@ export function ViewSecretPage() {
       // Get encryption key from URL fragment
       const hash = window.location.hash.substring(1)
 
-      let encryptionKey
+      let encryptionKey: CryptoKey;
 
       // Check if passphrase is required
       if (secret.passphrase_hash) {
@@ -211,27 +257,35 @@ export function ViewSecretPage() {
         encryptionKey = await importKey(decodeURIComponent(hash))
       }
 
-      // Decrypt content
-      const decrypted = await decrypt(secret.encrypted_content, secret.encryption_iv, encryptionKey)
-      setDecryptedContent(decrypted)
+      // Decrypt text content if available
+      if (secret.encrypted_content && secret.encryption_iv) {
+        const decrypted = await decrypt(secret.encrypted_content, secret.encryption_iv, encryptionKey)
+        setDecryptedContent(decrypted)
+      }
+
+      // Decrypt file content if available
+      if (secret.has_file && secret.file_url && secret.file_encryption_iv) {
+        // Fetch the encrypted file from Vercel Blob
+        const fileResponse = await fetch(secret.file_url);
+        if (!fileResponse.ok) {
+          throw new Error(`Failed to fetch encrypted file from ${secret.file_url}`);
+        }
+        const encryptedFileBuffer = await fileResponse.arrayBuffer();
+
+        // Decrypt the file buffer
+        const decryptedBuffer = await decryptFile(bufferToBase64(encryptedFileBuffer), secret.file_encryption_iv, encryptionKey);
+        setDecryptedFileBuffer(decryptedBuffer);
+
+        // Create an object URL for display/download
+        const fileBlob = new Blob([decryptedBuffer], { type: secret.file_type || 'application/octet-stream' });
+        setDecryptedFileUrl(URL.createObjectURL(fileBlob));
+      }
+
       setHasViewed(true)
-      await logAccess(secret.id, 'success');
 
-      // Update view count and burn status
-      const supabase = createClient()
-      const newViewCount = secret.view_count + 1
-      const shouldBurn = secret.max_views !== -1 && newViewCount >= secret.max_views
-
-      await supabase
-        .from("secrets")
-        .update({
-          view_count: newViewCount,
-          is_burned: shouldBurn,
-        })
-        .eq("id", secret.id)
-      
-      if (shouldBurn) {
-          await logAccess(secret.id, 'burn');
+      // If the secret was burned on initial load, log a burn event here if not already done.
+      if (secret.is_burned && !hasViewed) { // hasViewed check prevents redundant burn log if already viewed in session
+        await logAccess(secret.id, 'burn');
       }
 
     } catch (err) {
@@ -243,6 +297,15 @@ export function ViewSecretPage() {
       setIsDecrypting(false)
     }
   }
+
+  // Effect to revoke object URL when component unmounts or file changes
+  useEffect(() => {
+    return () => {
+      if (decryptedFileUrl) {
+        URL.revokeObjectURL(decryptedFileUrl);
+      }
+    };
+  }, [decryptedFileUrl]);
 
   // Loading state
   if (isLoading) {
@@ -450,6 +513,7 @@ export function ViewSecretPage() {
           </div>
 
           {/* Content Card */}
+          {decryptedContent && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -459,42 +523,78 @@ export function ViewSecretPage() {
               <CardDescription>This message will self-destruct</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="relative rounded-lg bg-muted p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowContent(!showContent)}
-                    className="h-auto p-0 text-xs hover:bg-transparent"
+              {/* Decrypted Text Content */}
+              
+                <div className="relative rounded-lg bg-muted p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowContent(!showContent)}
+                      className="h-auto p-0 text-xs hover:bg-transparent"
+                    >
+                      {showContent ? (
+                        <>
+                          <Eye className="mr-1 h-3 w-3" />
+                          Visible
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="mr-1 h-3 w-3" />
+                          Hidden
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <pre
+                    className={`whitespace-pre-wrap break-words font-mono text-sm ${showContent ? "" : "blur-sm select-none"}`}
                   >
-                    {showContent ? (
-                      <>
-                        <Eye className="mr-1 h-3 w-3" />
-                        Visible
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="mr-1 h-3 w-3" />
-                        Hidden
-                      </>
-                    )}
-                  </Button>
+                    {decryptedContent}
+                  </pre>
                 </div>
-                <pre
-                  className={`whitespace-pre-wrap break-words font-mono text-sm ${showContent ? "" : "blur-sm select-none"}`}
-                >
-                  {decryptedContent}
-                </pre>
-              </div>
+              
 
-              <CopyButton
-                text={decryptedContent || ""}
-                label="Copy to Clipboard"
-                className="w-full"
-                variant="default"
-              />
+              
+                <CopyButton
+                  text={decryptedContent || ""}
+                  label="Copy to Clipboard"
+                  className="w-full"
+                  variant="default"
+                />
+              
             </CardContent>
-          </Card>
+          </Card>)}
+
+          {/* Attached File Card */}
+          {secret.has_file && decryptedFileUrl && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <File className="h-5 w-5" />
+                  Attached File
+                </CardTitle>
+                <CardDescription>{secret.file_name}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {secret.file_type?.startsWith("image/") && (
+                  <div className="p-4 border rounded-lg flex justify-center">
+                    <img
+                      src={decryptedFileUrl}
+                      alt={secret.file_name || "Decrypted image"}
+                      className="max-w-full h-auto rounded-md"
+                      style={{ maxHeight: "500px" }}
+                    />
+                  </div>
+                )}
+                <Button asChild className="w-full">
+                  <a href={decryptedFileUrl} download={secret.file_name}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download File
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Burn Notice */}
           <Card className="border-red-500/20 bg-red-500/5">

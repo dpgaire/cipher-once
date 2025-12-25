@@ -93,6 +93,48 @@ export async function decrypt(ciphertext: string, iv: string, key: CryptoKey): P
 }
 
 /**
+ * Encrypt file content (ArrayBuffer) with a key
+ * Returns {ciphertext, iv} both as base64 strings
+ */
+export async function encryptFile(fileBuffer: ArrayBuffer, key: CryptoKey): Promise<{ ciphertext: string; iv: string }> {
+  // Generate random IV
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+
+  const encrypted = await crypto.subtle.encrypt(
+    {
+      name: ALGORITHM,
+      iv: iv,
+    },
+    key,
+    fileBuffer,
+  )
+
+  return {
+    ciphertext: bufferToBase64(encrypted),
+    iv: bufferToBase64(iv.buffer),
+  }
+}
+
+/**
+ * Decrypt file content (ArrayBuffer) with a key and iv
+ */
+export async function decryptFile(ciphertext: string, iv: string, key: CryptoKey): Promise<ArrayBuffer> {
+  const ciphertextBuffer = base64ToBuffer(ciphertext)
+  const ivBuffer = base64ToBuffer(iv)
+
+  const decrypted = await crypto.subtle.decrypt(
+    {
+      name: ALGORITHM,
+      iv: ivBuffer,
+    },
+    key,
+    ciphertextBuffer,
+  )
+
+  return decrypted // Returns ArrayBuffer
+}
+
+/**
  * Hash a passphrase to store/verify (using SHA-256)
  */
 export async function hashPassphrase(passphrase: string): Promise<string> {
@@ -152,7 +194,7 @@ export function generateShortId(length = 12): string {
 }
 
 // Helper functions for base64 encoding/decoding
-function bufferToBase64(buffer: ArrayBuffer): string {
+export function bufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ""
   for (let i = 0; i < bytes.byteLength; i++) {
@@ -161,7 +203,7 @@ function bufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary)
 }
 
-function base64ToBuffer(base64: string): ArrayBuffer {
+export function base64ToBuffer(base64: string): ArrayBuffer {
   const binary = atob(base64)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) {

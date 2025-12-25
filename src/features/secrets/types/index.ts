@@ -22,4 +22,12 @@ export interface Secret {
   user_id: string | null;
   is_burned: boolean;
   metadata: SecretMetadata; // Use the new metadata interface
+
+  // New file attachment properties
+  has_file?: boolean;
+  file_url?: string;
+  file_type?: string;
+  file_name?: string;
+  file_size?: number;
+  file_encryption_iv?: string; // for file content encryption
 }

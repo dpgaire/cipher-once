@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
-import { calculateExpirationDate } from "@/lib/secret-utils"
+import { calculateExpirationDate } from "@/features/secrets/domain/secret-utils"
 
 import { SecretCardHeader } from "./secret-card-header"
 import { SecretCardInfo } from "./secret-card-info"

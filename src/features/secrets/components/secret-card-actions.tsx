@@ -20,7 +20,7 @@ import {
 import { ExternalLink, Trash2, QrCode, ScrollText, Flame, PlusCircle } from "lucide-react"
 import { QRCodeDisplay } from "./qr-code-display"
 import { SecretAccessLogs } from "./secret-access-logs"
-import { SECRET_EXPIRATION_OPTIONS } from "@/lib/secret-utils"
+import { SECRET_EXPIRATION_OPTIONS } from "@/features/secrets/domain/secret-utils"
 
 interface SecretCardActionsProps {
   secretUrl: string

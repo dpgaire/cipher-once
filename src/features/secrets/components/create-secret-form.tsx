@@ -9,25 +9,28 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Lock, Shield, Clock, Eye, Users, Globe, Tag } from "lucide-react" // Added Users, Globe, Tag icons
+import { Lock, Shield, Clock, Eye, Users, Globe, Tag, Paperclip, X, Loader2 } from "lucide-react"
 import {
   generateKey,
   exportKey,
   encrypt,
+  encryptFile,
   generateShortId,
   hashPassphrase,
   generateSalt,
   deriveKeyFromPassphrase,
+  base64ToBuffer, // Imported base64ToBuffer
 } from "../services/encryption"
 import {
-  calculateExpirationDate,
   SECRET_EXPIRATION_OPTIONS,
   MAX_VIEW_OPTIONS,
+  sanitizeContent,
   validateSecretContent,
   validatePassphrase,
-} from "../../../lib/secret-utils" // Corrected path to shared lib
+  calculateExpirationDate,
+} from "@/features/secrets/domain/secret-utils"
 import { createClient } from "@/lib/supabase/client"
-import type { SecretMetadata } from "../types" // Import SecretMetadata from feature types
+import type { SecretMetadata } from "../types"
 
 
 export function CreateSecretForm() {
@@ -42,17 +45,23 @@ export function CreateSecretForm() {
 
   // New states for V2 rules
   const [requireAuth, setRequireAuth] = useState(false);
-  const [allowedDomainsInput, setAllowedDomainsInput] = useState(''); // Comma-separated string
-  const [customLabelsInput, setCustomLabelsInput] = useState(''); // Comma-separated string
+  const [allowedDomainsInput, setAllowedDomainsInput] = useState('');
+  const [customLabelsInput, setCustomLabelsInput] = useState('');
+
+  // New states for file upload
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
 
   const handleCreateSecret = async () => {
     setError(null)
     setIsLoading(true)
 
     try {
+      const contentTrimmed = content.trim();
+
       // Validate content
-      const contentValidation = validateSecretContent(content)
-      if (!contentValidation.valid) {
+      const contentValidation = validateSecretContent(contentTrimmed)
+      if (!contentValidation.valid && !selectedFile) {
         throw new Error(contentValidation.error)
       }
 
@@ -65,19 +74,72 @@ export function CreateSecretForm() {
       }
 
       // Generate encryption key
-      let encryptionKey
-      let salt = null
+      let encryptionKey: CryptoKey;
+      let salt: string | null = null;
       if (requirePassphrase) {
-        // Derive key from passphrase
-        salt = generateSalt()
-        encryptionKey = await deriveKeyFromPassphrase(passphrase, salt)
+        salt = generateSalt();
+        encryptionKey = await deriveKeyFromPassphrase(passphrase, salt);
       } else {
-        // Generate random key
-        encryptionKey = await generateKey()
+        encryptionKey = await generateKey();
       }
 
-      // Encrypt the content
-      const { ciphertext, iv } = await encrypt(content, encryptionKey)
+      // Encrypt the content (if any)
+      let ciphertext: string | undefined;
+      let iv: string | undefined;
+      if (contentTrimmed) {
+        const encryptedText = await encrypt(contentTrimmed, encryptionKey);
+        ciphertext = encryptedText.ciphertext;
+        iv = encryptedText.iv;
+      }
+      
+      // Handle file upload if a file is selected
+      let fileUrl: string | undefined;
+      let fileType: string | undefined;
+      let fileName: string | undefined;
+      let fileSize: number | undefined;
+      let fileIv: string | undefined;
+
+      if (selectedFile) {
+        setIsUploadingFile(true);
+        const fileBuffer = await selectedFile.arrayBuffer();
+        const encryptedFileResult = await encryptFile(fileBuffer, encryptionKey);
+
+        const encryptedFileBlob = new Blob([base64ToBuffer(encryptedFileResult.ciphertext)], {
+          type: 'application/octet-stream', // Always use octet-stream for encrypted blobs
+        });
+
+        const formData = new FormData();
+        formData.append('encryptedFile', encryptedFileBlob);
+        formData.append('fileName', selectedFile.name);
+        formData.append('fileType', selectedFile.type);
+        formData.append('fileSize', selectedFile.size.toString());
+        formData.append('fileIv', encryptedFileResult.iv);
+
+
+        const response = await fetch('/api/upload-file', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'File upload failed');
+        }
+
+        const result = await response.json();
+
+        fileUrl = result.blobUrl;
+        fileType = result.fileType; 
+        fileName = result.fileName; 
+        fileSize = result.fileSize; 
+        fileIv = result.fileIv; 
+        setIsUploadingFile(false);
+      }
+      
+      // If neither content nor file, throw an error
+      if (!contentTrimmed && !selectedFile) {
+        throw new Error("Secret must contain either text content or a file attachment.");
+      }
 
       // Generate short ID for URL
       const shortId = generateShortId()
@@ -100,7 +162,7 @@ export function CreateSecretForm() {
 
       // Construct metadata object
       const secretMetadata: SecretMetadata = {
-        ...(salt && { salt }), // Conditionally add salt
+        ...(salt && { salt }),
         has_passphrase: requirePassphrase,
         require_auth: requireAuth,
         allowed_domains: allowed_domains.length > 0 ? allowed_domains : undefined,
@@ -111,14 +173,20 @@ export function CreateSecretForm() {
       const { data, error: dbError } = await supabase
         .from("secrets")
         .insert({
-          encrypted_content: ciphertext,
-          encryption_iv: iv,
+          encrypted_content: ciphertext || null,
+          encryption_iv: iv || null,
           short_id: shortId,
           passphrase_hash: passphraseHash,
           max_views: maxViews,
           expires_at: expiresAt.toISOString(),
           user_id: user?.id || null,
-          metadata: secretMetadata, // Use the constructed metadata
+          metadata: secretMetadata,
+          has_file: !!selectedFile,
+          file_url: fileUrl || null,
+          file_type: fileType || null,
+          file_name: fileName || null,
+          file_size: fileSize || null,
+          file_encryption_iv: fileIv || null,
         })
         .select()
         .single()
@@ -135,6 +203,7 @@ export function CreateSecretForm() {
       setError(err instanceof Error ? err.message : "Failed to create secret")
     } finally {
       setIsLoading(false)
+      setIsUploadingFile(false);
     }
   }
 
@@ -159,7 +228,7 @@ export function CreateSecretForm() {
           <CardContent className="space-y-6">
             {/* Content Input */}
             <div className="space-y-2">
-              <Label htmlFor="content">Your Secret</Label>
+              <Label htmlFor="content">Your Secret Text</Label>
               <Textarea
                 id="content"
                 placeholder="Enter passwords, API keys, confidential messages, or any sensitive information..."
@@ -169,6 +238,39 @@ export function CreateSecretForm() {
               />
               <p className="text-xs text-muted-foreground">{content.length} characters</p>
             </div>
+
+            {/* File Attachment */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Paperclip className="h-4 w-4" />
+                Attach File (Optional)
+              </Label>
+              <Input
+                id="file-attachment"
+                type="file"
+                className="hidden" // Hide the default file input
+                onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                // Accept common file types as requested
+                accept="image/*,audio/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain"
+              />
+              {!selectedFile ? (
+                <Button type="button" variant="outline" onClick={() => document.getElementById('file-attachment')?.click()}>
+                  <Paperclip className="mr-2 h-4 w-4" />
+                  Choose File
+                </Button>
+              ) : (
+                <div className="flex items-center justify-between rounded-md bg-muted p-2 text-sm">
+                  <span className="truncate">{selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)</span>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedFile(null)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Max file size: 20MB
+              </p>
+            </div>
+
 
             {/* Configuration Options */}
             <div className="grid gap-6 md:grid-cols-2">
@@ -309,8 +411,15 @@ export function CreateSecretForm() {
             )}
 
             {/* Submit Button */}
-            <Button onClick={handleCreateSecret} disabled={isLoading || !content.trim()} className="w-full" size="lg">
-              {isLoading ? "Creating Secure Link..." : "Create Secret Link"}
+            <Button onClick={handleCreateSecret} disabled={isLoading || isUploadingFile || (!content.trim() && !selectedFile)} className="w-full" size="lg">
+              {isLoading || isUploadingFile ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {isUploadingFile ? "Uploading File..." : "Creating Secure Link..."}
+                </>
+              ) : (
+                "Create Secret Link"
+              )}
             </Button>
           </CardContent>
         </Card>

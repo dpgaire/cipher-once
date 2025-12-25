@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ExternalLink, Lock } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { SecretStatusBadge } from "@/components/secret-status-badge"
+import { SecretStatusBadge } from "@/features/secrets/components/secret-status-badge"
 
 interface SecretCardHeaderProps {
   shortId: string

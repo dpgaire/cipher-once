@@ -1,7 +1,7 @@
 "use client"
 
 import { Clock, Eye } from "lucide-react"
-import { formatTimeRemaining } from "@/lib/secret-utils"
+import { formatTimeRemaining } from "@/features/secrets/domain/secret-utils"
 
 interface SecretCardInfoProps {
   expiresAt: string
