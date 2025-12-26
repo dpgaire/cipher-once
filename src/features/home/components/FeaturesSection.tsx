@@ -4,11 +4,11 @@ import { Shield, Lock, Flame, Eye, Clock, FileText, QrCode, Trash2, Globe, Check
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="border-t border-gray-200 bg-gray-50 py-20 md:py-28">
+    <section id="features" className="border-t border-border py-20 md:py-28">
       <div className="container mx-auto px-6">
         <div className="mx-auto mb-16 max-w-3xl text-center">
           <h2 className="mb-4 text-4xl font-bold md:text-5xl">Enterprise-Grade Security</h2>
-          <p className="text-lg text-gray-600">Built with security professionals in mind</p>
+          <p className="text-lg text-muted-foreground">Built with security professionals in mind</p>
         </div>
 
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -27,13 +27,13 @@ export function FeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className="rounded-xl border border-gray-200 bg-white p-6 transition-all hover:border-blue-200 hover:shadow-lg"
+                className="rounded-xl border border-border bg-background p-6 transition-all hover:border-primary/50 hover:shadow-lg"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50">
-                  <Icon className="h-6 w-6 text-blue-600" />
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{feature.desc}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{feature.desc}</p>
               </div>
             );
           })}
