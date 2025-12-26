@@ -330,13 +330,13 @@ export function CreateSecretForm() {
                    <AccordionTrigger className="text-base font-medium">
                      <div className="flex items-center gap-2">
                        <Lock className="h-5 w-5" />
-                       Passphrase Protection (Optional)
+                       Password Protection (Optional)
                      </div>
                    </AccordionTrigger>
                    <AccordionContent className="space-y-4 pt-4">
                      <div className="flex items-center justify-between">
                        <div className="space-y-0.5">
-                         <Label htmlFor="passphrase-toggle">Require Passphrase</Label>
+                         <Label htmlFor="passphrase-toggle">Require password</Label>
                          <p className="text-xs text-muted-foreground">Add an extra layer of protection</p>
                        </div>
                        <Switch id="passphrase-toggle" checked={requirePassphrase} onCheckedChange={setRequirePassphrase} />
@@ -344,11 +344,11 @@ export function CreateSecretForm() {
    
                      {requirePassphrase && (
                        <div className="space-y-2">
-                         <Label htmlFor="passphrase">Passphrase</Label>
+                         <Label htmlFor="passphrase">Password</Label>
                          <Input
                            id="passphrase"
                            type="password"
-                           placeholder="Enter a passphrase (min. 4 characters)"
+                           placeholder="Enter a password or pin (min. 4 characters)"
                            value={passphrase}
                            onChange={(e) => setPassphrase(e.target.value)}
                          />

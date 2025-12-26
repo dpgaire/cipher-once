@@ -41,7 +41,7 @@ export default function SecurePasswordSharingPage() {
           <li><strong>Unique, Ephemeral Keys:</strong> Each shared password gets its own unique encryption key, which is never stored on our servers.</li>
           <li><strong>Zero-Knowledge Design:</strong> We never know your passwords. Our system is designed so that we cannot decrypt the information you share, even if we wanted to.</li>
           <li><strong>One-Time View Links:</strong> Passwords shared via CipherOnce can only be viewed once (or a limited number of times), after which they are automatically destroyed.</li>
-          <li><strong>Optional Passphrase Protection:</strong> Add an extra layer of security with a recipient-only passphrase.</li>
+          <li><strong>Optional Password Protection:</strong> Add an extra layer of security with a recipient-only passphrase.</li>
         </ul>
       </section>
 

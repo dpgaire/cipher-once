@@ -4,18 +4,18 @@ import { Lock, Plus } from "lucide-react"
 import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
 import type { User } from "@supabase/supabase-js"
 
-interface DashboardNavProps {
+interface DashboardHeaderProps {
   user: User
 }
 
-export function DashboardNav({ user }: DashboardNavProps) {
+export function DashboardHeader({ user }: DashboardHeaderProps) {
   if (!user) {
     // This should not happen if the layout protecting the page works correctly
     return null
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
+    <header className="sticky top-0 z-40 w-full border-b bg-background hidden md:flex">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2.5 font-bold transition-opacity hover:opacity-80">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">

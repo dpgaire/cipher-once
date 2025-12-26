@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { DashboardNav } from "@/features/secrets/components/dashboard-nav"
+import { DashboardHeader } from "@/features/secrets/components/dashboard-header"
+import { DashboardMobileNav } from "@/features/secrets/components/dashboard-mobile-nav"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -15,8 +16,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen flex-col">
-      <DashboardNav user={user} />
-      <main className="flex-1">{children}</main>
+      <DashboardHeader user={user} />
+      <main className="flex-1 pb-16 md:pb-0">{children}</main>
+      <DashboardMobileNav />
     </div>
   )
 }

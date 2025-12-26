@@ -123,12 +123,15 @@ export function Header() {
               <div className="mt-auto w-full max-w-xs space-y-4">
                 {/* Auth Buttons (if needed) */}
                 {loading ? (
-                  <div className="flex flex-col gap-4">
+                  <div className="flex justify-center flex-col gap-4">
                     <Skeleton className="h-12 w-full rounded-md" />
                     <Skeleton className="h-12 w-full rounded-md" />
                   </div>
                 ) : isAuthenticated ? (
-                  <UserProfileDropdown user={user as User} />
+                  <div className="flex justify-center items-center">
+
+                    <UserProfileDropdown user={user as User} />
+                  </div>
                 ) : (
                   <div className="flex flex-col gap-4">
                     <SheetClose asChild>

@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SecretCard } from "../components/secret-card" // Import from within the feature
-import { EmptyState } from "@/components/ui/empty" // Remains a general component
-import { Shield, Loader2, FileText, Activity, Flame } from "lucide-react"
+import { SecretCard } from "../components/secret-card"
+import { EmptyState } from "@/components/ui/empty"
+import { Shield, Loader2, FileText, Activity, Flame, Clock } from "lucide-react"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 interface Secret {
   id: string
@@ -19,13 +21,16 @@ interface Secret {
   passphrase_hash: string | null
 }
 
-export function DashboardPage() {
+function DashboardPageComponent() {
+  const searchParams = useSearchParams()
+  const activeTab = searchParams.get("tab") || "active"
+  
   const [secrets, setSecrets] = useState<Secret[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("active")
 
   useEffect(() => {
     const loadSecrets = async () => {
+      setIsLoading(true)
       const supabase = createClient()
       const {
         data: { user },
@@ -51,7 +56,7 @@ export function DashboardPage() {
   }, [])
 
   const handleDeleteSecret = async (secretId: string) => {
-    if (!confirm("Are you sure you want to delete this secret?")) return
+    if (!confirm("Are you sure you want to delete this secret? This action is irreversible.")) return
 
     const supabase = createClient()
     const { error } = await supabase.from("secrets").delete().eq("id", secretId)
@@ -64,55 +69,66 @@ export function DashboardPage() {
     }
   }
 
-  // Filter secrets by status
   const activeSecrets = secrets.filter((s) => !s.is_burned && new Date(s.expires_at) > new Date())
   const expiredSecrets = secrets.filter((s) => !s.is_burned && new Date(s.expires_at) <= new Date())
   const burnedSecrets = secrets.filter((s) => s.is_burned)
 
-  // Stats
   const stats = [
-    {
-      label: "Active Secrets",
-      value: activeSecrets.length,
-      icon: Shield,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-500/10",
-    },
-    {
-      label: "Total Created",
-      value: secrets.length,
-      icon: FileText,
-      color: "text-blue-600",
-      bgColor: "bg-blue-500/10",
-    },
-    {
-      label: "Total Views",
-      value: secrets.reduce((acc, s) => acc + s.view_count, 0),
-      icon: Activity,
-      color: "text-purple-600",
-      bgColor: "bg-purple-500/10",
-    },
-    {
-      label: "Burned",
-      value: burnedSecrets.length,
-      icon: Flame,
-      color: "text-red-600",
-      bgColor: "bg-red-500/10",
-    },
+    { label: "Active", value: activeSecrets.length, icon: Shield, color: "text-emerald-600", bgColor: "bg-emerald-500/10" },
+    { label: "Total Created", value: secrets.length, icon: FileText, color: "text-blue-600", bgColor: "bg-blue-500/10" },
+    { label: "Total Views", value: secrets.reduce((acc, s) => acc + s.view_count, 0), icon: Activity, color: "text-purple-600", bgColor: "bg-purple-500/10" },
+    { label: "Burned", value: burnedSecrets.length, icon: Flame, color: "text-red-600", bgColor: "bg-red-500/10" },
+  ]
+  
+  const navItems = [
+    { name: "Active", value: "active", count: activeSecrets.length, icon: Shield },
+    { name: "Expired", value: "expired", count: expiredSecrets.length, icon: Clock },
+    { name: "Burned", value: "burned", count: burnedSecrets.length, icon: Flame },
   ]
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center pt-16">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      )
+    }
+    
+    switch (activeTab) {
+      case "active":
+        return activeSecrets.length === 0 ? (
+          <EmptyState icon={Shield} title="No active secrets" description="Create your first secret to share sensitive information securely." actionLabel="Create Secret" actionHref="/create" />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {activeSecrets.map((secret) => <SecretCard key={secret.id} secret={secret} onDelete={handleDeleteSecret} />)}
+          </div>
+        )
+      case "expired":
+        return expiredSecrets.length === 0 ? (
+          <EmptyState icon={Clock} title="No expired secrets" description="Secrets that pass their expiration date will appear here." />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {expiredSecrets.map((secret) => <SecretCard key={secret.id} secret={secret} onDelete={handleDeleteSecret} />)}
+          </div>
+        )
+      case "burned":
+        return burnedSecrets.length === 0 ? (
+          <EmptyState icon={Flame} title="No burned secrets" description="Secrets that have been viewed and destroyed will appear here." />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {burnedSecrets.map((secret) => <SecretCard key={secret.id} secret={secret} onDelete={handleDeleteSecret} />)}
+          </div>
+        )
+      default:
+        return null
+    }
   }
 
   return (
     <div className="container max-w-7xl flex-1 py-8">
       {/* Stats Grid */}
-      <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -137,68 +153,41 @@ export function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Your Secrets</CardTitle>
-          <CardDescription>Manage and track all your shared secrets</CardDescription>
+          <CardDescription>Manage and track all your shared secrets. Select a category to view.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="active">Active ({activeSecrets.length})</TabsTrigger>
-              <TabsTrigger value="expired">Expired ({expiredSecrets.length})</TabsTrigger>
-              <TabsTrigger value="burned">Burned ({burnedSecrets.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="active" className="mt-6">
-              {activeSecrets.length === 0 ? (
-                <EmptyState
-                  icon={Shield}
-                  title="No active secrets"
-                  description="Create your first secret to share sensitive information securely."
-                  actionLabel="Create Secret"
-                  actionHref="/create"
-                />
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {activeSecrets.map((secret) => (
-                    <SecretCard key={secret.id} secret={secret} onDelete={handleDeleteSecret} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="expired" className="mt-6">
-              {expiredSecrets.length === 0 ? (
-                <EmptyState
-                  icon={Shield}
-                  title="No expired secrets"
-                  description="Secrets that pass their expiration date will appear here."
-                />
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {expiredSecrets.map((secret) => (
-                    <SecretCard key={secret.id} secret={secret} onDelete={handleDeleteSecret} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="burned" className="mt-6">
-              {burnedSecrets.length === 0 ? (
-                <EmptyState
-                  icon={Flame}
-                  title="No burned secrets"
-                  description="Secrets that have been viewed and destroyed will appear here."
-                />
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {burnedSecrets.map((secret) => (
-                    <SecretCard key={secret.id} secret={secret} onDelete={handleDeleteSecret} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+          {/* Desktop Tabs */}
+          <div className="hidden md:block border-b mb-6">
+            <nav className="-mb-px flex space-x-6">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={`/dashboard?tab=${item.value}`}
+                  className={cn(
+                    "whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors",
+                    activeTab === item.value
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  )}
+                >
+                  {item.name} ({item.count})
+                </Link>
+              ))}
+            </nav>
+          </div>
+          
+          {renderContent()}
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// Wrap the component in Suspense to use useSearchParams
+export function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex flex-1 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+      <DashboardPageComponent />
+    </Suspense>
   )
 }
