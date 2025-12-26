@@ -15,6 +15,7 @@ import { useState } from "react"
 import { useAuthSession } from "@/features/auth/hooks/use-auth-session"
 import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
 import { Skeleton } from "@/components/ui/skeleton"
+import { User } from "@supabase/supabase-js"
 
 export function Header() {
   const pathname = usePathname()
@@ -65,7 +66,7 @@ export function Header() {
           {loading ? (
             <Skeleton className="h-9 w-20 rounded-md" />
           ) : isAuthenticated ? (
-            <UserProfileDropdown user={user} />
+            <UserProfileDropdown user={user as User} />
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
@@ -122,7 +123,7 @@ export function Header() {
                 </div>
               ) : isAuthenticated ? (
                 <div className="mt-12 w-full max-w-xs">
-                  <UserProfileDropdown user={user} />
+                  <UserProfileDropdown user={user as User} />
                 </div>
               ) : (
                 <div className="mt-12 w-full max-w-xs flex flex-col gap-4">

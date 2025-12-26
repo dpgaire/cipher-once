@@ -9,21 +9,14 @@ export interface SecretConfig {
 }
 
 export const SECRET_EXPIRATION_OPTIONS = [
-  { label: "10 seconds", value: 10 / 3600 }, // 10s
-  { label: "30 seconds", value: 30 / 3600 }, // 30s
-  { label: "45 seconds", value: 45 / 3600 }, // 45s
-  { label: "1 minute", value: 1 / 60 },     // 1m
-  { label: "2 minutes", value: 2 / 60 },    // 2m
-  { label: "5 minutes", value: 5 / 60 },    // 5m
-  { label: "10 minutes", value: 10 / 60 },  // 10m
-  { label: "20 minutes", value: 20 / 60 },  // 20m
-  { label: "30 minutes", value: 30 / 60 },  // 30m
-  { label: "40 minutes", value: 40 / 60 },  // 40m
-  { label: "50 minutes", value: 50 / 60 },  // 50m
+  { label: "45 seconds", value: 45 / 3600 }, 
+  { label: "1 minute", value: 1 / 60 },     
+  { label: "5 minutes", value: 5 / 60 },   
+  { label: "15 minutes", value: 15 / 60 }, 
+  { label: "30 minutes", value: 30 / 60 },
   { label: "1 hour", value: 1 },
-  { label: "2 hours", value: 2 },
   { label: "3 hours", value: 3 },
-  { label: "4 hours", value: 4 },
+  { label: "6 hours", value: 6 },
   { label: "12 hours", value: 12 },
   { label: "1 day", value: 24 },
   { label: "3 days", value: 72 },
@@ -33,11 +26,8 @@ export const SECRET_EXPIRATION_OPTIONS = [
 export const MAX_VIEW_OPTIONS = [
   { label: "One time", value: 1 },
   { label: "2 views", value: 2 },
-  { label: "3 views", value: 3 },
   { label: "5 views", value: 5 },
-  { label: "10 views", value: 10 },
   { label: "15 views", value: 15 },
-  { label: "20 views", value: 20 },
   { label: "25 views", value: 25 },
   { label: "50 views", value: 50 },
   { label: "100 views", value: 100 },

@@ -59,10 +59,12 @@ export function CreateSecretForm() {
     try {
       const contentTrimmed = content.trim();
 
-      // Validate content
-      const contentValidation = validateSecretContent(contentTrimmed)
-      if (!contentValidation.valid && !selectedFile) {
-        throw new Error(contentValidation.error)
+      // Validate content IF it's provided and no file is selected
+      if (contentTrimmed && !selectedFile) {
+        const contentValidation = validateSecretContent(contentTrimmed)
+        if (!contentValidation.valid) { // Only check for content validation if content is provided
+          throw new Error(contentValidation.error)
+        }
       }
 
       // Validate passphrase if required

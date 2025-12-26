@@ -26,7 +26,7 @@ export function RootLayout({ children, isAuthenticated }: RootLayoutProps) {
   if (showGlobalHeaderFooter) {
     return (
       <>
-        <Header isAuthenticated={isAuthenticated} />
+        <Header />
         <main className="flex-1">{children}</main>
         <Footer />
       </>
