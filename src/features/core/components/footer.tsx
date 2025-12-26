@@ -34,6 +34,26 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/zero-knowledge-secret-sharing" className="text-muted-foreground hover:text-foreground">
+                  Zero-Knowledge Sharing
+                </Link>
+              </li>
+              <li>
+                <Link href="/one-time-secret-alternative" className="text-muted-foreground hover:text-foreground">
+                  One-Time Secret Alternative
+                </Link>
+              </li>
+              <li>
+                <Link href="/secure-password-sharing" className="text-muted-foreground hover:text-foreground">
+                  Secure Password Sharing
+                </Link>
+              </li>
+              <li>
+                <Link href="/self-destructing-messages" className="text-muted-foreground hover:text-foreground">
+                  Self-Destructing Messages
+                </Link>
+              </li>
+              <li>
                 <Link href="/create" className="text-muted-foreground hover:text-foreground">
                   Create Secret
                 </Link>

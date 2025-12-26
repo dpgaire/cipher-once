@@ -45,7 +45,7 @@ export function Header() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
             <Lock className="h-5 w-5" />
           </div>
-          <span className="text-xl tracking-tight">CipherOnce</span>
+          <span className="text-lg md:text-xl tracking-tight">CipherOnce</span>
         </Link>
 
         {/* Desktop Nav */}

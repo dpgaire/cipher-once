@@ -1,0 +1,72 @@
+"use client";
+
+import { Code, Briefcase, Users, CheckCircle2 } from 'lucide-react';
+
+export function UseCasesSection() {
+  return (
+    <section className="py-20 md:py-28">
+      <div className="container mx-auto px-6">
+        <div className="mx-auto mb-16 max-w-3xl text-center">
+          <h2 className="mb-4 text-4xl font-bold md:text-5xl">Trusted By Professionals</h2>
+          <p className="text-lg text-gray-600">From startups to Fortune 500 companies</p>
+        </div>
+
+        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
+          {[
+            {
+              icon: Code,
+              title: "Developers & Engineers",
+              items: [
+                "Share API keys and access tokens",
+                "Distribute database credentials",
+                "Send SSH keys and certificates",
+                "Avoid credential leaks in Slack",
+                "Secure CI/CD secrets delivery"
+              ],
+            },
+            {
+              icon: Briefcase,
+              title: "Business & Legal",
+              items: [
+                "Share contract details with clients",
+                "Distribute investor information",
+                "Send compliance documents",
+                "Secure M&A communications",
+                "GDPR-compliant data sharing"
+              ],
+            },
+            {
+              icon: Users,
+              title: "Teams & Agencies",
+              items: [
+                "Client login credentials",
+                "Campaign access codes",
+                "Partner portal passwords",
+                "Vendor payment details",
+                "Temporary access provisioning"
+              ],
+            },
+          ].map((group) => {
+            const Icon = group.icon;
+            return (
+              <div key={group.title} className="rounded-xl border border-gray-200 bg-white p-8">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50">
+                  <Icon className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="mb-6 text-xl font-bold">{group.title}</h3>
+                <ul className="space-y-3">
+                  {group.items.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
