@@ -1,0 +1,3 @@
+ALTER TABLE secrets
+ALTER COLUMN encrypted_content DROP NOT NULL,
+ALTER COLUMN encryption_iv DROP NOT NULL;
