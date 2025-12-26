@@ -116,7 +116,67 @@ export default function AboutPage() {
             </p>
           </div>
         </div>
+
+        {/* Documentation Section */}
+        <div className="mt-16 pt-12 border-t">
+          <h2 className="mb-8 text-center text-3xl font-bold">Learn More</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Link
+              href="/one-time-secret-alternative"
+              className="group rounded-xl border bg-card p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <Repeat className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-foreground">One-Time Secret Alternative</h3>
+              <p className="text-sm text-muted-foreground">
+                Explore why CipherOnce is a modern, more secure alternative to traditional one-time secret sharing methods.
+              </p>
+            </Link>
+
+            <Link
+              href="/secure-password-sharing"
+              className="group rounded-xl border bg-card p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <KeyRound className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-foreground">Secure Password Sharing</h3>
+              <p className="text-sm text-muted-foreground">
+                Learn the best practices for sharing passwords securely and how CipherOnce facilitates this process.
+              </p>
+            </Link>
+
+            <Link
+              href="/self-destructing-messages"
+              className="group rounded-xl border bg-card p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <Flame className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-foreground">Self-Destructing Messages</h3>
+              <p className="text-sm text-muted-foreground">
+                Understand the technology behind self-destructing messages and their importance in digital privacy.
+              </p>
+            </Link>
+
+            <Link
+              href="/zero-knowledge-secret-sharing"
+              className="group rounded-xl border bg-card p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <ShieldCheck className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-foreground">Zero-Knowledge Secret Sharing</h3>
+              <p className="text-sm text-muted-foreground">
+                A deep dive into our zero-knowledge architecture and what it means for the security of your data.
+              </p>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
+import Link from "next/link";
+import { Repeat, KeyRound, Flame, ShieldCheck } from "lucide-react";

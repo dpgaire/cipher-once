@@ -18,8 +18,8 @@ export function ProblemStatementSection() {
             <div className="flex items-start gap-4">
               <AlertCircle className="h-6 w-6 flex-shrink-0 text-destructive" />
               <div className="text-left">
-                <p className="text-sm font-semibold text-destructive-foreground">Security Incident Example</p>
-                <p className="mt-2 text-sm leading-relaxed text-destructive-foreground/90">
+                <p className="text-sm font-semibold ">Security Incident Example</p>
+                <p className="mt-2 text-sm leading-relaxed ">
                   A developer shares database credentials in Slack. Three months later, an attacker gains access
                   to their company Slack workspace. Result: Full database compromise from a "deleted" message.
                 </p>

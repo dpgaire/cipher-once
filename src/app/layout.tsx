@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     "secret sharing",
     "secure sharing",
     "one-time secret",
+    "file sharing",
     "ephemeral sharing",
     "self-destructing message",
     "zero-knowledge",
