@@ -40,24 +40,6 @@ export function HeroSection() {
           <p className="mt-6 text-sm text-muted-foreground">No registration • No credit card • Always free</p>
         </div>
       </div>
-
-      {/* Stats Bar */}
-      <div className="container mx-auto mt-16 px-6">
-        <div className="mx-auto grid max-w-4xl grid-cols-3 divide-x divide-border rounded-xl border border-border bg-background">
-          <div className="px-8 py-6 text-center">
-            <div className="text-3xl font-bold text-primary">256-bit</div>
-            <div className="mt-1 text-sm font-medium text-muted-foreground">AES Encryption</div>
-          </div>
-          <div className="px-8 py-6 text-center">
-            <div className="text-3xl font-bold text-primary">100%</div>
-            <div className="mt-1 text-sm font-medium text-muted-foreground">Client-Side</div>
-          </div>
-          <div className="px-8 py-6 text-center">
-            <div className="text-3xl font-bold text-primary">0</div>
-            <div className="mt-1 text-sm font-medium text-muted-foreground">Data Retention</div>
-          </div>
-        </div>
-      </div>
     </section>
   );
 }

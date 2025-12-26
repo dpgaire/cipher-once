@@ -24,7 +24,7 @@ export function SecurityArchitectureSection() {
               Every secret is encrypted using AES-256-GCM before leaving your device. The encryption key is
               generated locally and embedded in the URL fragment (#), which is never sent to our servers.
             </p>
-            <div className="rounded-lg bg-muted p-4 font-mono text-xs text-muted-foreground">
+            <div className="rounded-lg bg-muted wrap-break-word p-4 font-mono text-xs text-muted-foreground">
               https://cipheronce.com/s/abc123<span className="text-primary">#encryption-key-here</span>
             </div>
           </div>
