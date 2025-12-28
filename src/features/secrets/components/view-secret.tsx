@@ -429,10 +429,10 @@ export function ViewSecretPage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm font-medium">
                       <Lock className="h-4 w-4" />
-                      Passphrase Required
+                      Password Required
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="passphrase">Enter Passphrase</Label>
+                      <Label htmlFor="passphrase">Enter Password</Label>
                       <Input
                         id="passphrase"
                         type="password"

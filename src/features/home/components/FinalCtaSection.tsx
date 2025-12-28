@@ -5,14 +5,14 @@ import Link from "next/link";
 
 export function FinalCtaSection() {
   return (
-    <section className="py-20 md:py-28">
-      <div className="container mx-auto px-6">
+    <section className="py-10 md:py-28">
+      <div className="container mx-auto px-4 lg:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-xl bg-primary">
             <Lock className="h-10 w-10 text-primary-foreground" />
           </div>
 
-          <h2 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
+          <h2 className="mb-6 text-3xl font-bold md:text-5xl lg:text-6xl">
             Start sharing secrets securely
           </h2>
 

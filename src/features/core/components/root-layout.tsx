@@ -15,14 +15,14 @@ export function RootLayout({ children, isAuthenticated }: RootLayoutProps) {
   const pathname = usePathname()
 
   // Define routes where the header and footer should not be shown
-  const isAuthPage = pathname.startsWith("/auth")
+  // const isAuthPage = pathname.startsWith("/auth")
   const isDashboard = pathname.startsWith("/dashboard")
   // const isCreatePage = pathname.startsWith("/create")
   const isSecretPage = pathname.startsWith("/s/")
 
   // A more flexible way to manage layouts
   // const showGlobalHeaderFooter = !isAuthPage && !isDashboard && !isCreatePage && !isSecretPage
-  const showGlobalHeaderFooter = !isAuthPage && !isDashboard  && !isSecretPage
+  const showGlobalHeaderFooter =  !isDashboard  && !isSecretPage
 
 
   if (showGlobalHeaderFooter) {
