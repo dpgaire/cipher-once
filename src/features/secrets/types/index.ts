@@ -31,3 +31,9 @@ export interface Secret {
   file_size?: number;
   file_encryption_iv?: string; // for file content encryption
 }
+
+export interface ConvertResult  {
+  file: File
+  converted?: boolean
+}
+
