@@ -12,7 +12,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 const siteConfig = {
   name: "CipherOnce",
-  url: "https://cipher-once.vercel.app", // Replace with your actual domain
+  url: "https://cipheronce.com", // Replace with your actual domain
   description:
     "Share secrets, passwords, and API keys securely with end-to-end encrypted, self-destructing links. A zero-knowledge platform for ephemeral and secure data transfer.",
 }
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: `${siteConfig.url}/og-image.svg`,
-        width: 1200,
-        height: 630,
+        url: `${siteConfig.url}/cipheronce_lock_fade_blue500.png`, // Updated to new PNG
+        width: 1200, // Assuming a reasonable width for the OG image
+        height: 630, // Assuming a reasonable height for the OG image
         alt: siteConfig.name,
       },
     ],
@@ -65,31 +65,17 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [`${siteConfig.url}/og-image.svg`],
+    images: [`${siteConfig.url}/cipheronce_lock_fade_blue500.png`], // Updated to new PNG
     creator: "@your-twitter-handle", // Replace with your Twitter handle
   },
   
   icons: {
     icon: [
-      {
-        url: "/icon-light.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
+      { url: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },
+      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: {
-      url: "/apple-icon.svg",
-      type: "image/svg+xml",
-    },
+    apple: '/apple-icon.png',
   },
 }
 

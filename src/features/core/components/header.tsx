@@ -82,82 +82,97 @@ export function Header() {
           <ThemeToggle />
         </div>
 
-        {/* Mobile Menu */}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </SheetTrigger>
+       {/* Mobile Menu */}
+<Sheet open={open} onOpenChange={setOpen}>
+  <SheetTrigger asChild>
+    <Button
+      variant="ghost"
+      size="icon"
+      className="md:hidden group transition-transform duration-300 hover:rotate-90"
+    >
+      <Menu className="h-6 w-6" />
+      <span className="sr-only">Open menu</span>
+    </Button>
+  </SheetTrigger>
 
-          <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-background/95 backdrop-blur-md">
-            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+  <SheetContent
+    side="right"
+    className="w-[85vw] sm:w-[400px] bg-background/95 backdrop-blur-md shadow-xl  overflow-y-auto transition-transform duration-300"
+  >
+    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
 
-            <div className="flex flex-col items-center pt-8 pb-12 px-6 h-full">
-              {/* Logo at top */}
-              <div className="flex items-center gap-3 mb-12">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-                  <Lock className="h-6 w-6" />
-                </div>
-                <span className="text-2xl font-bold tracking-tight">
-                  CipherOnce
-                </span>
-              </div>
+    <div className="flex flex-col items-start pt-6 pb-12 px-6 h-full">
+      {/* Logo at top */}
+      <div className="flex items-center gap-3 mb-12">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-inner">
+          <Lock className="h-6 w-6" />
+        </div>
+        <span className="text-2xl font-bold tracking-tight">
+          CipherOnce
+        </span>
+      </div>
 
-              {/* Centered Navigation Links */}
-              <nav className="flex w-full max-w-xs flex-col gap-6">
-                {navItems.map((item) => (
-                  <SheetClose asChild key={item.label}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="text-center text-lg font-medium text-foreground/80 transition-all hover:text-foreground py-2"
-                    >
-                      {item.label}
-                    </Link>
-                  </SheetClose>
-                ))}
-              </nav>
+      {/* Centered Navigation Links */}
+      <nav className="flex w-full max-w-xs flex-col gap-6">
+        {navItems.map((item) => (
+          <SheetClose asChild key={item.label}>
+            <Link
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className="text-start text-lg font-semibold text-foreground/80  transition-all hover:text-primary hover:translate-x-1 py-2 active:scale-95"
+            >
+              {item.label}
+            </Link>
+          </SheetClose>
+        ))}
+      </nav>
 
-              <div className="mt-auto w-full max-w-xs space-y-4">
-                {/* Auth Buttons (if needed) */}
-                {loading ? (
-                  <div className="flex justify-center flex-col gap-4">
-                    <Skeleton className="h-12 w-full rounded-md" />
-                    <Skeleton className="h-12 w-full rounded-md" />
-                  </div>
-                ) : isAuthenticated ? (
-                  <div className="flex justify-center items-center">
+      <div className="mt-auto w-full max-w-xs space-y-4 pt-6 border-t border-foreground/10">
+        {/* Auth Buttons */}
+        {loading ? (
+          <div className="flex justify-center flex-col gap-4">
+            <Skeleton className="h-12 w-full rounded-md animate-pulse " />
+            <Skeleton className="h-12 w-full rounded-md animate-pulse " />
+          </div>
+        ) : isAuthenticated ? (
+          <div className="flex justify-center items-center">
+            <UserProfileDropdown user={user as User} />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <SheetClose asChild>
+              <Button
+                variant="outline"
+                size="lg"
+                asChild
+                className="w-full hover:scale-105 transition-transform duration-150"
+              >
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+            </SheetClose>
+            <SheetClose asChild>
+              <Button
+                size="lg"
+                asChild
+                className="w-full  font-semibold hover:scale-105 transition-transform duration-150"
+              >
+                <Link href="/auth/sign-up">Get Started</Link>
+              </Button>
+            </SheetClose>
+          </div>
+        )}
 
-                    <UserProfileDropdown user={user as User} />
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    <SheetClose asChild>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        asChild
-                        className="w-full"
-                      >
-                        <Link href="/auth/login">Sign in</Link>
-                      </Button>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Button size="lg" asChild className="w-full">
-                        <Link href="/auth/sign-up">Get Started</Link>
-                      </Button>
-                    </SheetClose>
-                  </div>
-                )}
-                <div className="flex justify-center pt-4">
-                  <ThemeToggle />
-                </div>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+        {/* Theme Toggle */}
+        <div className="flex justify-center pt-4">
+          <div className="p-2 rounded-full bg-background/80 shadow-md transition-all hover:scale-105">
+            <ThemeToggle />
+          </div>
+        </div>
+      </div>
+    </div>
+  </SheetContent>
+</Sheet>
+
       </div>
     </header>
   )

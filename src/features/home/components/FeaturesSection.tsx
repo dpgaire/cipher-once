@@ -4,10 +4,10 @@ import { Shield, Lock, Flame, Eye, Clock, FileText, QrCode, Trash2, Globe, Check
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="border-t border-border py-20 md:py-28">
-      <div className="container mx-auto px-6">
+    <section id="features" className="border-t border-border py-10 md:py-28">
+      <div className="container mx-auto px-4 lg:px-6">
         <div className="mx-auto mb-16 max-w-3xl text-center">
-          <h2 className="mb-4 text-4xl font-bold md:text-5xl">Enterprise-Grade Security</h2>
+          <h2 className="mb-4 text-3xl font-bold md:text-5xl">Enterprise-Grade Security</h2>
           <p className="text-lg text-muted-foreground">Built with security professionals in mind</p>
         </div>
 
@@ -27,13 +27,13 @@ export function FeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className="rounded-xl border border-border bg-background p-6 transition-all hover:border-primary/50 hover:shadow-lg"
+                className="rounded-xl flex flex-col justify-center items-center border border-border bg-background p-6 transition-all hover:border-primary/50 hover:shadow-lg"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                   <Icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{feature.desc}</p>
+                <p className="text-sm leading-relaxed text-center text-muted-foreground">{feature.desc}</p>
               </div>
             );
           })}

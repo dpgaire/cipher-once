@@ -5,10 +5,10 @@ import Link from 'next/link';
 
 export function SecurityArchitectureSection() {
   return (
-    <section id="security" className="border-t border-border py-20 md:py-28">
-      <div className="container mx-auto px-6">
+    <section id="security" className="border-t border-border py-10 md:py-28">
+      <div className="container mx-auto px-4 lg:px-6">
         <div className="mx-auto mb-16 max-w-3xl text-center">
-          <h2 className="mb-4 text-4xl font-bold md:text-5xl">Security Architecture</h2>
+          <h2 className="mb-4 text-3xl font-bold md:text-5xl">Security Architecture</h2>
           <p className="text-lg text-muted-foreground">Transparency in design and implementation</p>
         </div>
 
@@ -69,7 +69,7 @@ export function SecurityArchitectureSection() {
           </div>
         </div>
 
-        <div className="mx-auto mt-12 max-w-4xl rounded-xl border border-primary/50 bg-primary/10 p-8 text-center">
+        <div className="mx-auto mt-8 lg:mt-12 max-w-4xl rounded-xl border border-primary/50 bg-primary/10 p-8 text-center">
           <p className="text-lg font-semibold text-primary">
             Want to verify our security claims? Our encryption implementation is open-source and independently auditable.
           </p>
