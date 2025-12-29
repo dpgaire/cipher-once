@@ -14,8 +14,10 @@ export function RootLayout({ children }: RootLayoutProps) {
 
   const isDashboard = pathname.startsWith("/dashboard")
   const isSecretPage = pathname.startsWith("/s/")
+  const isAdmin = pathname.startsWith("/admin")
 
-  const showGlobalHeaderFooter = !isDashboard && !isSecretPage
+
+  const showGlobalHeaderFooter = !isDashboard && !isSecretPage && !isAdmin
 
   if (showGlobalHeaderFooter) {
     return (
