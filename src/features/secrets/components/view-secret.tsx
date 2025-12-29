@@ -168,17 +168,14 @@ export function ViewSecretPage() {
         const newViewCount = secretData.view_count + 1
         const shouldBurn = secretData.max_views !== -1 && newViewCount >= secretData.max_views
 
-        const { error: updateError } = await supabase.rpc('update_secret_view_and_burn', { p_secret_id: secretData.id });
+        const { data: rpcSuccess, error: updateError } = await supabase.rpc('update_secret_view_and_burn', { p_secret_id: secretData.id });
 
         if (updateError) {
-          console.error("Error calling RPC to update view count:", updateError)
-          // Log failure but don't block the user from viewing the secret
+          console.error("RPC Error updating view count:", updateError);
           await logAccess(secretData.id, 'failure', `Failed to update view count via RPC: ${updateError.message}`);
+        } else if (!rpcSuccess) {
+          console.warn("RPC call to update_secret_view_and_burn did not succeed for secret:", secretData.id);
         } else {
-          // The RPC function updates the database. We need to re-fetch the secret to get the updated values,
-          // or we can optimistically update the local state. For simplicity and to reflect the RPC's
-          // internal logic, we'll optimistically update based on the original `secretData` and `newViewCount`
-          // and `shouldBurn` derived earlier.
           setSecret((prevSecret) => {
             if (!prevSecret) return null;
             return {

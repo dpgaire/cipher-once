@@ -1,39 +1,32 @@
-// lib/types/secrets.ts
+export interface Secret {
+  id: string
+  short_id: string
+  created_at: string
+  expires_at: string
+  view_count: number
+  max_views: number
+  is_burned: boolean
+  passphrase_hash: string | null
+  encrypted_content: string | null;
+  encryption_iv: string | null;
+  metadata: SecretMetadata;
+  has_file: boolean;
+  file_url: string | null;
+  file_type: string | null;
+  file_name: string | null;
+  file_size: number | null;
+  file_encryption_iv: string | null;
+}
 
 export interface SecretMetadata {
   salt?: string;
   has_passphrase?: boolean;
-  // New V2 Rules
-  require_auth?: boolean; // If true, only authenticated users can view
-  allowed_domains?: string[]; // Array of domains from which secret can be viewed
-  custom_labels?: string[]; // Arbitrary labels for categorization
+  require_auth?: boolean;
+  allowed_domains?: string[];
+  custom_labels?: string[];
 }
 
-export interface Secret {
-  id: string;
-  encrypted_content: string;
-  encryption_iv: string;
-  short_id: string;
-  passphrase_hash: string | null;
-  max_views: number;
-  view_count: number;
-  expires_at: string;
-  created_at: string;
-  user_id: string | null;
-  is_burned: boolean;
-  metadata: SecretMetadata; // Use the new metadata interface
-
-  // New file attachment properties
-  has_file?: boolean;
-  file_url?: string;
-  file_type?: string;
-  file_name?: string;
-  file_size?: number;
-  file_encryption_iv?: string; // for file content encryption
+export interface ConvertResult {
+  file: File;
+  converted: boolean;
 }
-
-export interface ConvertResult  {
-  file: File
-  converted?: boolean
-}
-

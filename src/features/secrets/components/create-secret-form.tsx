@@ -254,6 +254,20 @@ export function CreateSecretForm() {
 
       if (dbError) throw dbError;
 
+      // Increment the user's created secret count
+      if (user) {
+        try {
+          const { data: success, error: rpcError } = await supabase.rpc('increment_created_secret_count', { p_user_id: user.id });
+          if (rpcError) {
+            console.error('RPC Error incrementing created secret count:', rpcError);
+          } else if (!success) {
+            console.warn('Failed to increment created secret count for user:', user.id);
+          }
+        } catch (rpcError) {
+          console.error('Exception calling increment_created_secret_count:', rpcError);
+        }
+      }
+
       // Export the encryption key to include in URL
       const keyString = await exportKey(encryptionKey);
 

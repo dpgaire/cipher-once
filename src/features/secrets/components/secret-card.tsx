@@ -37,7 +37,7 @@ export function SecretCard({ secret, onDelete }: SecretCardProps) {
 
   const isExpired = new Date(secret.expires_at) < new Date()
   const status = secret.is_burned ? "burned" : isExpired ? "expired" : "active"
-  const secretUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/s/${secret.short_id}`
+  const secretUrl = `/s/${secret.short_id}`
 
   const handleBurnSecret = async () => {
     setIsBurning(true)
@@ -121,6 +121,7 @@ export function SecretCard({ secret, onDelete }: SecretCardProps) {
           showLogsDialog={showLogsDialog}
           onToggleLogsDialog={setShowLogsDialog}
           showBurnDialog={showBurnDialog}
+  
           onToggleBurnDialog={setShowBurnDialog}
           showExtendExpiryDialog={showExtendExpiryDialog}
           onToggleExtendExpiryDialog={setShowExtendExpiryDialog}

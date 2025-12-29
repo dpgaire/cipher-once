@@ -1,14 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
 import { Shield, Clock, Flame, PlusCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export function DashboardMobileNav() {
-  const searchParams = useSearchParams()
-  const tab = searchParams.get("tab") || "active"
+interface DashboardMobileNavProps {
+  tab: string;
+}
 
+export function DashboardMobileNav({ tab }: DashboardMobileNavProps) {
   const navItems = [
     { name: "Active", href: "/dashboard?tab=active", icon: Shield, value: "active" },
     { name: "Expired", href: "/dashboard?tab=expired", icon: Clock, value: "expired" },
