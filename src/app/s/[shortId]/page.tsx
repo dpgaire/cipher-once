@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { ViewSecretPage } from "@/features/secrets/components/view-secret";
 
 export async function generateMetadata({ params }: { params: { shortId: string } }): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = 'https://www.cipheronce.com';
   const secretUrl = `${baseUrl}/s/${params.shortId}`;
 
   return {

@@ -9,6 +9,7 @@ import {
   FaTelegramPlane,
 } from "react-icons/fa"
 import { SiX } from "react-icons/si"
+import { useIsMobile } from "@/hooks/use-responsive-breakpoint"
 
 interface SocialShareButtonsProps {
   secretUrl: string
@@ -21,6 +22,7 @@ export function SocialShareButtons({
   title,
   text,
 }: SocialShareButtonsProps) {
+  const isMobile = useIsMobile()
   // Ensure URL starts with https:// for reliable previews
   const fullUrl = secretUrl.startsWith("http") ? secretUrl : `https://${secretUrl}`
   const encodedUrl = encodeURIComponent(fullUrl)
@@ -65,12 +67,12 @@ export function SocialShareButtons({
   }
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({
           title,
-          text: fullMessage, // Text + URL for clickability + preview
-          url: "",
+          text: text, // Only text, let the 'url' field handle the link
+          url: fullUrl, // The correct URL to share
         })
       } catch (error) {
         console.error("Error sharing:", error)
@@ -80,6 +82,15 @@ export function SocialShareButtons({
 
   return (
     <div className="flex flex-wrap gap-4 justify-center p-6">
+    {/* Native Share */}
+      {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && isMobile && (
+        <Button
+          onClick={handleNativeShare}
+          className="h-14 w-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white shadow-lg transition-transform hover:scale-105"
+        >
+          <Share2 className="h-7 w-7" />
+        </Button>
+      )}
       {/* X */}
       <Button
         onClick={shareOnX}
@@ -127,16 +138,6 @@ export function SocialShareButtons({
       >
         <Mail className="h-7 w-7 text-gray-700" />
       </Button>
-
-      {/* Native Share */}
-      {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
-        <Button
-          onClick={handleNativeShare}
-          className="h-14 w-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white shadow-lg transition-transform hover:scale-105"
-        >
-          <Share2 className="h-7 w-7" />
-        </Button>
-      )}
     </div>
   )
 }
