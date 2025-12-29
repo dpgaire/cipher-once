@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, Suspense } from "react"
-// import { useSearchParams } from "next/navigation" // Remove this import
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SecretCard } from "../components/secret-card"
@@ -13,13 +12,16 @@ import type { Secret } from "@/features/secrets/types"
 
 interface DashboardPageComponentProps {
   initialSecrets: Secret[];
-  searchParams: { tab?: string }; // Add this prop
+  searchParams: { tab?: string };
+  stats: {
+    total_secrets_created: number;
+    total_secrets_viewed: number;
+    total_secrets_burned: number;
+  } | null;
 }
 
-// The component receives the secrets and searchParams as props
-function DashboardPageComponent({ initialSecrets, searchParams }: DashboardPageComponentProps) {
-  // const searchParams = useSearchParams() // Remove this line
-  const activeTab = searchParams.tab || "active" // Use the prop instead
+function DashboardPageComponent({ initialSecrets, searchParams, stats }: DashboardPageComponentProps) {
+  const activeTab = searchParams.tab || "active"
   
   const [secrets, setSecrets] = useState<Secret[]>(initialSecrets)
 
@@ -41,11 +43,11 @@ function DashboardPageComponent({ initialSecrets, searchParams }: DashboardPageC
   const expiredSecrets = secrets.filter((s) => !s.is_burned && new Date(s.expires_at) <= new Date())
   const burnedSecrets = secrets.filter((s) => s.is_burned)
 
-  const stats = [
+  const statsCards = [
     { label: "Active", value: activeSecrets.length, icon: Shield, color: "text-emerald-600", bgColor: "bg-emerald-500/10" },
-    { label: "Total Created", value: secrets.length, icon: FileText, color: "text-blue-600", bgColor: "bg-blue-500/10" },
-    { label: "Total Views", value: secrets.reduce((acc, s) => acc + s.view_count, 0), icon: Activity, color: "text-purple-600", bgColor: "bg-purple-500/10" },
-    { label: "Burned", value: burnedSecrets.length, icon: Flame, color: "text-red-600", bgColor: "bg-red-500/10" },
+    { label: "Total Created", value: stats?.total_secrets_created ?? 0, icon: FileText, color: "text-blue-600", bgColor: "bg-blue-500/10" },
+    { label: "Total Views", value: stats?.total_secrets_viewed ?? 0, icon: Activity, color: "text-purple-600", bgColor: "bg-purple-500/10" },
+    { label: "Burned", value: stats?.total_secrets_burned ?? 0, icon: Flame, color: "text-red-600", bgColor: "bg-red-500/10" },
   ]
 
   const navItems = [
@@ -89,7 +91,7 @@ function DashboardPageComponent({ initialSecrets, searchParams }: DashboardPageC
     <div className="container max-w-7xl flex-1 py-8">
       {/* Stats Grid */}
       <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4">
-        {stats.map((stat) => {
+        {statsCards.map((stat) => {
           const Icon = stat.icon
           return (
             <Card key={stat.label}>
@@ -146,12 +148,17 @@ function DashboardPageComponent({ initialSecrets, searchParams }: DashboardPageC
 interface DashboardPageProps {
   secrets: Secret[];
   searchParams: { tab?: string };
+  stats: {
+    total_secrets_created: number;
+    total_secrets_viewed: number;
+    total_secrets_burned: number;
+  } | null;
 }
 
-export function DashboardPage({ secrets, searchParams }: DashboardPageProps) {
+export function DashboardPage({ secrets, searchParams, stats }: DashboardPageProps) {
   return (
     <Suspense fallback={<div className="flex flex-1 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
-      <DashboardPageComponent initialSecrets={secrets} searchParams={searchParams} />
+      <DashboardPageComponent initialSecrets={secrets} searchParams={searchParams} stats={stats} />
     </Suspense>
   )
 }

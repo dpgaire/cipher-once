@@ -29,10 +29,20 @@ export default async function DashboardPageWrapper({
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
+    console.log('secrets',secrets)
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('total_secrets_created, total_secrets_viewed, total_secrets_burned')
+    .eq('id', user?.id)
+    .single();
+
+    console.log('profile',profile)
+
   return (
     <>
       <Suspense fallback={<div className="flex flex-1 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
-        <DashboardPage secrets={(secrets as Secret[]) || []} searchParams={searchParams} />
+        <DashboardPage secrets={(secrets as Secret[]) || []} searchParams={searchParams} stats={profile} />
       </Suspense>
       <Suspense fallback={null}>
         <DashboardMobileNavWrapper />
