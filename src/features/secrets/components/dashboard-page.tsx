@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useState, Suspense } from "react"
+// import { useSearchParams } from "next/navigation" // Remove this import
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SecretCard } from "../components/secret-card"
@@ -9,51 +9,19 @@ import { EmptyState } from "@/components/ui/empty"
 import { Shield, Loader2, FileText, Activity, Flame, Clock } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import type { Secret } from "@/features/secrets/types"
 
-interface Secret {
-  id: string
-  short_id: string
-  created_at: string
-  expires_at: string
-  view_count: number
-  max_views: number
-  is_burned: boolean
-  passphrase_hash: string | null
+interface DashboardPageComponentProps {
+  initialSecrets: Secret[];
+  searchParams: { tab?: string }; // Add this prop
 }
 
-function DashboardPageComponent() {
-  const searchParams = useSearchParams()
-  const activeTab = searchParams.get("tab") || "active"
+// The component receives the secrets and searchParams as props
+function DashboardPageComponent({ initialSecrets, searchParams }: DashboardPageComponentProps) {
+  // const searchParams = useSearchParams() // Remove this line
+  const activeTab = searchParams.tab || "active" // Use the prop instead
   
-  const [secrets, setSecrets] = useState<Secret[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const loadSecrets = async () => {
-      setIsLoading(true)
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (user) {
-        const { data, error } = await supabase
-          .from("secrets")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-
-        if (error) {
-          console.error("Error loading secrets:", error)
-        } else {
-          setSecrets(data || [])
-        }
-      }
-      setIsLoading(false)
-    }
-
-    loadSecrets()
-  }, [])
+  const [secrets, setSecrets] = useState<Secret[]>(initialSecrets)
 
   const handleDeleteSecret = async (secretId: string) => {
     if (!confirm("Are you sure you want to delete this secret? This action is irreversible.")) return
@@ -79,7 +47,7 @@ function DashboardPageComponent() {
     { label: "Total Views", value: secrets.reduce((acc, s) => acc + s.view_count, 0), icon: Activity, color: "text-purple-600", bgColor: "bg-purple-500/10" },
     { label: "Burned", value: burnedSecrets.length, icon: Flame, color: "text-red-600", bgColor: "bg-red-500/10" },
   ]
-  
+
   const navItems = [
     { name: "Active", value: "active", count: activeSecrets.length, icon: Shield },
     { name: "Expired", value: "expired", count: expiredSecrets.length, icon: Clock },
@@ -87,14 +55,6 @@ function DashboardPageComponent() {
   ]
 
   const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center pt-16">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      )
-    }
-    
     switch (activeTab) {
       case "active":
         return activeSecrets.length === 0 ? (
@@ -183,11 +143,15 @@ function DashboardPageComponent() {
   )
 }
 
-// Wrap the component in Suspense to use useSearchParams
-export function DashboardPage() {
+interface DashboardPageProps {
+  secrets: Secret[];
+  searchParams: { tab?: string };
+}
+
+export function DashboardPage({ secrets, searchParams }: DashboardPageProps) {
   return (
     <Suspense fallback={<div className="flex flex-1 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
-      <DashboardPageComponent />
+      <DashboardPageComponent initialSecrets={secrets} searchParams={searchParams} />
     </Suspense>
   )
 }

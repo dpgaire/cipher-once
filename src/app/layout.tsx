@@ -4,15 +4,14 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { createClient } from "@/lib/supabase/server"
-import { RootLayout } from "@/features/core/components/root-layout" // Import new component
+import { RootLayout } from "@/features/core/components/root-layout"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 const siteConfig = {
   name: "CipherOnce",
-  url: "https://cipheronce.com", // Replace with your actual domain
+  url: "https://cipheronce.com", 
   description:
     "Share secrets, passwords, and API keys securely with end-to-end encrypted, self-destructing links. A zero-knowledge platform for ephemeral and secure data transfer.",
 }
@@ -54,9 +53,9 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: `${siteConfig.url}/cipheronce_lock_fade_blue500.png`, // Updated to new PNG
-        width: 1200, // Assuming a reasonable width for the OG image
-        height: 630, // Assuming a reasonable height for the OG image
+        url: `${siteConfig.url}/cipheronce_lock_fade_blue500.png`,
+        width: 1200,
+        height: 630,
         alt: siteConfig.name,
       },
     ],
@@ -65,8 +64,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [`${siteConfig.url}/cipheronce_lock_fade_blue500.png`], // Updated to new PNG
-    creator: "@your-twitter-handle", // Replace with your Twitter handle
+    images: [`${siteConfig.url}/cipheronce_lock_fade_blue500.png`],
+    creator: "@your-twitter-handle",
   },
   
   icons: {
@@ -90,18 +89,11 @@ export const viewport = {
   userScalable: true,
 }
 
-export default async function Layout({
+export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const isAuthenticated = !!user
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`} suppressHydrationWarning>
@@ -112,7 +104,7 @@ export default async function Layout({
           disableTransitionOnChange
         >
           <div className="flex min-h-screen flex-col">
-            <RootLayout isAuthenticated={isAuthenticated}>
+            <RootLayout>
               {children}
             </RootLayout>
           </div>

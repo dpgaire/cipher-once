@@ -1,7 +1,42 @@
-"use client"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { DashboardPage } from "@/features/secrets/components/dashboard-page"
+import type { Secret } from "@/features/secrets/types"
+import { Suspense } from "react"
+import { Loader2 } from "lucide-react"
+import { DashboardMobileNavWrapper } from "@/features/secrets/components/dashboard-mobile-nav-wrapper"
 
-import { DashboardPage } from "@/features/secrets/components/dashboard-page";
+export default async function DashboardPageWrapper({
+  searchParams,
+}: {
+  searchParams: { tab?: string };
+}) {
+  const supabase = await createClient()
 
-export default function DashboardPageWrapper() {
-  return <DashboardPage />;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/auth/login")
+  }
+
+  const { data: secrets } = await supabase
+    .from("secrets")
+    .select(
+      "id, short_id, created_at, expires_at, view_count, max_views, is_burned, passphrase_hash"
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+
+  return (
+    <>
+      <Suspense fallback={<div className="flex flex-1 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+        <DashboardPage secrets={(secrets as Secret[]) || []} searchParams={searchParams} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <DashboardMobileNavWrapper />
+      </Suspense>
+    </>
+  )
 }

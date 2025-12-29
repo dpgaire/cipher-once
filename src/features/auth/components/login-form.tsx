@@ -55,7 +55,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
+    <div className="flex min-h-screen w-full items-center justify-center">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">

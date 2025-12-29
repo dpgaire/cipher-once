@@ -1,18 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Lock, Plus } from "lucide-react"
 import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
-import type { User } from "@supabase/supabase-js"
+import { useAuthSession } from "@/features/auth/hooks/use-auth-session"
+import { Skeleton } from "@/components/ui/skeleton"
 
-interface DashboardHeaderProps {
-  user: User
-}
-
-export function DashboardHeader({ user }: DashboardHeaderProps) {
-  if (!user) {
-    // This should not happen if the layout protecting the page works correctly
-    return null
-  }
+export function DashboardHeader() {
+  const { user, loading } = useAuthSession()
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background hidden md:flex">
@@ -31,7 +27,11 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               New Secret
             </Link>
           </Button>
-          <UserProfileDropdown user={user} />
+          {loading ? (
+            <Skeleton className="h-10 w-10 rounded-full" />
+          ) : user ? (
+            <UserProfileDropdown user={user} />
+          ) : null}
         </div>
       </div>
     </header>
