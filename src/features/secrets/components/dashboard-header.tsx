@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Lock, Plus } from "lucide-react"
+import { Lock, Plus, Mail } from "lucide-react"
 import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
 import { useAuthSession } from "@/features/auth/hooks/use-auth-session"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -21,6 +21,12 @@ export function DashboardHeader() {
         </Link>
 
         <div className="flex items-center gap-4">
+          <Button asChild variant="ghost">
+            <Link href="/inbox">
+              <Mail className="mr-2 h-4 w-4" />
+              Inbox
+            </Link>
+          </Button>
           <Button asChild>
             <Link href="/create">
               <Plus className="mr-2 h-4 w-4" />
