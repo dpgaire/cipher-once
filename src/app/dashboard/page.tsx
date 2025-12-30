@@ -29,7 +29,6 @@ export default async function DashboardPageWrapper({
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
-    console.log('secrets',secrets)
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -37,7 +36,6 @@ export default async function DashboardPageWrapper({
     .eq('id', user?.id)
     .single();
 
-    console.log('profile',profile)
 
   return (
     <>

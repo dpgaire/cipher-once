@@ -5,9 +5,7 @@ import { Users, FileText, Eye } from "lucide-react"
 async function getStats() {
   const supabase = await createClient()
 
-  const { count: userCount } = await supabase
-    .from("profiles")
-    .select("id", { count: "exact", head: true })
+  const { data:userCount, error } = await supabase.rpc("get_all_users")
 
   const { count: secretCount } = await supabase
     .from("secrets")
@@ -26,7 +24,7 @@ export default async function AdminDashboardPage() {
   const stats = [
     {
       label: "Total Users",
-      value: userCount ?? 0,
+      value: userCount.length ?? 0,
       icon: Users,
     },
     {

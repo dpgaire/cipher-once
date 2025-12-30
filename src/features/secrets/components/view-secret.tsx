@@ -75,7 +75,6 @@ export function ViewSecretPage() {
     const checkForKey = async () => {
       const hash = window.location.hash.substring(1)
       if (!hash && !secret?.passphrase_hash) {
-        console.log("[v0] No encryption key found in URL hash")
         setMissingKey(true)
         const errorMessage = "Invalid secret link: Encryption key is missing from the URL";
         setError(errorMessage)
@@ -253,9 +252,6 @@ export function ViewSecretPage() {
         // Import key from URL fragment
         encryptionKey = await importKey(decodeURIComponent(hash))
       }
-
-      console.log('secret.metadata?',secret.metadata)
-
       // Decrypt text content if available
       if (secret.encrypted_content && secret.encryption_iv) {
         const decrypted = await decrypt(secret.encrypted_content, secret.encryption_iv, encryptionKey)

@@ -88,9 +88,7 @@ export function UsersTable({ users }: UsersTableProps) {
               <TableHead>Status</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Created At</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
