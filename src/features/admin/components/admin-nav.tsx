@@ -66,7 +66,7 @@ export function AdminNav({ user, isMobileOpen, toggleSidebar }: AdminNavProps) {
         {/* Toggle Buttons */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:block p-1.5 rounded-md hover:bg-muted transition-colors"
+          className="hidden lg:block p-1.5 bg-blue-500 text-white mr-2 rounded-full  hover:scale-95 transition-colors"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -121,13 +121,6 @@ export function AdminNav({ user, isMobileOpen, toggleSidebar }: AdminNavProps) {
                         <ChevronRight className="h-4 w-4 opacity-80 translate-x-0 group-hover:translate-x-1 transition-transform" />
                       )}
                     </>
-                  )}
-
-                  {/* Tooltip when collapsed */}
-                  {isCollapsed && (
-                    <span className="absolute left-full ml-2 px-2 py-1 bg-muted text-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10">
-                      {item.label}
-                    </span>
                   )}
                 </Link>
               </li>
