@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
+import { Toaster } from "sonner"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
@@ -106,6 +107,7 @@ export default function Layout({
           <div className="flex min-h-screen flex-col">
             <RootLayout>
               {children}
+              <Toaster position="top-right" richColors closeButton />
             </RootLayout>
           </div>
         </ThemeProvider>

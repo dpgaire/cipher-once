@@ -254,6 +254,8 @@ export function ViewSecretPage() {
         encryptionKey = await importKey(decodeURIComponent(hash))
       }
 
+      console.log('secret.metadata?',secret.metadata)
+
       // Decrypt text content if available
       if (secret.encrypted_content && secret.encryption_iv) {
         const decrypted = await decrypt(secret.encrypted_content, secret.encryption_iv, encryptionKey)
@@ -307,7 +309,7 @@ export function ViewSecretPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="flex min-h-screen items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -319,9 +321,9 @@ export function ViewSecretPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="w-full max-w-md flex flex-col gap-4 mb-8">
+          <div className=" mb-8 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
               <AlertCircle className="h-8 w-8 text-destructive" />
             </div>
@@ -508,7 +510,6 @@ export function ViewSecretPage() {
             <h1 className="mb-2 text-3xl font-bold">Secret Revealed</h1>
             <p className="text-muted-foreground">Copy the information below before leaving this page</p>
           </div>
-
           {/* Content Card */}
           {decryptedContent && (
           <Card className="mb-6">
@@ -570,7 +571,7 @@ export function ViewSecretPage() {
                   <File className="h-5 w-5" />
                   Attached File
                 </CardTitle>
-                <CardDescription>{secret.file_name}</CardDescription>
+                <CardDescription className="text-xs truncate">{secret.file_name}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {secret.file_type?.startsWith("image/") && (
@@ -584,7 +585,7 @@ export function ViewSecretPage() {
                   </div>
                 )}
                 <Button asChild className="w-full">
-                  <a href={decryptedFileUrl} download={secret.file_name}>
+                  <a href={decryptedFileUrl} download={secret.file_name} target="_blank" rel="noopener noreferrer">
                     <Download className="mr-2 h-4 w-4" />
                     Download File
                   </a>

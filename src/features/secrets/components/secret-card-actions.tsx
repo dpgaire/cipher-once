@@ -66,7 +66,7 @@ export function SecretCardActions({
   return (
     <div className="flex items-center justify-between border-t bg-muted/20 p-4">
       <div className="flex gap-2">
-        <Button variant="default" size="sm" asChild>
+        {/* <Button variant="default" size="sm" asChild>
           <Link href={secretUrl} target="_blank">
             <ExternalLink className="h-4 w-4 mr-2" />
             Open
@@ -75,7 +75,7 @@ export function SecretCardActions({
         <CopyButton text={secretUrl} />
         <Button variant="outline" size="sm" onClick={onToggleQR}>
           <QrCode className="h-4 w-4" />
-        </Button>
+        </Button> */}
         <Dialog open={showLogsDialog} onOpenChange={onToggleLogsDialog}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">

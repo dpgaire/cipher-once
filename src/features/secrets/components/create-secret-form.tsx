@@ -518,7 +518,7 @@ export function CreateSecretForm() {
                     />
                   </div>
 
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label
                       htmlFor="allowed-domains"
                       className="flex items-center gap-2"
@@ -536,7 +536,7 @@ export function CreateSecretForm() {
                     <p className="text-xs text-muted-foreground">
                       Comma-separated list. Leave empty for any domain.
                     </p>
-                  </div>
+                  </div> */}
 
                   <div className="space-y-2">
                     <Label

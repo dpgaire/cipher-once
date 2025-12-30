@@ -27,6 +27,7 @@ export function Header() {
     { label: "Features", href: "/#features" },
     { label: "How it works", href: "/#how-it-works" },
     { label: "About", href: "/about" },
+    { label: "Docs", href: "/docs" },
     { label: "Create Secret", href: "/create" },
   ]
 

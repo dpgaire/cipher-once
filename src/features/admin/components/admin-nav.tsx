@@ -1,79 +1,145 @@
 // components/admin-nav.tsx
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, Users, BarChart, Shield, ChevronRight } from "lucide-react"
-import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
-import type { User } from "@supabase/supabase-js"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Home,
+  Users,
+  BarChart,
+  Shield,
+  ChevronRight,
+  Menu,
+  X,
+} from "lucide-react";
+import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown";
+import type { User } from "@supabase/supabase-js";
+import { useState } from "react";
+import { cn } from "@/lib/utils"; // assuming you have a cn utility (classNames)
 
-export function AdminNav({ user, toggleSidebar }: { user: User, toggleSidebar: () => void }) {
-  const pathname = usePathname()
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
 
-  const navItems = [
-    { href: "/admin", label: "Dashboard", icon: Home },
-    { href: "/admin/users", label: "Users", icon: Users },
-    { href: "/admin/analytics", label: "Analytics", icon: BarChart },
-  ]
+interface AdminNavProps {
+  user: User;
+  isMobileOpen: boolean;
+  toggleSidebar: () => void;
+}
+
+const navItems: NavItem[] = [
+  { href: "/admin", label: "Dashboard", icon: Home },
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart },
+];
+
+export function AdminNav({ user, isMobileOpen, toggleSidebar }: AdminNavProps) {
+  const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Better active detection: exact match or starts with href (but not if parent is longer)
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname.startsWith(href) && pathname[href.length] === "/";
+  };
 
   return (
-    <aside className="w-64 flex flex-col bg-card border-r shadow-lg p-4"> {/* Removed h-screen */}
+    <aside
+      className={cn(
+        "fixed lg:static h-screen inset-y-0 left-0 z-50 flex flex-col bg-card border-r shadow-lg transition-all duration-300",
+        "lg:translate-x-0",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full",
+        isCollapsed ? "w-16" : "w-64"
+      )}
+    >
       {/* Header */}
-      <div className="flex items-center gap-3 px-2 py-3 border-b bg-primary text-primary-foreground rounded-lg">
-        <Shield className="h-6 w-6" />
-        <h2 className="text-xl font-bold tracking-tight">Admin Panel</h2>
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-3">
+          <Shield className="h-7 w-7 text-primary" />
+          {!isCollapsed && (
+            <h2 className="text-xl font-bold tracking-tight">Admin Panel</h2>
+          )}
+        </div>
+
+        {/* Toggle Buttons */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden lg:block p-1.5 rounded-md hover:bg-muted transition-colors"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+
+        <button
+          onClick={toggleSidebar}
+          className="lg:hidden p-1.5 rounded-md hover:bg-muted"
+          aria-label="Close sidebar"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-6 overflow-y-auto">
-        <ul className="space-y-1">
+      <nav className="flex-1 px-3 py-6 overflow-y-auto">
+        <ul className="space-y-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (pathname.startsWith(item.href + '/') && item.href !== '/admin')
-            const Icon = item.icon
+            const active = isActive(item.href);
+            const Icon = item.icon;
 
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`
-                    group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium
-                    transition-all duration-200 ease-out
-                    ${isActive
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                      : "text-foreground/80 hover:text-foreground hover:bg-muted/70 hover:translate-x-1"
-                    }
-                  `}
-                  onClick={toggleSidebar} // Close sidebar on nav item click (for mobile)
+                  onClick={toggleSidebar}
+                  className={cn(
+                    "group relative flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+                    isCollapsed && "justify-center"
+                  )}
+                  aria-current={active ? "page" : undefined}
                 >
-                  {/* Active Indicator Pill */}
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-primary-foreground rounded-r-full" />
+                  {/* Active Indicator */}
+                  {active && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-9 w-1 bg-primary-foreground rounded-r-full" />
                   )}
 
-                  <Icon className={`
-                    h-5 w-5 transition-all duration-200
-                    ${isActive
-                      ? "text-primary-foreground scale-110"
-                      : "text-muted-foreground group-hover:text-foreground group-hover:scale-110"
-                    }
-                  `} />
-                  
-                  <span className="flex-1">{item.label}</span>
-                  
-                  {isActive && (
-                    <ChevronRight className="h-4 w-4 opacity-80 group-hover:translate-x-1 transition-transform" />
+                  <Icon
+                    className={cn(
+                      "h-5 w-5 shrink-0 transition-transform duration-200",
+                      active ? "scale-110" : "group-hover:scale-110"
+                    )}
+                  />
+
+                  {!isCollapsed && (
+                    <>
+                      <span className="ml-3 flex-1">{item.label}</span>
+                      {active && (
+                        <ChevronRight className="h-4 w-4 opacity-80 translate-x-0 group-hover:translate-x-1 transition-transform" />
+                      )}
+                    </>
+                  )}
+
+                  {/* Tooltip when collapsed */}
+                  {isCollapsed && (
+                    <span className="absolute left-full ml-2 px-2 py-1 bg-muted text-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10">
+                      {item.label}
+                    </span>
                   )}
                 </Link>
               </li>
-            )
+            );
           })}
         </ul>
       </nav>
 
-      {/* User Dropdown Footer */}
-      <div className="mt-auto border-t border-border bg-muted/50 p-2 rounded-md">
-        <UserProfileDropdown user={user} />
+      {/* User Profile Footer */}
+      <div className={cn("border-t p-3", isCollapsed && "px-2")}>
+        <UserProfileDropdown user={user}  />
       </div>
     </aside>
-  )
+  );
 }

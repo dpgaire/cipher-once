@@ -1,26 +1,29 @@
 "use client"
 
 import Link from "next/link"
-import { Shield, Clock, Flame, PlusCircle } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { Shield, Clock, Flame, PlusCircle, Mail } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DashboardMobileNavProps {
-  tab: string;
+  tab: string
 }
 
 export function DashboardMobileNav({ tab }: DashboardMobileNavProps) {
+  const pathname = usePathname()
   const navItems = [
     { name: "Active", href: "/dashboard?tab=active", icon: Shield, value: "active" },
     { name: "Expired", href: "/dashboard?tab=expired", icon: Clock, value: "expired" },
     { name: "Burned", href: "/dashboard?tab=burned", icon: Flame, value: "burned" },
+    { name: "Inbox", href: "/inbox", icon: Mail, value: "inbox" },
   ]
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 z-50 w-full h-16 border-t bg-background">
-      <div className="grid h-full grid-cols-4 mx-auto font-medium">
+      <div className="grid h-full grid-cols-5 mx-auto font-medium">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = tab === item.value
+          const isActive = item.value === "inbox" ? pathname === item.href : tab === item.value
           return (
             <Link
               key={item.name}

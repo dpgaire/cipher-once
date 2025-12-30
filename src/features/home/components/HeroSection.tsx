@@ -15,13 +15,13 @@ export function HeroSection() {
           </div>
 
           <h1 className="mb-6 text-3xl font-bold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl">
-            Secure, Private Secrets
+           Share Secure, Private Secrets
             <br />
             <span className="text-primary">That Disappear After Use</span>
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            The most secure way to share passwords, API keys, and confidential
+            The most secure way to share files, passwords, API keys, and confidential
             data. Encrypted in your browser, destroyed after reading. No traces,
             no logs, no exceptions.
           </p>

@@ -30,7 +30,11 @@ export function AdminLayoutWrapper({ user, children }: AdminLayoutWrapperProps) 
           w-64 shrink-0
         `}
       >
-        <AdminNav user={user} toggleSidebar={toggleSidebar} />
+        <AdminNav
+          user={user}
+          isMobileOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
       </div>
 
       {/* Overlay for mobile when sidebar is open */}

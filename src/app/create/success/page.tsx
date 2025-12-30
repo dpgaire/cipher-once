@@ -14,11 +14,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { CopyButton } from "@/features/secrets/components/copy-button";
 import { QRCodeDisplay } from "@/features/secrets/components/qr-code-display";
 import { SocialShareButtons } from "@/features/secrets/components/social-share-buttons";
 
-import { CheckCircle2, AlertTriangle, Share2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Share2, Send } from "lucide-react";
 
 function SuccessContent() {
   const router = useRouter();
@@ -30,6 +34,11 @@ function SuccessContent() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [origin, setOrigin] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [showQrCode, setShowQrCode] = useState(true);
+
+  const supabase = createClient();
 
   // ✅ Get browser origin safely
   useEffect(() => {
@@ -54,6 +63,62 @@ function SuccessContent() {
     if (!origin || !shortId || !key) return "";
     return `${origin}/s/${shortId}#${key}`;
   }, [origin, shortId, key]);
+
+  const handleSendToInbox = async () => {
+    if (!recipientEmail) {
+      toast.error("Please enter a recipient's email address.");
+      return;
+    }
+    setIsSending(true);
+
+    const {
+      data: { user: senderUser },
+    } = await supabase.auth.getUser();
+
+    if (!senderUser) {
+      toast.error("You must be logged in to send a message to an inbox.");
+      setIsSending(false);
+      return;
+    }
+
+    try {
+      // 1. Get recipient user
+      const { data: recipientId, error: rpcError } = await supabase.rpc(
+        "get_user_id_by_email",
+        { p_email: recipientEmail }
+      );
+
+      if (rpcError || !recipientId) {
+        toast.error(
+          "User with that email not found. You can only send secrets to registered users."
+        );
+        return;
+      }
+
+      // 2. Insert into inbox
+      const { error: insertError } = await supabase
+        .from("inbox_messages")
+        .insert({
+          sender_id: senderUser.id,
+          recipient_id: recipientId,
+          message:
+            "Someone has shared a secret with you. Open it before it's gone.",
+          link: secretUrl,
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      toast.success("Secret sent to the user's inbox!");
+      setRecipientEmail("");
+    } catch (error: any) {
+      console.error("Error sending to inbox:", error);
+      toast.error("Failed to send secret. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   // ❌ Invalid link state
   if (!shortId || !key) {
@@ -121,18 +186,62 @@ function SuccessContent() {
                 className="w-full"
               />
 
-              <QRCodeDisplay value={secretUrl} size={192} />
+              <div className="mt-4 flex flex-col items-center gap-2">
+                {showQrCode && <QRCodeDisplay value={secretUrl} size={192} />}
+                <Button variant="outline" onClick={() => setShowQrCode(!showQrCode)} className="w-full">
+                  {showQrCode ? "Hide QR Code" : "Show QR Code"}
+                </Button>
+              </div>
 
               <div className="pt-4">
-                <h3 className="mb-2 text-lg font-semibold">
-                  Share Your Secret
-                </h3>
+                {user && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="send-to-inbox" className="font-semibold">
+                        Send to App Inbox 
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="send-to-inbox"
+                          type="email"
+                          placeholder="Registered user's email"
+                          value={recipientEmail}
+                          onChange={(e) => setRecipientEmail(e.target.value)}
+                          disabled={isSending}
+                        />
+                        <Button
+                          onClick={handleSendToInbox}
+                          disabled={isSending || !recipientEmail}
+                        >
+                          {isSending ? (
+                            "Sending..."
+                          ) : (
+                            <>
+                              <Send className="mr-2 h-4 w-4" />
+                              Send
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        The secret will be sent to the user if they are
+                        registered.
+                      </p>
+                    </div>
+                  </>
+                )}
+                <Separator className="my-4" />
 
-                <SocialShareButtons
-                  secretUrl={secretUrl}
-                  title="CipherOnce - One-Time Secret"
-                  text="I'm sharing a self-destructing secret with you via CipherOnce. View it before it's gone!"
-                />
+                <div className="my-4">
+                  <h3 className="mb-2 text-lg font-semibold">
+                Share Externally
+                  </h3>
+                  <SocialShareButtons
+                    secretUrl={secretUrl}
+                    title="CipherOnce - One-Time Secret"
+                    text="I'm sharing a self-destructing secret with you via CipherOnce. View it before it's gone!"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -147,8 +256,8 @@ function SuccessContent() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p>
-                <strong>Save this link now.</strong> You won’t be able to retrieve
-                it again.
+                <strong>Save this link now.</strong> You won’t be able to
+                retrieve it again.
               </p>
               <p>
                 The secret is permanently deleted after viewing or expiration.
