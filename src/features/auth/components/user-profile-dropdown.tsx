@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +56,13 @@ export function UserProfileDropdown({ user }: UserProfileDropdownProps) {
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/profile">
+            <UserIcon className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
