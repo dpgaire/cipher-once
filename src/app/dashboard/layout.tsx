@@ -1,5 +1,5 @@
 import { DashboardHeader } from "@/features/secrets/components/dashboard-header"
-import { DashboardMobileNavWrapper } from "@/features/secrets/components/dashboard-mobile-nav-wrapper"
+
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (

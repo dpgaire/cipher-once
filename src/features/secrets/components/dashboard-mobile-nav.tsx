@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Shield, Clock, Flame, PlusCircle, Mail } from "lucide-react"
+import { Shield, Clock, Flame, PlusCircle, Mail, User, Home, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DashboardMobileNavProps {
@@ -12,10 +12,10 @@ interface DashboardMobileNavProps {
 export function DashboardMobileNav({ tab }: DashboardMobileNavProps) {
   const pathname = usePathname()
   const navItems = [
-    { name: "Active", href: "/dashboard?tab=active", icon: Shield, value: "active" },
-    { name: "Expired", href: "/dashboard?tab=expired", icon: Clock, value: "expired" },
-    { name: "Burned", href: "/dashboard?tab=burned", icon: Flame, value: "burned" },
+    { name: "Active", href: "/dashboard", icon: Home, value: "dashboard" },
     { name: "Inbox", href: "/inbox", icon: Mail, value: "inbox" },
+    { name: "Profile", href: "/dashboard/profile", icon: User, value: "user" },
+    { name: "Setting", href: "/dashboard/settings", icon: Settings, value: "setting" },
   ]
 
   return (

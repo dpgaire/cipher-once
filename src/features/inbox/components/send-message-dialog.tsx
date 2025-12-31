@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { Send } from 'lucide-react';
 
 type SendMessageDialogProps = {
   isOpen: boolean;
@@ -111,7 +112,7 @@ export function SendMessageDialog({ isOpen, onOpenChange }: SendMessageDialogPro
           <DialogTitle>Send a New Message</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-1  items-center gap-4">
             <Label htmlFor="recipient" className="text-right">
               Recipient Email
             </Label>
@@ -124,7 +125,7 @@ export function SendMessageDialog({ isOpen, onOpenChange }: SendMessageDialogPro
               placeholder="user@example.com"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-1  items-center gap-4">
             <Label htmlFor="message" className="text-right">
               Message
             </Label>
@@ -136,7 +137,7 @@ export function SendMessageDialog({ isOpen, onOpenChange }: SendMessageDialogPro
               placeholder="Your message..."
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-1  items-center gap-4">
             <Label htmlFor="link" className="text-right">
               Link
             </Label>
@@ -145,7 +146,7 @@ export function SendMessageDialog({ isOpen, onOpenChange }: SendMessageDialogPro
               value={link}
               onChange={(e) => setLink(e.target.value)}
               className="col-span-3"
-              placeholder="https://example.com"
+              placeholder="https://www.cipheronce.com/s/..."
             />
           </div>
         </div>
@@ -154,7 +155,8 @@ export function SendMessageDialog({ isOpen, onOpenChange }: SendMessageDialogPro
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button onClick={handleSend} disabled={isSending}>
-            {isSending ? 'Sending...' : 'Send Message'}
+            <Send className='h-4 w-4'/>
+            {isSending ? 'Sending message...' : 'Send'}
           </Button>
         </DialogFooter>
       </DialogContent>
