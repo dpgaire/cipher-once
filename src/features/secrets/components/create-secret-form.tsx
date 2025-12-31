@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Lock,
   Shield,
@@ -81,6 +82,56 @@ export function CreateSecretForm() {
   // New states for file upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+
+    // Default settings
+    const [useDefaultSettings, setUseDefaultSettings] = useState(false);
+    const [defaultSettings, setDefaultSettings] = useState<any>(null);
+
+    const fetchDefaultSettings = async () => {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("default_settings")
+            .eq("id", user.id)
+            .single();
+          if (profile && profile.default_settings) {
+            setDefaultSettings(profile.default_settings);
+          }
+        }
+      };
+  
+    useEffect(() => {
+      
+      fetchDefaultSettings();
+    }, []);
+
+    console.log('defaultSettings',defaultSettings)
+  
+useEffect(() => {
+  if (useDefaultSettings && defaultSettings) {
+    setExpirationHours(
+      defaultSettings.defaultExpiration !== undefined
+        ? Number(defaultSettings.defaultExpiration)
+        : 24
+    );
+
+    setMaxViews(
+      defaultSettings.defaultViewLimit !== undefined
+        ? Number(defaultSettings.defaultViewLimit)
+        : 1
+    );
+
+    const hasDefaultPassword =
+      typeof defaultSettings.defaultPassword === "string" &&
+      defaultSettings.defaultPassword.length > 0;
+
+    setRequirePassphrase(hasDefaultPassword);
+    setPassphrase(hasDefaultPassword ? defaultSettings.defaultPassword : "");
+  }
+}, [useDefaultSettings, defaultSettings]);
+
 
   const handleCreateSecret = async () => {
     setError(null);
@@ -308,6 +359,17 @@ export function CreateSecretForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
+          {defaultSettings && (
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="use-defaults" checked={useDefaultSettings} onCheckedChange={(checked) => setUseDefaultSettings(!!checked)} />
+                    <label
+                    htmlFor="use-defaults"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                    Use my default settings
+                    </label>
+                </div>
+            )}
             {/* Always-visible: Text Content */}
             <div className="space-y-2">
               <Label htmlFor="content">Your Secret Text</Label>
@@ -392,6 +454,7 @@ export function CreateSecretForm() {
                       <Select
                         value={expirationHours.toString()}
                         onValueChange={(v) => setExpirationHours(Number(v))}
+                        disabled={useDefaultSettings}
                       >
                         <SelectTrigger id="expiration">
                           <SelectValue />
@@ -423,6 +486,7 @@ export function CreateSecretForm() {
                       <Select
                         value={maxViews.toString()}
                         onValueChange={(v) => setMaxViews(Number(v))}
+                        disabled={useDefaultSettings}
                       >
                         <SelectTrigger id="maxViews">
                           <SelectValue />
@@ -468,6 +532,7 @@ export function CreateSecretForm() {
                       id="passphrase-toggle"
                       checked={requirePassphrase}
                       onCheckedChange={setRequirePassphrase}
+                      disabled={useDefaultSettings}
                     />
                   </div>
 
@@ -480,6 +545,7 @@ export function CreateSecretForm() {
                         placeholder="Enter a password or pin (min. 4 characters)"
                         value={passphrase}
                         onChange={(e) => setPassphrase(e.target.value)}
+                        disabled={useDefaultSettings}
                       />
                       <p className="text-xs text-muted-foreground">
                         Recipients will need this passphrase to view the secret
