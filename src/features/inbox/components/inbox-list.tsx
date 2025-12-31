@@ -1,18 +1,20 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { toast } from 'sonner';
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
 
 type Profile = {
   full_name: string | null;
@@ -28,6 +30,10 @@ type Message = {
   is_read: boolean;
   sender_profile: Profile;
   recipient_profile: Profile;
+};
+
+type InboxListProps = {
+  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 /* ---------- Skeleton ---------- */
@@ -53,16 +59,18 @@ function InboxCardSkeleton() {
   );
 }
 
-export function InboxList() {
+export function InboxList({ setIsDialogOpen }: InboxListProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const supabase = createClient();
 
-  const fetchMessages = useCallback(async (user: any) => {
-    const { data, error } = await supabase
-      .from('inbox_messages')
-      .select(`
+  const fetchMessages = useCallback(
+    async (user: any) => {
+      const { data, error } = await supabase
+        .from("inbox_messages")
+        .select(
+          `
         id,
         sender_id,
         recipient_id,
@@ -72,32 +80,40 @@ export function InboxList() {
         is_read,
         sender_profile:profiles!inbox_messages_sender_id_fkey(full_name),
         recipient_profile:profiles!inbox_messages_recipient_id_fkey(full_name)
-      `)
-      .eq('recipient_id', user.id)
-      .order('created_at', { ascending: false });
+      `
+        )
+        .eq("recipient_id", user.id)
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      toast.error('Failed to load inbox');
-      console.error(error);
-    } else {
-      // Manually format the data to ensure sender_profile and recipient_profile are objects or null
-      const formattedData = data.map(msg => ({
-        ...msg,
-        sender_profile: Array.isArray(msg.sender_profile) && msg.sender_profile.length > 0
-          ? msg.sender_profile[0]
-          : null,
-        recipient_profile: Array.isArray(msg.recipient_profile) && msg.recipient_profile.length > 0
-          ? msg.recipient_profile[0]
-          : null,
-      }));
-      setMessages(formattedData as Message[]);
-    }
-  }, [supabase]);
+      if (error) {
+        toast.error("Failed to load inbox");
+        console.error(error);
+      } else {
+        // Manually format the data to ensure sender_profile and recipient_profile are objects or null
+        const formattedData = data.map((msg) => ({
+          ...msg,
+          sender_profile:
+            Array.isArray(msg.sender_profile) && msg.sender_profile.length > 0
+              ? msg.sender_profile[0]
+              : null,
+          recipient_profile:
+            Array.isArray(msg.recipient_profile) &&
+            msg.recipient_profile.length > 0
+              ? msg.recipient_profile[0]
+              : null,
+        }));
+        setMessages(formattedData as Message[]);
+      }
+    },
+    [supabase]
+  );
 
   useEffect(() => {
     const setup = async () => {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setCurrentUserId(user.id);
         await fetchMessages(user);
@@ -105,7 +121,9 @@ export function InboxList() {
       setLoading(false);
 
       const interval = setInterval(async () => {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
         if (currentUser) {
           await fetchMessages(currentUser);
         }
@@ -120,31 +138,31 @@ export function InboxList() {
   const handleLinkClick = async (messageId: string) => {
     // First, mark as read
     const { error: updateError } = await supabase
-      .from('inbox_messages')
+      .from("inbox_messages")
       .update({ is_read: true })
-      .eq('id', messageId);
+      .eq("id", messageId);
 
     if (updateError) {
-      toast.error('Failed to process message.');
+      toast.error("Failed to process message.");
       console.error(updateError);
       return;
     }
 
     // Immediately delete after marking as read
     const { error: deleteError } = await supabase
-      .from('inbox_messages')
+      .from("inbox_messages")
       .delete()
-      .eq('id', messageId);
+      .eq("id", messageId);
 
     if (deleteError) {
-      toast.error('Failed to delete message after reading.');
+      toast.error("Failed to delete message after reading.");
       console.error(deleteError);
       // Still remove from UI if delete fails but update succeeded, to avoid confusion
-      setMessages(messages.filter(msg => msg.id !== messageId));
+      setMessages(messages.filter((msg) => msg.id !== messageId));
     } else {
       // On successful deletion, remove it from the UI optimistically
-      setMessages(messages.filter(msg => msg.id !== messageId));
-      toast.success('Message read and deleted.');
+      setMessages(messages.filter((msg) => msg.id !== messageId));
+      toast.success("Message read and deleted.");
     }
   };
 
@@ -161,8 +179,15 @@ export function InboxList() {
 
   if (messages.length === 0) {
     return (
-      <div className="py-10 text-center text-sm text-muted-foreground">
-        No messages yet
+      <div className="py-10 flex flex-col items-center gap-3 text-center text-sm text-muted-foreground">
+        <span className="max-w-xs">
+          Silence is secure. Share only when it truly matters.
+        </span>
+
+        <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+          <Send className="h-4 w-4 mr-2 " />
+          New Message
+        </Button>
       </div>
     );
   }
@@ -172,27 +197,27 @@ export function InboxList() {
       {messages.map((msg) => {
         const isSender = msg.sender_id === currentUserId;
         const otherUser = isSender ? msg.recipient_profile : msg.sender_profile;
-        const name = otherUser?.full_name ?? 'Anonymous';
+        const name = otherUser?.full_name ?? "Anonymous";
         const initials = name
-          .split(' ')
+          .split(" ")
           .map((n) => n[0])
           .slice(0, 2)
-          .join('')
+          .join("")
           .toUpperCase();
 
         const time = new Date(msg.created_at).toLocaleString(undefined, {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         });
 
         return (
           <Card
             key={msg.id}
             className={cn(
-              'relative transition-all hover:shadow-sm',
-              !msg.is_read && 'border-l-2 border-l-primary'
+              "relative transition-all hover:shadow-sm",
+              !msg.is_read && "border-l-2 border-l-primary"
             )}
           >
             {!msg.is_read && (
@@ -211,9 +236,7 @@ export function InboxList() {
                   <CardTitle className="text-sm font-medium leading-none">
                     {isSender ? `To ${name}` : name}
                   </CardTitle>
-                  <CardDescription className="text-xs">
-                    {time}
-                  </CardDescription>
+                  <CardDescription className="text-xs">{time}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -236,7 +259,7 @@ export function InboxList() {
                       e.preventDefault(); // Prevent immediate navigation
                       handleLinkClick(msg.id);
                       if (msg.link) {
-                        window.open(msg.link, '_blank', 'noopener,noreferrer');
+                        window.open(msg.link, "_blank", "noopener,noreferrer");
                       }
                     }}
                     className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"

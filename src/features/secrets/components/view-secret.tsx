@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { CopyButton } from "../components/copy-button" // Relative import within feature
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CopyButton } from "../components/copy-button"; // Relative import within feature
 import {
   AlertCircle,
   CheckCircle2,
@@ -24,40 +30,53 @@ import {
   Music, // Added Music icon
   Video, // Added Video icon
   File, // Generic file icon
-} from "lucide-react"
-import { createClient } from "@/lib/supabase/client" // Stays as shared utility
-import { decrypt, decryptFile, importKey, hashPassphrase, deriveKeyFromPassphrase, bufferToBase64 } from "../services/encryption" // Added decryptFile, bufferToBase64
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client"; // Stays as shared utility
+import {
+  decrypt,
+  decryptFile,
+  importKey,
+  hashPassphrase,
+  deriveKeyFromPassphrase,
+  bufferToBase64,
+} from "../services/encryption"; // Added decryptFile, bufferToBase64
 import {
   formatTimeRemaining,
   SECRET_EXPIRATION_OPTIONS,
-} from "@/features/secrets/domain/secret-utils"
-import type { Secret } from "../types" // Import Secret from feature types file
-import type { User } from "@supabase/supabase-js" // Import User type
+} from "@/features/secrets/domain/secret-utils";
+import type { Secret } from "../types"; // Import Secret from feature types file
+import type { User } from "@supabase/supabase-js"; // Import User type
 
 export function ViewSecretPage() {
-  const params = useParams()
-  const shortId = params.shortId as string
-  const [secret, setSecret] = useState<Secret | null>(null)
-  const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
-  const [passphrase, setPassphrase] = useState("")
-  const [showContent, setShowContent] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isDecrypting, setIsDecrypting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [hasViewed, setHasViewed] = useState(false)
-  const [missingKey, setMissingKey] = useState(false)
+  const params = useParams();
+  const shortId = params.shortId as string;
+  const [secret, setSecret] = useState<Secret | null>(null);
+  const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
+  const [passphrase, setPassphrase] = useState("");
+  const [showContent, setShowContent] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDecrypting, setIsDecrypting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasViewed, setHasViewed] = useState(false);
+  const [missingKey, setMissingKey] = useState(false);
 
   // New states for decrypted file
-  const [decryptedFileBuffer, setDecryptedFileBuffer] = useState<ArrayBuffer | null>(null);
+  const [decryptedFileBuffer, setDecryptedFileBuffer] =
+    useState<ArrayBuffer | null>(null);
   const [decryptedFileUrl, setDecryptedFileUrl] = useState<string | null>(null);
 
   // Helper function to log access attempts
-  const logAccess = async (currentSecretId: string, status: string, errorMessage?: string, metadata?: Record<string, any>) => {
+  const logAccess = async (
+    currentSecretId: string,
+    status: string,
+    errorMessage?: string,
+    metadata?: Record<string, any>
+  ) => {
     try {
-      await fetch('/api/log-access', {
-        method: 'POST',
+      await fetch("/api/log-access", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           secret_id: currentSecretId,
@@ -67,136 +86,165 @@ export function ViewSecretPage() {
         }),
       });
     } catch (err) {
-      console.error('Failed to log access:', err);
+      console.error("Failed to log access:", err);
     }
   };
 
   useEffect(() => {
     const checkForKey = async () => {
-      const hash = window.location.hash.substring(1)
+      const hash = window.location.hash.substring(1);
       if (!hash && !secret?.passphrase_hash) {
-        setMissingKey(true)
-        const errorMessage = "Invalid secret link: Encryption key is missing from the URL";
-        setError(errorMessage)
-        setIsLoading(false)
-        await logAccess(shortId, 'failure', errorMessage);
-        return false
+        setMissingKey(true);
+        const errorMessage =
+          "Invalid secret link: Encryption key is missing from the URL";
+        setError(errorMessage);
+        setIsLoading(false);
+        await logAccess(shortId, "failure", errorMessage);
+        return false;
       }
-      return true
-    }
+      return true;
+    };
 
     // Only run checkForKey if secret is not yet loaded, or if secret is loaded but passphrase is null and hash is missing
-    if (!secret || (!secret.passphrase_hash && !window.location.hash.substring(1))) {
+    if (
+      !secret ||
+      (!secret.passphrase_hash && !window.location.hash.substring(1))
+    ) {
       checkForKey();
     }
-  }, [secret, shortId])
+  }, [secret, shortId]);
+
+  const fetchSecret = async () => {
+    try {
+      await logAccess(shortId, "attempt");
+      const supabase = createClient();
+      const { data, error: fetchError } = await supabase
+        .from("secrets")
+        .select("*")
+        .eq("short_id", shortId)
+        .single();
+
+      if (fetchError || !data) {
+        const errorMessage = "Secret not found or has been deleted";
+        setError(errorMessage);
+        await logAccess(shortId, "failure", errorMessage);
+        return;
+      }
+
+      const secretData: Secret = data as Secret; // Cast to new Secret interface
+
+      // Check if expired
+      if (new Date(secretData.expires_at) < new Date()) {
+        const errorMessage = "This secret has expired";
+        setError(errorMessage);
+        await logAccess(secretData.id, "failure", errorMessage);
+        return;
+      }
+
+      // Check if already burned
+      if (secretData.is_burned) {
+        const errorMessage = "This secret has already been viewed and burned";
+        setError(errorMessage);
+        await logAccess(secretData.id, "failure", errorMessage);
+        return;
+      }
+
+      // Check if max views reached
+      if (
+        secretData.max_views !== -1 &&
+        secretData.view_count >= secretData.max_views
+      ) {
+        const errorMessage = "This secret has reached its maximum view count";
+        setError(errorMessage);
+        await logAccess(secretData.id, "failure", errorMessage);
+        return;
+      }
+
+      // NEW V2: METADATA-BASED RULE EVALUATION
+      if (secretData.metadata?.require_auth) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          const errorMessage =
+            "Authentication required to view this secret. Please sign in.";
+          setError(errorMessage);
+          await logAccess(secretData.id, "failure", errorMessage);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      if (
+        secretData.metadata?.allowed_domains &&
+        secretData.metadata.allowed_domains.length > 0
+      ) {
+        const currentHostname = window.location.hostname;
+        const allowed = secretData.metadata.allowed_domains.some(
+          (domain) =>
+            currentHostname === domain || currentHostname.endsWith(`.${domain}`)
+        );
+        if (!allowed) {
+          const errorMessage = `Access to this secret is restricted to specific domains. Current domain: ${currentHostname}`;
+          setError(errorMessage);
+          await logAccess(secretData.id, "failure", errorMessage);
+          setIsLoading(false);
+          return;
+        }
+      }
+      // END NEW V2: METADATA-BASED RULE EVALUATION
+
+      setSecret(secretData);
+
+      // Increment view count and update burn status immediately on valid access
+      const newViewCount = secretData.view_count + 1;
+      const shouldBurn =
+        secretData.max_views !== -1 && newViewCount >= secretData.max_views;
+
+      const { data: rpcSuccess, error: updateError } = await supabase.rpc(
+        "update_secret_view_and_burn",
+        { p_secret_id: secretData.id }
+      );
+
+      if (updateError) {
+        console.error("RPC Error updating view count:", updateError);
+        await logAccess(
+          secretData.id,
+          "failure",
+          `Failed to update view count via RPC: ${updateError.message}`
+        );
+      } else if (!rpcSuccess) {
+        console.warn(
+          "RPC call to update_secret_view_and_burn did not succeed for secret:",
+          secretData.id
+        );
+      } else {
+        setSecret((prevSecret) => {
+          if (!prevSecret) return null;
+          return {
+            ...prevSecret,
+            view_count: newViewCount,
+            is_burned: shouldBurn,
+          };
+        });
+        await logAccess(secretData.id, "view"); // Log a successful view
+      }
+    } catch (err) {
+      console.error("[v0] Error fetching secret:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load secret";
+      setError(errorMessage);
+      await logAccess(shortId, "failure", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Fetch secret metadata
   useEffect(() => {
-    if (!shortId) return
-
-    const fetchSecret = async () => {
-      try {
-        await logAccess(shortId, 'attempt');
-        const supabase = createClient()
-        const { data, error: fetchError } = await supabase.from("secrets").select("*").eq("short_id", shortId).single()
-
-        if (fetchError || !data) {
-          const errorMessage = "Secret not found or has been deleted";
-          setError(errorMessage)
-          await logAccess(shortId, 'failure', errorMessage);
-          return
-        }
-
-        const secretData: Secret = data as Secret; // Cast to new Secret interface
-
-        // Check if expired
-        if (new Date(secretData.expires_at) < new Date()) {
-          const errorMessage = "This secret has expired";
-          setError(errorMessage)
-          await logAccess(secretData.id, 'failure', errorMessage);
-          return
-        }
-
-        // Check if already burned
-        if (secretData.is_burned) {
-          const errorMessage = "This secret has already been viewed and burned";
-          setError(errorMessage)
-          await logAccess(secretData.id, 'failure', errorMessage);
-          return
-        }
-
-        // Check if max views reached
-        if (secretData.max_views !== -1 && secretData.view_count >= secretData.max_views) {
-          const errorMessage = "This secret has reached its maximum view count";
-          setError(errorMessage)
-          await logAccess(secretData.id, 'failure', errorMessage);
-          return
-        }
-
-        // NEW V2: METADATA-BASED RULE EVALUATION
-        if (secretData.metadata?.require_auth) {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) {
-            const errorMessage = "Authentication required to view this secret. Please sign in.";
-            setError(errorMessage);
-            await logAccess(secretData.id, 'failure', errorMessage);
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        if (secretData.metadata?.allowed_domains && secretData.metadata.allowed_domains.length > 0) {
-          const currentHostname = window.location.hostname;
-          const allowed = secretData.metadata.allowed_domains.some(domain =>
-            currentHostname === domain || currentHostname.endsWith(`.${domain}`)
-          );
-          if (!allowed) {
-            const errorMessage = `Access to this secret is restricted to specific domains. Current domain: ${currentHostname}`;
-            setError(errorMessage);
-            await logAccess(secretData.id, 'failure', errorMessage);
-            setIsLoading(false);
-            return;
-          }
-        }
-        // END NEW V2: METADATA-BASED RULE EVALUATION
-
-        setSecret(secretData)
-
-        // Increment view count and update burn status immediately on valid access
-        const newViewCount = secretData.view_count + 1
-        const shouldBurn = secretData.max_views !== -1 && newViewCount >= secretData.max_views
-
-        const { data: rpcSuccess, error: updateError } = await supabase.rpc('update_secret_view_and_burn', { p_secret_id: secretData.id });
-
-        if (updateError) {
-          console.error("RPC Error updating view count:", updateError);
-          await logAccess(secretData.id, 'failure', `Failed to update view count via RPC: ${updateError.message}`);
-        } else if (!rpcSuccess) {
-          console.warn("RPC call to update_secret_view_and_burn did not succeed for secret:", secretData.id);
-        } else {
-          setSecret((prevSecret) => {
-            if (!prevSecret) return null;
-            return {
-              ...prevSecret,
-              view_count: newViewCount,
-              is_burned: shouldBurn,
-            };
-          });
-          await logAccess(secretData.id, 'view'); // Log a successful view
-        }
-      } catch (err) {
-        console.error("[v0] Error fetching secret:", err)
-        const errorMessage = err instanceof Error ? err.message : "Failed to load secret";
-        setError(errorMessage)
-        await logAccess(shortId, 'failure', errorMessage);
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchSecret()
-  }, [shortId])
+    if (!shortId) return;
+    fetchSecret();
+  }, [shortId]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -214,48 +262,52 @@ export function ViewSecretPage() {
   }, [hasViewed]);
 
   const handleRevealSecret = async () => {
-    if (!secret) return
+    if (!secret) return;
 
-    setIsDecrypting(true)
-    setError(null)
+    setIsDecrypting(true);
+    setError(null);
 
     try {
       // Get encryption key from URL fragment
-      const hash = window.location.hash.substring(1)
+      const hash = window.location.hash.substring(1);
 
       let encryptionKey: CryptoKey;
 
       // Check if passphrase is required
       if (secret.passphrase_hash) {
         if (!passphrase) {
-          throw new Error("Passphrase is required to view this secret")
+          throw new Error("Passphrase is required to view this secret");
         }
 
         // Verify passphrase
-        const passphraseHashInput = await hashPassphrase(passphrase)
+        const passphraseHashInput = await hashPassphrase(passphrase);
         if (passphraseHashInput !== secret.passphrase_hash) {
-          throw new Error("Incorrect passphrase")
+          throw new Error("Incorrect passphrase");
         }
 
         // Derive key from passphrase
-        const salt = secret.metadata?.salt // Optional chaining
+        const salt = secret.metadata?.salt; // Optional chaining
         if (!salt) {
-          throw new Error("Salt missing for passphrase-protected secret")
+          throw new Error("Salt missing for passphrase-protected secret");
         }
-        encryptionKey = await deriveKeyFromPassphrase(passphrase, salt)
+        encryptionKey = await deriveKeyFromPassphrase(passphrase, salt);
       } else {
         if (!hash) {
           throw new Error(
-            "The secret link is incomplete. Please make sure you copied the entire URL, including the part after the # symbol.",
-          )
+            "The secret link is incomplete. Please make sure you copied the entire URL, including the part after the # symbol."
+          );
         }
         // Import key from URL fragment
-        encryptionKey = await importKey(decodeURIComponent(hash))
+        encryptionKey = await importKey(decodeURIComponent(hash));
       }
       // Decrypt text content if available
       if (secret.encrypted_content && secret.encryption_iv) {
-        const decrypted = await decrypt(secret.encrypted_content, secret.encryption_iv, encryptionKey)
-        setDecryptedContent(decrypted)
+        const decrypted = await decrypt(
+          secret.encrypted_content,
+          secret.encryption_iv,
+          encryptionKey
+        );
+        setDecryptedContent(decrypted);
       }
 
       // Decrypt file content if available
@@ -263,35 +315,44 @@ export function ViewSecretPage() {
         // Fetch the encrypted file from Vercel Blob
         const fileResponse = await fetch(secret.file_url);
         if (!fileResponse.ok) {
-          throw new Error(`Failed to fetch encrypted file from ${secret.file_url}`);
+          throw new Error(
+            `Failed to fetch encrypted file from ${secret.file_url}`
+          );
         }
         const encryptedFileBuffer = await fileResponse.arrayBuffer();
 
         // Decrypt the file buffer
-        const decryptedBuffer = await decryptFile(bufferToBase64(encryptedFileBuffer), secret.file_encryption_iv, encryptionKey);
+        const decryptedBuffer = await decryptFile(
+          bufferToBase64(encryptedFileBuffer),
+          secret.file_encryption_iv,
+          encryptionKey
+        );
         setDecryptedFileBuffer(decryptedBuffer);
 
         // Create an object URL for display/download
-        const fileBlob = new Blob([decryptedBuffer], { type: secret.file_type || 'application/octet-stream' });
+        const fileBlob = new Blob([decryptedBuffer], {
+          type: secret.file_type || "application/octet-stream",
+        });
         setDecryptedFileUrl(URL.createObjectURL(fileBlob));
       }
 
-      setHasViewed(true)
+      setHasViewed(true);
 
       // If the secret was burned on initial load, log a burn event here if not already done.
-      if (secret.is_burned && !hasViewed) { // hasViewed check prevents redundant burn log if already viewed in session
-        await logAccess(secret.id, 'burn');
+      if (secret.is_burned && !hasViewed) {
+        // hasViewed check prevents redundant burn log if already viewed in session
+        await logAccess(secret.id, "burn");
       }
-
     } catch (err) {
-      console.error("[v0] Error decrypting secret:", err)
-      const errorMessage = err instanceof Error ? err.message : "Failed to decrypt secret";
-      setError(errorMessage)
-      await logAccess(secret.id, 'failure', errorMessage);
+      console.error("[v0] Error decrypting secret:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to decrypt secret";
+      setError(errorMessage);
+      await logAccess(secret.id, "failure", errorMessage);
     } finally {
-      setIsDecrypting(false)
+      setIsDecrypting(false);
     }
-  }
+  };
 
   // Effect to revoke object URL when component unmounts or file changes
   useEffect(() => {
@@ -312,7 +373,7 @@ export function ViewSecretPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -335,14 +396,20 @@ export function ViewSecretPage() {
 
               {missingKey && (
                 <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4 space-y-2">
-                  <p className="text-sm font-medium text-amber-600">What went wrong?</p>
-                  <p className="text-xs text-muted-foreground">
-                    Secret links contain an encryption key after the # symbol (e.g.,{" "}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">/s/abc123#key...</code>). This key is
-                    required to decrypt the secret.
+                  <p className="text-sm font-medium text-amber-600">
+                    What went wrong?
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Make sure you copied the complete URL provided when the secret was created.
+                    Secret links contain an encryption key after the # symbol
+                    (e.g.,{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      /s/abc123#key...
+                    </code>
+                    ). This key is required to decrypt the secret.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Make sure you copied the complete URL provided when the
+                    secret was created.
                   </p>
                 </div>
               )}
@@ -354,7 +421,7 @@ export function ViewSecretPage() {
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   // If secret is null even after loading, show a generic error (should ideally not happen if fetchSecret handles all errors)
@@ -367,7 +434,9 @@ export function ViewSecretPage() {
               <AlertCircle className="h-8 w-8 text-destructive" />
             </div>
             <h1 className="mb-2 text-2xl font-bold">Secret Not Available</h1>
-            <p className="text-muted-foreground">The secret could not be loaded or accessed.</p>
+            <p className="text-muted-foreground">
+              The secret could not be loaded or accessed.
+            </p>
           </div>
           <Button asChild className="w-full">
             <a href="/create">Create Your Own Secret</a>
@@ -388,8 +457,12 @@ export function ViewSecretPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
                 <Lock className="h-8 w-8 text-primary" />
               </div>
-              <h1 className="mb-2 text-3xl font-bold text-balance">Encrypted Secret</h1>
-              <p className="text-muted-foreground">Someone has shared a secure message with you</p>
+              <h1 className="mb-2 text-3xl font-bold text-balance">
+                Encrypted Secret
+              </h1>
+              <p className="text-muted-foreground">
+                Someone has shared a secure message with you
+              </p>
             </div>
 
             {/* Secret Info Card */}
@@ -405,16 +478,25 @@ export function ViewSecretPage() {
                   <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Expires in</p>
-                      <p className="font-medium">{formatTimeRemaining(secret.expires_at)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Expires in
+                      </p>
+                      <p className="font-medium">
+                        {formatTimeRemaining(secret.expires_at)}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Eye className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Views remaining</p>
+                      <p className="text-xs text-muted-foreground">
+                        Views remaining
+                      </p>
                       <p className="font-medium">
-                        {(secret.max_views === -1 || secret.max_views === undefined) ? "Unlimited" : (secret.max_views - secret.view_count)}
+                        {secret.max_views === -1 ||
+                        secret.max_views === undefined
+                          ? "Unlimited"
+                          : secret.max_views - secret.view_count}
                       </p>
                     </div>
                   </div>
@@ -436,7 +518,7 @@ export function ViewSecretPage() {
                         onChange={(e) => setPassphrase(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            handleRevealSecret()
+                            handleRevealSecret();
                           }
                         }}
                       />
@@ -452,7 +534,9 @@ export function ViewSecretPage() {
 
                 <Button
                   onClick={handleRevealSecret}
-                  disabled={isDecrypting || (!!secret.passphrase_hash && !passphrase)}
+                  disabled={
+                    isDecrypting || (!!secret.passphrase_hash && !passphrase)
+                  }
                   className="w-full"
                   size="lg"
                 >
@@ -481,21 +565,29 @@ export function ViewSecretPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <p>
-                  This secret will be <strong>permanently deleted</strong> after you view it
-                  {secret.max_views !== undefined && secret.max_views > 1 && ` or after ${secret.max_views} total views`}.
+                  This secret will be <strong>permanently deleted</strong> after
+                  you view it
+                  {secret.max_views !== undefined &&
+                    secret.max_views > 1 &&
+                    ` or after ${secret.max_views} total views`}
+                  .
                 </p>
-                <p>Make sure you&apos;re ready to save or copy the information before revealing it.</p>
+                <p>
+                  Make sure you&apos;re ready to save or copy the information
+                  before revealing it.
+                </p>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Secret revealed - show content
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6">
+    <div className="min-h-screen  p-6">
       <div className="container py-12">
         <div className="mx-auto max-w-2xl">
           {/* Success Header */}
@@ -504,21 +596,25 @@ export function ViewSecretPage() {
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
             <h1 className="mb-2 text-3xl font-bold">Secret Revealed</h1>
-            <p className="text-muted-foreground">Copy the information below before leaving this page</p>
+            <p className="text-muted-foreground">
+              Copy the information below before leaving this page
+            </p>
           </div>
           {/* Content Card */}
           {decryptedContent && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Decrypted Content
-              </CardTitle>
-              <CardDescription>This message will self-destruct</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Decrypted Text Content */}
-              
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Decrypted Content
+                </CardTitle>
+                <CardDescription>
+                  This message will self-destruct
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Decrypted Text Content */}
+
                 <div className="relative rounded-lg bg-muted p-4">
                   <div className="mb-2 flex items-center justify-between">
                     <Button
@@ -541,23 +637,46 @@ export function ViewSecretPage() {
                     </Button>
                   </div>
                   <pre
-                    className={`whitespace-pre-wrap break-words font-mono text-sm ${showContent ? "" : "blur-sm select-none"}`}
+                    className={`whitespace-pre-wrap break-words font-mono text-sm ${
+                      showContent ? "" : "blur-sm select-none"
+                    }`}
                   >
                     {decryptedContent}
                   </pre>
                 </div>
-              
 
-              
                 <CopyButton
                   text={decryptedContent || ""}
                   label="Copy to Clipboard"
                   className="w-full"
                   variant="default"
                 />
-              
-            </CardContent>
-          </Card>)}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Custom Labels */}
+
+          {secret?.metadata?.custom_labels && secret.metadata.custom_labels.length > 0 && (
+            <Card className="p-4">
+              <div className="mb-6">
+                <p className="mb-2 text-xs font-medium text-muted-foreground">
+                  Labels
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  {secret.metadata.custom_labels.map((label, index) => (
+                    <span
+                      key={`${label}-${index}`}
+                      className="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Attached File Card */}
           {secret.has_file && decryptedFileUrl && (
@@ -567,8 +686,11 @@ export function ViewSecretPage() {
                   <File className="h-5 w-5" />
                   Attached File
                 </CardTitle>
-                <CardDescription className="text-xs truncate">{secret.file_name}</CardDescription>
+                <CardDescription className="text-xs truncate">
+                  {secret.file_name}
+                </CardDescription>
               </CardHeader>
+
               <CardContent className="space-y-4">
                 {secret.file_type?.startsWith("image/") && (
                   <div className="p-4 border rounded-lg flex justify-center">
@@ -581,7 +703,12 @@ export function ViewSecretPage() {
                   </div>
                 )}
                 <Button asChild className="w-full">
-                  <a href={decryptedFileUrl} download={secret.file_name} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={decryptedFileUrl}
+                    download={secret.file_name}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Download className="mr-2 h-4 w-4" />
                     Download File
                   </a>
@@ -599,7 +726,10 @@ export function ViewSecretPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p>This secret has been viewed and will be permanently deleted from our servers.</p>
+              <p>
+                This secret has been viewed and will be permanently deleted from
+                our servers.
+              </p>
               <p>The link is no longer valid and cannot be used again.</p>
             </CardContent>
           </Card>
@@ -613,5 +743,5 @@ export function ViewSecretPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

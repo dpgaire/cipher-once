@@ -1,26 +1,61 @@
-import { InboxList } from '@/features/inbox/components/inbox-list';
-import { SendMessageButton } from '@/features/inbox/components/send-message-button';
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+"use client";
 
-export default async function InboxPage() {
-  const supabase = await createClient();
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { InboxList } from "@/features/inbox/components/inbox-list";
+import { SendMessageButton } from "@/features/inbox/components/send-message-button";
+import { createClient } from "@/lib/supabase/client";
+import DashboardLayout from "../dashboard/layout";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function InboxPage() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const supabase = createClient();
 
-  if (!user) {
-    redirect('/auth/login');
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/auth/login");
+      } else {
+        setUser(user);
+        setLoading(false);
+      }
+    };
+
+    getUser();
+  }, [supabase, router]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="animate-spin h-8 w-8" />
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Inbox</h1>
-        <SendMessageButton />
-      </div>
-      <InboxList />
-    </div>
+    <DashboardLayout>
+      <Card className="container mx-auto max-w-7xl my-4">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-2xl font-bold">Inbox</CardTitle>
+          <SendMessageButton isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
+        </CardHeader>
+
+        <CardContent className="p-4">
+          <InboxList setIsDialogOpen={setIsDialogOpen} />
+        </CardContent>
+      </Card>
+    </DashboardLayout>
   );
 }
