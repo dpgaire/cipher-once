@@ -26,10 +26,6 @@ import {
   AlertTriangle,
   Loader2,
   Download,
-  FileText,
-  Image,
-  Music,
-  Video,
   File,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client"; // Stays as shared utility
@@ -41,12 +37,8 @@ import {
   deriveKeyFromPassphrase,
   bufferToBase64,
 } from "../services/encryption"; // Added decryptFile, bufferToBase64
-import {
-  formatTimeRemaining,
-  SECRET_EXPIRATION_OPTIONS,
-} from "@/features/secrets/domain/secret-utils";
+import { formatTimeRemaining } from "@/features/secrets/domain/secret-utils";
 import type { Secret } from "../types"; // Import Secret from feature types file
-import type { User } from "@supabase/supabase-js"; // Import User type
 
 const ImageCanvasPreview = dynamic(
   () => import("@/features/s/components/ImageCanvasPreview"),
@@ -413,7 +405,7 @@ export function ViewSecretPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-md flex flex-col gap-4 mb-8">
           <div className=" mb-8 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
@@ -462,7 +454,7 @@ export function ViewSecretPage() {
   // If secret is null even after loading, show a generic error (should ideally not happen if fetchSecret handles all errors)
   if (!secret) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
+      <div className="flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
@@ -692,29 +684,30 @@ export function ViewSecretPage() {
 
           {/* Custom Labels */}
 
-          {secret?.metadata?.custom_labels && secret.metadata.custom_labels.length > 0 && (
-            <Card className="p-4">
-              <div className="mb-6">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">
-                  Labels
-                </p>
+          {secret?.metadata?.custom_labels &&
+            secret.metadata.custom_labels.length > 0 && (
+              <Card className="p-4">
+                <div className="mb-6">
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">
+                    Labels
+                  </p>
 
-                <div className="flex flex-wrap gap-2">
-                  {secret.metadata.custom_labels.map((label, index) => (
-                    <span
-                      key={`${label}-${index}`}
-                      className="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium"
-                    >
-                      {label}
-                    </span>
-                  ))}
+                  <div className="flex flex-wrap gap-2">
+                    {secret.metadata.custom_labels.map((label, index) => (
+                      <span
+                        key={`${label}-${index}`}
+                        className="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          )}
+              </Card>
+            )}
 
           {/* Attached File Card */}
-          {/* {secret.has_file && decryptedFileUrl && (
+          {secret.has_file && decryptedFileUrl && (
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -727,124 +720,95 @@ export function ViewSecretPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {secret.file_type?.startsWith("image/") && (
-                  <div className="p-4 border rounded-lg flex justify-center">
-                    <img
-                      src={decryptedFileUrl}
-                      alt={secret.file_name || "Decrypted image"}
-                      className="max-w-full h-auto rounded-md"
-                      style={{ maxHeight: "500px" }}
-                    />
+                {(() => {
+                  const type = getFileCategory(secret.file_type);
+
+                  switch (type) {
+                    case "image":
+                      return secret.metadata?.allow_download ? (
+                        <img
+                          src={decryptedFileUrl}
+                          alt={secret.file_name || "Image"}
+                          className="max-w-full max-h-[500px] mx-auto rounded-md"
+                        />
+                      ) : (
+                        <ImageCanvasPreview url={decryptedFileUrl} />
+                      );
+
+                    case "video":
+                      return (
+                        <div className="relative">
+                          <video
+                            src={decryptedFileUrl}
+                            controls
+                            controlsList="nodownload noplaybackrate"
+                            disablePictureInPicture
+                            className="w-full max-h-[500px] rounded-md"
+                          />
+
+                          {/* Watermark */}
+                          {!secret.metadata?.allow_download && (
+                            <div className="pointer-events-none absolute bottom-3 right-3 text-white/60 text-xs font-medium select-none">
+                              cipheronce.com
+                            </div>
+                          )}
+                        </div>
+                      );
+
+                    case "audio":
+                      return (
+                        <audio
+                          src={decryptedFileUrl}
+                          controls
+                          controlsList="nodownload"
+                          className="w-full"
+                        />
+                      );
+
+                    case "pdf":
+                      return secret.metadata?.allow_download ? (
+                        <iframe
+                          src={decryptedFileUrl}
+                          className="w-full h-[500px] rounded-md border"
+                        />
+                      ) : (
+                        <PdfCanvasPreview url={decryptedFileUrl} />
+                      );
+
+                    default:
+                      return (
+                        <div className="text-sm text-muted-foreground text-center py-6">
+                          Preview not available for this file type.
+                        </div>
+                      );
+                  }
+                })()}
+
+                {/* Download button ONLY if allowed */}
+                {secret.metadata?.allow_download && (
+                  <Button asChild className="w-full">
+                    <a
+                      href={decryptedFileUrl}
+                      download={secret.file_name}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download File
+                    </a>
+                  </Button>
+                )}
+
+                {/* Security notice */}
+                {!secret.metadata?.allow_download && (
+                  <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+                    🔒 Download disabled — preview only. This file cannot be
+                    saved.
                   </div>
                 )}
-                <Button asChild className="w-full">
-                  <a
-                    href={decryptedFileUrl}
-                    download={secret.file_name}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download File
-                  </a>
-                </Button>
               </CardContent>
             </Card>
-          )} */}
-          {/* Attached File Card */}
-{secret.has_file && decryptedFileUrl && (
-  <Card className="mb-6">
-    <CardHeader>
-      <CardTitle className="flex items-center gap-2">
-        <File className="h-5 w-5" />
-        Attached File
-      </CardTitle>
-      <CardDescription className="text-xs truncate">
-        {secret.file_name}
-      </CardDescription>
-    </CardHeader>
-
-    <CardContent className="space-y-4">
-      {(() => {
-        const type = getFileCategory(secret.file_type)
-
-        switch (type) {
-          case "image":
-            return secret.metadata?.allow_download ? (
-              <img
-                src={decryptedFileUrl}
-                alt={secret.file_name || "Image"}
-                className="max-w-full max-h-[500px] mx-auto rounded-md"
-              />
-            ) : (
-              <ImageCanvasPreview url={decryptedFileUrl} />
-            )
-
-          case "video":
-            return (
-              <video
-                src={decryptedFileUrl}
-                controls
-                controlsList="nodownload noplaybackrate"
-                disablePictureInPicture
-                className="w-full max-h-[500px] rounded-md"
-              />
-            )
-
-          case "audio":
-            return (
-              <audio
-                src={decryptedFileUrl}
-                controls
-                controlsList="nodownload"
-                className="w-full"
-              />
-            )
-
-          case "pdf":
-            return secret.metadata?.allow_download ? (
-              <iframe
-                src={decryptedFileUrl}
-                className="w-full h-[500px] rounded-md border"
-              />
-            ) : (
-              <PdfCanvasPreview url={decryptedFileUrl} />
-            )
-
-          default:
-            return (
-              <div className="text-sm text-muted-foreground text-center py-6">
-                Preview not available for this file type.
-              </div>
-            )
-        }
-      })()}
-
-      {/* Download button ONLY if allowed */}
-      {secret.metadata?.allow_download && (
-        <Button asChild className="w-full">
-          <a
-            href={decryptedFileUrl}
-            download={secret.file_name}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download File
-          </a>
-        </Button>
-      )}
-
-      {/* Security notice */}
-      {!secret.metadata?.allow_download && (
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
-          🔒 Download disabled — preview only. This file cannot be saved.
-        </div>
-      )}
-    </CardContent>
-  </Card>
-)}
-
+          )}
 
           {/* Burn Notice */}
           <Card className="border-red-500/20 bg-red-500/5">

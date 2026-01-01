@@ -44,6 +44,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "CipherOnce Team" }],
   creator: "CipherOnce",
+  manifest: "/manifest.json",
   
   openGraph: {
     type: "website",

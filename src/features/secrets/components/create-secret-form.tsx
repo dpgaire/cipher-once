@@ -71,7 +71,7 @@ export function CreateSecretForm() {
   const [maxViews, setMaxViews] = useState(1);
   const [requirePassphrase, setRequirePassphrase] = useState(false);
   const [passphrase, setPassphrase] = useState("");
-const [allowFileDownload, setAllowFileDownload] = useState(false);
+  const [allowFileDownload, setAllowFileDownload] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,59 +85,57 @@ const [allowFileDownload, setAllowFileDownload] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
 
-    // Default settings
-    const [useDefaultSettings, setUseDefaultSettings] = useState(false);
-    const [defaultSettings, setDefaultSettings] = useState<any>(null);
+  // Default settings
+  const [useDefaultSettings, setUseDefaultSettings] = useState(false);
+  const [defaultSettings, setDefaultSettings] = useState<any>(null);
 
-    const fetchDefaultSettings = async () => {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("default_settings")
-            .eq("id", user.id)
-            .single();
-          if (profile && profile.default_settings) {
-            setDefaultSettings(profile.default_settings);
-          }
-        }
-      };
-  
-    useEffect(() => {
-      
-      fetchDefaultSettings();
-    }, []);
+  const fetchDefaultSettings = async () => {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("default_settings")
+        .eq("id", user.id)
+        .single();
+      if (profile && profile.default_settings) {
+        setDefaultSettings(profile.default_settings);
+      }
+    }
+  };
 
-    console.log('defaultSettings',defaultSettings)
-  
-useEffect(() => {
-  if (useDefaultSettings && defaultSettings) {
-    setExpirationHours(
-      defaultSettings.defaultExpiration !== undefined
-        ? Number(defaultSettings.defaultExpiration)
-        : 24
-    );
+  useEffect(() => {
+    fetchDefaultSettings();
+  }, []);
 
-    setMaxViews(
-      defaultSettings.defaultViewLimit !== undefined
-        ? Number(defaultSettings.defaultViewLimit)
-        : 1
-    );
+  console.log("defaultSettings", defaultSettings);
 
-    const hasDefaultPassword =
-      typeof defaultSettings.defaultPassword === "string" &&
-      defaultSettings.defaultPassword.length > 0;
+  useEffect(() => {
+    if (useDefaultSettings && defaultSettings) {
+      setExpirationHours(
+        defaultSettings.defaultExpiration !== undefined
+          ? Number(defaultSettings.defaultExpiration)
+          : 24
+      );
 
-      setAllowFileDownload(
-      defaultSettings.defaultAllowDownload ?? false
-    );
+      setMaxViews(
+        defaultSettings.defaultViewLimit !== undefined
+          ? Number(defaultSettings.defaultViewLimit)
+          : 1
+      );
 
-    setRequirePassphrase(hasDefaultPassword);
-    setPassphrase(hasDefaultPassword ? defaultSettings.defaultPassword : "");
-  }
-}, [useDefaultSettings, defaultSettings]);
+      const hasDefaultPassword =
+        typeof defaultSettings.defaultPassword === "string" &&
+        defaultSettings.defaultPassword.length > 0;
 
+      setAllowFileDownload(defaultSettings.defaultAllowDownload ?? false);
+
+      setRequirePassphrase(hasDefaultPassword);
+      setPassphrase(hasDefaultPassword ? defaultSettings.defaultPassword : "");
+    }
+  }, [useDefaultSettings, defaultSettings]);
 
   const handleCreateSecret = async () => {
     setError(null);
@@ -315,14 +313,26 @@ useEffect(() => {
       // Increment the user's created secret count
       if (user) {
         try {
-          const { data: success, error: rpcError } = await supabase.rpc('increment_created_secret_count', { p_user_id: user.id });
+          const { data: success, error: rpcError } = await supabase.rpc(
+            "increment_created_secret_count",
+            { p_user_id: user.id }
+          );
           if (rpcError) {
-            console.error('RPC Error incrementing created secret count:', rpcError);
+            console.error(
+              "RPC Error incrementing created secret count:",
+              rpcError
+            );
           } else if (!success) {
-            console.warn('Failed to increment created secret count for user:', user.id);
+            console.warn(
+              "Failed to increment created secret count for user:",
+              user.id
+            );
           }
         } catch (rpcError) {
-          console.error('Exception calling increment_created_secret_count:', rpcError);
+          console.error(
+            "Exception calling increment_created_secret_count:",
+            rpcError
+          );
         }
       }
 
@@ -365,17 +375,23 @@ useEffect(() => {
               Enter the information you want to share securely
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
-          {defaultSettings && (
-                <div className="flex items-center space-x-2">
-                    <Checkbox id="use-defaults" checked={useDefaultSettings} onCheckedChange={(checked) => setUseDefaultSettings(!!checked)} />
-                    <label
-                    htmlFor="use-defaults"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                    Use my default settings
-                    </label>
-                </div>
+          <CardContent className="space-y-4">
+            {defaultSettings && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="use-defaults"
+                  checked={useDefaultSettings}
+                  onCheckedChange={(checked) =>
+                    setUseDefaultSettings(!!checked)
+                  }
+                />
+                <label
+                  htmlFor="use-defaults"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Use my default settings
+                </label>
+              </div>
             )}
             {/* Always-visible: Text Content */}
             <div className="space-y-2">
@@ -437,48 +453,48 @@ useEffect(() => {
                 Max file size: 20MB
               </p>
             </div>
-              {selectedFile && (
-  <Accordion type="single" collapsible className="space-y-4">
-    <AccordionItem value="file-config">
-      <AccordionTrigger className="text-base font-medium">
-        <div className="flex items-center gap-2">
-          <Paperclip className="h-5 w-5" />
-          File Options
-        </div>
-      </AccordionTrigger>
-
-      <AccordionContent className="space-y-6 pt-4">
-        {/* Allow Download Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="flex items-center gap-2">
-              Allow file download
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              If disabled, recipients can preview the file but cannot download it.
-            </p>
-          </div>
-
-          <Switch
-            checked={allowFileDownload}
-            onCheckedChange={setAllowFileDownload}
-          />
-        </div>
-
-        {/* Security Notice */}
-        {!allowFileDownload && (
-          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
-            🔒 Download is disabled. The file can only be viewed inside CipherOnce.
-          </div>
-        )}
-      </AccordionContent>
-    </AccordionItem>
-  </Accordion>
-)}
-
 
             {/* Collapsible Configuration Sections */}
             <Accordion type="multiple" className="space-y-4">
+              {/* File sharing */}
+              {selectedFile && (
+                <AccordionItem value="file-options">
+                  <AccordionTrigger className="text-base font-medium">
+                    <div className="flex items-center gap-2">
+                      <Paperclip className="h-5 w-5" />
+                      File Options
+                    </div>
+                  </AccordionTrigger>
+
+                  <AccordionContent className="space-y-6 pt-4">
+                    {/* Allow Download Toggle */}
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="flex items-center gap-2">
+                          Allow file download
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          If disabled, recipients can preview the file but
+                          cannot download it.
+                        </p>
+                      </div>
+
+                      <Switch
+                        checked={allowFileDownload}
+                        onCheckedChange={setAllowFileDownload}
+                      />
+                    </div>
+
+                    {/* Security Notice */}
+                    {!allowFileDownload && (
+                      <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+                        🔒 Download is disabled. The file can only be viewed
+                        inside CipherOnce.
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              )}
               {/* Basic Limits */}
               <AccordionItem value="limits">
                 <AccordionTrigger className="text-base font-medium">
