@@ -22,6 +22,7 @@ export interface SecretMetadata {
   salt?: string;
   has_passphrase?: boolean;
   require_auth?: boolean;
+  allow_download?:boolean;
   allowed_domains?: string[];
   custom_labels?: string[];
 }

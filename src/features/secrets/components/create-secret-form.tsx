@@ -71,6 +71,8 @@ export function CreateSecretForm() {
   const [maxViews, setMaxViews] = useState(1);
   const [requirePassphrase, setRequirePassphrase] = useState(false);
   const [passphrase, setPassphrase] = useState("");
+const [allowFileDownload, setAllowFileDownload] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,6 +128,10 @@ useEffect(() => {
     const hasDefaultPassword =
       typeof defaultSettings.defaultPassword === "string" &&
       defaultSettings.defaultPassword.length > 0;
+
+      setAllowFileDownload(
+      defaultSettings.defaultAllowDownload ?? false
+    );
 
     setRequirePassphrase(hasDefaultPassword);
     setPassphrase(hasDefaultPassword ? defaultSettings.defaultPassword : "");
@@ -276,6 +282,7 @@ useEffect(() => {
         ...(salt && { salt }),
         has_passphrase: requirePassphrase,
         require_auth: requireAuth,
+        allow_download: allowFileDownload,
         allowed_domains:
           allowed_domains.length > 0 ? allowed_domains : undefined,
         custom_labels: custom_labels.length > 0 ? custom_labels : undefined,
@@ -376,7 +383,7 @@ useEffect(() => {
               <Textarea
                 id="content"
                 placeholder="Enter passwords, API keys, confidential messages, or any sensitive information..."
-                className="max-h-[100px] md:h-[150px] font-mono text-sm overflow-y-scroll"
+                className="max-h-[100px] md:h-[150px] text-sm overflow-y-scroll"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
@@ -430,6 +437,45 @@ useEffect(() => {
                 Max file size: 20MB
               </p>
             </div>
+              {selectedFile && (
+  <Accordion type="single" collapsible className="space-y-4">
+    <AccordionItem value="file-config">
+      <AccordionTrigger className="text-base font-medium">
+        <div className="flex items-center gap-2">
+          <Paperclip className="h-5 w-5" />
+          File Options
+        </div>
+      </AccordionTrigger>
+
+      <AccordionContent className="space-y-6 pt-4">
+        {/* Allow Download Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="flex items-center gap-2">
+              Allow file download
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              If disabled, recipients can preview the file but cannot download it.
+            </p>
+          </div>
+
+          <Switch
+            checked={allowFileDownload}
+            onCheckedChange={setAllowFileDownload}
+          />
+        </div>
+
+        {/* Security Notice */}
+        {!allowFileDownload && (
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+            🔒 Download is disabled. The file can only be viewed inside CipherOnce.
+          </div>
+        )}
+      </AccordionContent>
+    </AccordionItem>
+  </Accordion>
+)}
+
 
             {/* Collapsible Configuration Sections */}
             <Accordion type="multiple" className="space-y-4">
