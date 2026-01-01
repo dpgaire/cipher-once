@@ -6,6 +6,7 @@ import { Lock, Plus, Mail } from "lucide-react"
 import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
 import { useAuthSession } from "@/features/auth/hooks/use-auth-session"
 import { Skeleton } from "@/components/ui/skeleton"
+import { NotificationBell } from "@/features/notifications/components/notification-bell"
 
 export function DashboardHeader() {
   const { user, loading } = useAuthSession()
@@ -33,6 +34,7 @@ export function DashboardHeader() {
               New Secret
             </Link>
           </Button>
+          <NotificationBell />
           {loading ? (
             <Skeleton className="h-10 w-10 rounded-full" />
           ) : user ? (
