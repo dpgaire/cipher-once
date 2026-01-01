@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import {
   Card,
@@ -24,12 +25,12 @@ import {
   Shield,
   AlertTriangle,
   Loader2,
-  Download, // Added Download icon
-  FileText, // Added FileText icon for generic files
-  Image, // Added Image icon
-  Music, // Added Music icon
-  Video, // Added Video icon
-  File, // Generic file icon
+  Download,
+  FileText,
+  Image,
+  Music,
+  Video,
+  File,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client"; // Stays as shared utility
 import {
@@ -46,6 +47,40 @@ import {
 } from "@/features/secrets/domain/secret-utils";
 import type { Secret } from "../types"; // Import Secret from feature types file
 import type { User } from "@supabase/supabase-js"; // Import User type
+
+const ImageCanvasPreview = dynamic(
+  () => import("@/features/s/components/ImageCanvasPreview"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
+);
+const PdfCanvasPreview = dynamic(
+  () => import("@/features/s/components/PdfCanvasPreview"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
+);
+
+const getFileCategory = (
+  fileType: string | null | undefined
+): "image" | "video" | "audio" | "pdf" | "other" => {
+  if (!fileType) return "other";
+  if (fileType.startsWith("image/")) return "image";
+  if (fileType.startsWith("video/")) return "video";
+  if (fileType.startsWith("audio/")) return "audio";
+  if (fileType === "application/pdf") return "pdf";
+  return "other";
+};
 
 export function ViewSecretPage() {
   const params = useParams();
@@ -449,8 +484,8 @@ export function ViewSecretPage() {
   // Secret found - show reveal interface
   if (!hasViewed) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6">
-        <div className="container py-12">
+      <div className="min-h-screen p-2  lg:p-6">
+        <div className="container py-4 lg:py-12">
           <div className="mx-auto max-w-2xl">
             {/* Header */}
             <div className="mb-8 text-center">
@@ -537,7 +572,7 @@ export function ViewSecretPage() {
                   disabled={
                     isDecrypting || (!!secret.passphrase_hash && !passphrase)
                   }
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   size="lg"
                 >
                   {isDecrypting ? (
@@ -587,8 +622,8 @@ export function ViewSecretPage() {
   // Secret revealed - show content
 
   return (
-    <div className="min-h-screen  p-6">
-      <div className="container py-12">
+    <div className="min-h-screen p-4 lg:p-6">
+      <div className="container py-4 lg:py-12">
         <div className="mx-auto max-w-2xl">
           {/* Success Header */}
           <div className="mb-8 text-center">
@@ -637,7 +672,7 @@ export function ViewSecretPage() {
                     </Button>
                   </div>
                   <pre
-                    className={`whitespace-pre-wrap break-words font-mono text-sm ${
+                    className={`whitespace-pre-wrap font-mono text-sm ${
                       showContent ? "" : "blur-sm select-none"
                     }`}
                   >
@@ -679,7 +714,7 @@ export function ViewSecretPage() {
           )}
 
           {/* Attached File Card */}
-          {secret.has_file && decryptedFileUrl && (
+          {/* {secret.has_file && decryptedFileUrl && (
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -715,7 +750,101 @@ export function ViewSecretPage() {
                 </Button>
               </CardContent>
             </Card>
-          )}
+          )} */}
+          {/* Attached File Card */}
+{secret.has_file && decryptedFileUrl && (
+  <Card className="mb-6">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2">
+        <File className="h-5 w-5" />
+        Attached File
+      </CardTitle>
+      <CardDescription className="text-xs truncate">
+        {secret.file_name}
+      </CardDescription>
+    </CardHeader>
+
+    <CardContent className="space-y-4">
+      {(() => {
+        const type = getFileCategory(secret.file_type)
+
+        switch (type) {
+          case "image":
+            return secret.metadata?.allow_download ? (
+              <img
+                src={decryptedFileUrl}
+                alt={secret.file_name || "Image"}
+                className="max-w-full max-h-[500px] mx-auto rounded-md"
+              />
+            ) : (
+              <ImageCanvasPreview url={decryptedFileUrl} />
+            )
+
+          case "video":
+            return (
+              <video
+                src={decryptedFileUrl}
+                controls
+                controlsList="nodownload noplaybackrate"
+                disablePictureInPicture
+                className="w-full max-h-[500px] rounded-md"
+              />
+            )
+
+          case "audio":
+            return (
+              <audio
+                src={decryptedFileUrl}
+                controls
+                controlsList="nodownload"
+                className="w-full"
+              />
+            )
+
+          case "pdf":
+            return secret.metadata?.allow_download ? (
+              <iframe
+                src={decryptedFileUrl}
+                className="w-full h-[500px] rounded-md border"
+              />
+            ) : (
+              <PdfCanvasPreview url={decryptedFileUrl} />
+            )
+
+          default:
+            return (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                Preview not available for this file type.
+              </div>
+            )
+        }
+      })()}
+
+      {/* Download button ONLY if allowed */}
+      {secret.metadata?.allow_download && (
+        <Button asChild className="w-full">
+          <a
+            href={decryptedFileUrl}
+            download={secret.file_name}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download File
+          </a>
+        </Button>
+      )}
+
+      {/* Security notice */}
+      {!secret.metadata?.allow_download && (
+        <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+          🔒 Download disabled — preview only. This file cannot be saved.
+        </div>
+      )}
+    </CardContent>
+  </Card>
+)}
+
 
           {/* Burn Notice */}
           <Card className="border-red-500/20 bg-red-500/5">

@@ -4,14 +4,30 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { MAX_VIEW_OPTIONS, SECRET_EXPIRATION_OPTIONS } from "@/features/secrets/domain/secret-utils";
+import {
+  MAX_VIEW_OPTIONS,
+  SECRET_EXPIRATION_OPTIONS,
+} from "@/features/secrets/domain/secret-utils";
 import type { User } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
@@ -20,8 +36,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     theme: "system",
-    defaultExpiration:1,
-    defaultViewLimit: 5 ,
+    defaultExpiration: 1,
+    defaultViewLimit: 5,
+    defaultAllowDownload: false,
     defaultPassword: "",
   });
   const { setTheme } = useTheme();
@@ -30,7 +47,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const fetchUserSettings = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUser(user);
         const { data: profile } = await supabase
@@ -40,7 +59,7 @@ export default function SettingsPage() {
           .single();
 
         if (profile && profile.default_settings) {
-          setSettings(s => ({ ...s, ...profile.default_settings }));
+          setSettings((s) => ({ ...s, ...profile.default_settings }));
         }
       } else {
         router.push("/auth/login");
@@ -59,7 +78,11 @@ export default function SettingsPage() {
       .eq("id", user.id);
 
     if (error) {
-      toast({ title: "Error saving settings", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error saving settings",
+        description: error.message,
+        variant: "destructive",
+      });
     } else {
       toast({ title: "Settings saved successfully" });
       setTheme(settings.theme);
@@ -68,7 +91,7 @@ export default function SettingsPage() {
   };
 
   const handleInputChange = (key: string, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   if (loading) {
@@ -85,12 +108,32 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Default Secret Settings</CardTitle>
-          <CardDescription>Configure your default options when creating a new secret.</CardDescription>
+          <CardDescription>
+            Configure your default options when creating a new secret.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Allow file download by default</Label>
+              <p className="text-xs text-muted-foreground">
+                If disabled, recipients can preview files but cannot download
+                them unless explicitly allowed.
+              </p>
+            </div>
+            <Switch
+              checked={settings.defaultAllowDownload}
+              onCheckedChange={(checked) =>
+                handleInputChange("defaultAllowDownload", checked)
+              }
+            />
+          </div>
           <div className="space-y-2">
             <Label>Theme</Label>
-            <Select value={settings.theme} onValueChange={(value) => handleInputChange("theme", value)}>
+            <Select
+              value={settings.theme}
+              onValueChange={(value) => handleInputChange("theme", value)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select theme" />
               </SelectTrigger>
@@ -103,36 +146,53 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-2">
             <Label>Default Expiration</Label>
-            <Select value={settings.defaultExpiration.toString()} onValueChange={(value) => handleInputChange("defaultExpiration", value)}>
+            <Select
+              value={settings.defaultExpiration.toString()}
+              onValueChange={(value) =>
+                handleInputChange("defaultExpiration", value)
+              }
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select expiration" />
               </SelectTrigger>
               <SelectContent>
-                {SECRET_EXPIRATION_OPTIONS.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>
+                {SECRET_EXPIRATION_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value.toString()}>
+                    {opt.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>Default View Limit</Label>
-            <Select value={settings.defaultViewLimit.toString()} onValueChange={(value) => handleInputChange("defaultViewLimit", value)}>
+            <Select
+              value={settings.defaultViewLimit.toString()}
+              onValueChange={(value) =>
+                handleInputChange("defaultViewLimit", value)
+              }
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select expiration" />
               </SelectTrigger>
               <SelectContent>
-                {MAX_VIEW_OPTIONS.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>
+                {MAX_VIEW_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value.toString()}>
+                    {opt.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
             <Label>Default Password</Label>
             <Input
               type="password"
               value={settings.defaultPassword}
-              onChange={(e) => handleInputChange("defaultPassword", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("defaultPassword", e.target.value)
+              }
               placeholder="Leave blank for no password"
             />
           </div>
