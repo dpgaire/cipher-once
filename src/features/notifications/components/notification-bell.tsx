@@ -21,31 +21,36 @@ export function NotificationBell() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <div className="relative">
-          {unreadCount > 0 ? <BellRing /> : <Bell />}
-          {unreadCount > 0 && (
-            <Badge
-              color="red"
-              className="absolute -top-2 -right-2"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {notifications.map((notification) => (
-          <DropdownMenuItem
-            key={notification.id}
-            onClick={() => handleClick(notification)}
-            className={!notification.is_read ? 'font-bold' : ''}
-          >
-            <span>{notification.message}</span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+   <DropdownMenu>
+  <DropdownMenuTrigger>
+    <div className="relative">
+      {unreadCount > 0 ? <BellRing /> : <Bell />}
+      {unreadCount > 0 && (
+        <Badge className="absolute -top-2 -right-2">
+          {unreadCount}
+        </Badge>
+      )}
+    </div>
+  </DropdownMenuTrigger>
+
+  <DropdownMenuContent className="w-64">
+    {notifications.length === 0 ? (
+      <div className="px-3 py-2 text-sm text-muted-foreground text-center">
+        No notifications
+      </div>
+    ) : (
+      notifications.map((notification) => (
+        <DropdownMenuItem
+          key={notification.id}
+          onClick={() => handleClick(notification)}
+          className={!notification.is_read ? 'font-bold cursor-pointer' : 'cursor-pointer'}
+        >
+          {notification.message}
+        </DropdownMenuItem>
+      ))
+    )}
+  </DropdownMenuContent>
+</DropdownMenu>
+
   );
 }

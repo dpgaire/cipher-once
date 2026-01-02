@@ -4,12 +4,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Lock, Plus, Mail } from "lucide-react"
 import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
-import { useAuthSession } from "@/features/auth/hooks/use-auth-session"
 import { Skeleton } from "@/components/ui/skeleton"
 import { NotificationBell } from "@/features/notifications/components/notification-bell"
+import type { User } from "@supabase/supabase-js" // New Import
 
-export function DashboardHeader() {
-  const { user, loading } = useAuthSession()
+interface DashboardHeaderProps {
+  user: User | null
+  loading: boolean
+}
+
+export function DashboardHeader({ user, loading }: DashboardHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background hidden md:flex">
@@ -23,7 +27,7 @@ export function DashboardHeader() {
 
         <div className="flex items-center gap-4">
           <Button asChild variant="ghost">
-            <Link href="/inbox">
+            <Link href="/dashboard/inbox">
               <Mail className="mr-2 h-4 w-4" />
               Inbox
             </Link>
@@ -42,6 +46,7 @@ export function DashboardHeader() {
           ) : null}
         </div>
       </div>
+     
     </header>
   )
 }

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { InboxList } from "@/features/inbox/components/inbox-list";
 import { SendMessageButton } from "@/features/inbox/components/send-message-button";
 import { createClient } from "@/lib/supabase/client";
-import DashboardLayout from "../dashboard/layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
@@ -36,16 +35,13 @@ export default function InboxPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
         <div className="flex justify-center items-center h-full">
           <Loader2 className="animate-spin h-8 w-8" />
         </div>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
       <Card className="container mx-auto max-w-7xl my-4">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-2xl font-bold">Inbox</CardTitle>
@@ -56,6 +52,5 @@ export default function InboxPage() {
           <InboxList setIsDialogOpen={setIsDialogOpen} />
         </CardContent>
       </Card>
-    </DashboardLayout>
   );
 }

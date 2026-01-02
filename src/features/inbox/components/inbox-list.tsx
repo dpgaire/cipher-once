@@ -11,10 +11,14 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
+import {
+  decrypt,
+  importKey,
+} from "@/features/secrets/services/encryption";
+import { ClickableMessage } from "./ClickableMessage";
 
 type Profile = {
   full_name: string | null;
@@ -25,11 +29,13 @@ type Message = {
   sender_id: string;
   recipient_id: string;
   message: string | null;
-  link: string | null;
+  message_encryption_iv: string | null;
+  link: string | null; // This now holds the exported key
   created_at: string;
   is_read: boolean;
   sender_profile: Profile;
   recipient_profile: Profile;
+  decryptedMessage?: string;
 };
 
 type InboxListProps = {
@@ -49,7 +55,6 @@ function InboxCardSkeleton() {
           </div>
         </div>
       </CardHeader>
-
       <CardContent className="pt-0 space-y-3">
         <div className="h-3 w-full bg-muted rounded animate-pulse" />
         <div className="h-3 w-5/6 bg-muted rounded animate-pulse" />
@@ -75,6 +80,7 @@ export function InboxList({ setIsDialogOpen }: InboxListProps) {
         sender_id,
         recipient_id,
         message,
+        message_encryption_iv,
         link,
         created_at,
         is_read,
@@ -88,22 +94,43 @@ export function InboxList({ setIsDialogOpen }: InboxListProps) {
       if (error) {
         toast.error("Failed to load inbox");
         console.error(error);
-      } else {
-        // Manually format the data to ensure sender_profile and recipient_profile are objects or null
-        const formattedData = data.map((msg) => ({
-          ...msg,
-          sender_profile:
-            Array.isArray(msg.sender_profile) && msg.sender_profile.length > 0
-              ? msg.sender_profile[0]
-              : null,
-          recipient_profile:
-            Array.isArray(msg.recipient_profile) &&
-            msg.recipient_profile.length > 0
-              ? msg.recipient_profile[0]
-              : null,
-        }));
-        setMessages(formattedData as Message[]);
+        return;
       }
+
+      // Decrypt messages
+      const decryptedMessages = await Promise.all(
+        data.map(async (msg) => {
+          let decryptedMessage = "[Message could not be decrypted]";
+          if (msg.message && msg.message_encryption_iv && msg.link) {
+            try {
+              const key = await importKey(msg.link);
+              decryptedMessage = await decrypt(
+                msg.message,
+                msg.message_encryption_iv,
+                key
+              );
+            } catch (e) {
+              console.error("Decryption failed for message", msg.id, e);
+            }
+          }
+          return { ...msg, decryptedMessage };
+        })
+      );
+
+      const formattedData = decryptedMessages.map((msg) => ({
+        ...msg,
+        sender_profile:
+          Array.isArray(msg.sender_profile) && msg.sender_profile.length > 0
+            ? msg.sender_profile[0]
+            : null,
+        recipient_profile:
+          Array.isArray(msg.recipient_profile) &&
+          msg.recipient_profile.length > 0
+            ? msg.recipient_profile[0]
+            : null,
+      }));
+
+      setMessages(formattedData as Message[]);
     },
     [supabase]
   );
@@ -119,35 +146,21 @@ export function InboxList({ setIsDialogOpen }: InboxListProps) {
         await fetchMessages(user);
       }
       setLoading(false);
-
-      const interval = setInterval(async () => {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        if (currentUser) {
-          await fetchMessages(currentUser);
-        }
-      }, 30000); // Poll every 30 seconds
-
-      return () => clearInterval(interval);
     };
 
     setup();
   }, [supabase, fetchMessages]);
 
-  const handleLinkClick = async (messageId: string) => {
+  const handleDeleteMessage = async (messageId: string) => {
+    // Optimistically remove from UI
+    setMessages(messages.filter((msg) => msg.id !== messageId));
+
     // First, mark as read
-    const { error: updateError } = await supabase
+    await supabase
       .from("inbox_messages")
       .update({ is_read: true })
       .eq("id", messageId);
-
-    if (updateError) {
-      toast.error("Failed to process message.");
-      console.error(updateError);
-      return;
-    }
-
+      
     // Immediately delete after marking as read
     const { error: deleteError } = await supabase
       .from("inbox_messages")
@@ -155,18 +168,16 @@ export function InboxList({ setIsDialogOpen }: InboxListProps) {
       .eq("id", messageId);
 
     if (deleteError) {
-      toast.error("Failed to delete message after reading.");
+      toast.error("Failed to delete message from server.");
       console.error(deleteError);
-      // Still remove from UI if delete fails but update succeeded, to avoid confusion
-      setMessages(messages.filter((msg) => msg.id !== messageId));
+      // Re-fetch to get consistent state
+      const { data: { user } } = await supabase.auth.getUser();
+      if(user) fetchMessages(user);
     } else {
-      // On successful deletion, remove it from the UI optimistically
-      setMessages(messages.filter((msg) => msg.id !== messageId));
-      toast.success("Message read and deleted.");
+      toast.success("Message deleted.");
     }
   };
 
-  /* ---------- Loading Skeleton ---------- */
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -181,12 +192,11 @@ export function InboxList({ setIsDialogOpen }: InboxListProps) {
     return (
       <div className="py-10 flex flex-col items-center gap-3 text-center text-sm text-muted-foreground">
         <span className="max-w-xs">
-          Silence is secure. Share only when it truly matters.
+          Your inbox is empty. All communications are secure and ephemeral.
         </span>
-
         <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
           <Send className="h-4 w-4 mr-2 " />
-          New Message
+          New Secure Message
         </Button>
       </div>
     );
@@ -216,7 +226,7 @@ export function InboxList({ setIsDialogOpen }: InboxListProps) {
           <Card
             key={msg.id}
             className={cn(
-              "relative transition-all hover:shadow-sm",
+              "relative transition-all hover:shadow-sm flex flex-col",
               !msg.is_read && "border-l-2 border-l-primary"
             )}
           >
@@ -234,41 +244,28 @@ export function InboxList({ setIsDialogOpen }: InboxListProps) {
 
                 <div className="flex-1">
                   <CardTitle className="text-sm font-medium leading-none">
-                    {isSender ? `To ${name}` : name}
+                    {isSender ? `To: ${name}` : `From: ${name}`}
                   </CardTitle>
                   <CardDescription className="text-xs">{time}</CardDescription>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="pt-0 space-y-3">
-              {msg.message && (
-                <p className="text-sm leading-relaxed text-foreground/90 line-clamp-4">
-                  {msg.message}
-                </p>
-              )}
-
-              {msg.link && (
-                <>
-                  <Separator />
-                  <a
-                    href={msg.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.preventDefault(); // Prevent immediate navigation
-                      handleLinkClick(msg.id);
-                      if (msg.link) {
-                        window.open(msg.link, "_blank", "noopener,noreferrer");
-                      }
-                    }}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-                  >
-                    Open link →
-                  </a>
-                </>
-              )}
+            <CardContent className="pt-2 space-y-3 flex-grow">
+              {msg.decryptedMessage && <ClickableMessage text={msg.decryptedMessage} />}
             </CardContent>
+            
+            <div className="p-4 pt-0">
+               <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleDeleteMessage(msg.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Mark as Read & Delete
+                </Button>
+            </div>
           </Card>
         );
       })}
