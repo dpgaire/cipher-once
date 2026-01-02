@@ -2,20 +2,16 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Shield, Clock, Flame, PlusCircle, Mail, User, Home, Settings } from "lucide-react"
+import { PlusCircle, Mail, User, Home, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface DashboardMobileNavProps {
-  tab: string
-}
-
-export function DashboardMobileNav({ tab }: DashboardMobileNavProps) {
+export function DashboardMobileNav() {
   const pathname = usePathname()
   const navItems = [
-    { name: "Active", href: "/dashboard", icon: Home, value: "dashboard" },
-    { name: "Inbox", href: "/inbox", icon: Mail, value: "inbox" },
-    { name: "Profile", href: "/dashboard/profile", icon: User, value: "user" },
-    { name: "Setting", href: "/dashboard/settings", icon: Settings, value: "setting" },
+    { name: "Dashbaord", href: "/dashboard", icon: Home, value: "dashboard" },
+    { name: "Inbox", href: "/dashboard/inbox", icon: Mail, value: "inbox" },
+    { name: "Profile", href: "/dashboard/profile", icon: User, value: "profile" },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings, value: "settings" },
   ]
 
   return (
@@ -23,7 +19,10 @@ export function DashboardMobileNav({ tab }: DashboardMobileNavProps) {
       <div className="grid h-full grid-cols-5 mx-auto font-medium">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = item.value === "inbox" ? pathname === item.href : tab === item.value
+           const isActive =
+    item.href === "/dashboard"
+      ? pathname === "/dashboard"
+      : pathname.startsWith(item.href)
           return (
             <Link
               key={item.name}

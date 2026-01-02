@@ -5,6 +5,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/client";
+import {
+  generateKey,
+  encrypt,
+  exportKey,
+} from "@/features/secrets/services/encryption";
 
 import {
   Card,
@@ -95,15 +100,21 @@ function SuccessContent() {
         return;
       }
 
-      // 2. Insert into inbox
+      // 2. Encrypt the message content
+      const messageContent = `Someone has shared a secret with you. Open it before it's gone: ${secretUrl}`;
+      const inboxMessageKey = await generateKey();
+      const { ciphertext, iv } = await encrypt(messageContent, inboxMessageKey);
+      const exportedKey = await exportKey(inboxMessageKey);
+
+      // 3. Insert into inbox
       const { error: insertError } = await supabase
         .from("inbox_messages")
         .insert({
           sender_id: senderUser.id,
           recipient_id: recipientId,
-          message:
-            "Someone has shared a secret with you. Open it before it's gone.",
-          link: secretUrl,
+          message: ciphertext,
+          message_encryption_iv: iv,
+          link: exportedKey, // Store the message key here
         });
 
       if (insertError) {
@@ -198,7 +209,7 @@ function SuccessContent() {
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="send-to-inbox" className="font-semibold">
-                        Send to App Inbox 
+                        Send to App Inbox
                       </Label>
                       <div className="flex gap-2">
                         <Input
@@ -234,7 +245,7 @@ function SuccessContent() {
 
                 <div className="my-4">
                   <h3 className="mb-2 text-lg font-semibold">
-                Share Externally
+                    Share Externally
                   </h3>
                   <SocialShareButtons
                     secretUrl={secretUrl}

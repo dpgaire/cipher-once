@@ -9,7 +9,7 @@ BEGIN
     VALUES (
         NEW.recipient_id,
         'You have a new message from ' || COALESCE((SELECT full_name FROM profiles WHERE id = NEW.sender_id), 'Anonymous'),
-        '/inbox'
+        '/dashboard/inbox'
     );
 
     RETURN NEW;
