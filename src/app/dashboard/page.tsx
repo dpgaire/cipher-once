@@ -3,8 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { DashboardPage } from "@/features/secrets/components/dashboard-page"
 import type { Secret } from "@/features/secrets/types"
 import { Suspense } from "react"
-import { Loader2 } from "lucide-react"
-import { DashboardMobileNavWrapper } from "@/features/secrets/components/dashboard-mobile-nav-wrapper"
+import { DashboardSkeleton } from "@/features/secrets/components/dashboard-skeleton"
 
 export default async function DashboardPageWrapper({
   searchParams,
@@ -39,7 +38,7 @@ export default async function DashboardPageWrapper({
 
   return (
     <>
-      <Suspense fallback={<div className="flex flex-1 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+      <Suspense fallback={<DashboardSkeleton />}>
         <DashboardPage secrets={(secrets as Secret[]) || []} searchParams={searchParams} stats={profile} />
       </Suspense>
       {/* <Suspense fallback={null}>

@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  History,
 } from "lucide-react";
 import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown";
 import type { User } from "@supabase/supabase-js";
@@ -33,6 +34,7 @@ const navItems: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: Home },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart },
+  { href: "/admin/logs", label: "Access Logs", icon: History },
 ];
 
 export function AdminNav({ user, isMobileOpen, toggleSidebar }: AdminNavProps) {

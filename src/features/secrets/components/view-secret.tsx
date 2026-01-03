@@ -39,27 +39,21 @@ import {
 } from "../services/encryption"; // Added decryptFile, bufferToBase64
 import { formatTimeRemaining } from "@/features/secrets/domain/secret-utils";
 import type { Secret } from "../types"; // Import Secret from feature types file
+import { MediaSkeleton } from "@/features/core/components";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ImageCanvasPreview = dynamic(
   () => import("@/features/s/components/ImageCanvasPreview"),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    ),
+    loading: () => <MediaSkeleton className="h-40 w-full" />,
   }
 );
 const PdfCanvasPreview = dynamic(
   () => import("@/features/s/components/PdfCanvasPreview"),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    ),
+    loading: () => <MediaSkeleton className="h-40 w-full" />,
   }
 );
 
@@ -393,12 +387,59 @@ export function ViewSecretPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </CardContent>
-        </Card>
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="mb-8 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+                    <Lock className="h-8 w-8 text-primary" />
+                </div>
+                <h1 className="mb-2 text-3xl font-bold text-balance">
+                    <Skeleton className="h-8 w-3/4 mx-auto" />
+                </h1>
+                <div className="text-muted-foreground">
+                    <Skeleton className="h-4 w-1/2 mx-auto" />
+                </div>
+            </div>
+
+            {/* Secret Info Card Skeleton */}
+            <Card className="mb-6">
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid gap-4 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
+                        <div className="flex items-center gap-3">
+                            <Clock className="h-5 w-5 text-muted-foreground" />
+                            <div className="space-y-1">
+                                <Skeleton className="h-3 w-20" />
+                                <Skeleton className="h-4 w-24" />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Eye className="h-5 w-5 text-muted-foreground" />
+                            <div className="space-y-1">
+                                <Skeleton className="h-3 w-20" />
+                                <Skeleton className="h-4 w-24" />
+                            </div>
+                        </div>
+                    </div>
+                    <Skeleton className="h-10 w-full" /> {/* Passphrase input */}
+                    <Skeleton className="h-10 w-full" /> {/* Reveal button */}
+                </CardContent>
+            </Card>
+
+            {/* Warning Card Skeleton */}
+            <Card className="border-amber-500/20 bg-amber-500/5">
+                <CardHeader>
+                    <Skeleton className="h-6 w-2/3 text-amber-600" />
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                </CardContent>
+            </Card>
+        </div>
       </div>
     );
   }

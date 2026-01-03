@@ -17,9 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ExternalLink, Trash2, QrCode, ScrollText, Flame, PlusCircle } from "lucide-react"
+import { ExternalLink, Trash2, QrCode, Flame, PlusCircle } from "lucide-react"
 import { QRCodeDisplay } from "./qr-code-display"
-import { SecretAccessLogs } from "./secret-access-logs"
 import { SECRET_EXPIRATION_OPTIONS } from "@/features/secrets/domain/secret-utils"
 
 interface SecretCardActionsProps {
@@ -33,8 +32,8 @@ interface SecretCardActionsProps {
   onExtend: (hours: number) => void
   isBurning: boolean
   isExtending: boolean
-  showLogsDialog: boolean
-  onToggleLogsDialog: (open: boolean) => void
+  showLogsDialog: boolean // Removed as logs dialog is no longer here
+  onToggleLogsDialog: (open: boolean) => void // Removed
   showBurnDialog: boolean
   onToggleBurnDialog: (open: boolean) => void
   showExtendExpiryDialog: boolean
@@ -54,8 +53,8 @@ export function SecretCardActions({
   onExtend,
   isBurning,
   isExtending,
-  showLogsDialog,
-  onToggleLogsDialog,
+  showLogsDialog, // Removed
+  onToggleLogsDialog, // Removed
   showBurnDialog,
   onToggleBurnDialog,
   showExtendExpiryDialog,
@@ -66,7 +65,7 @@ export function SecretCardActions({
   return (
     <div className="flex items-center justify-between border-t bg-muted/20 p-4">
       <div className="flex gap-2">
-        {/* <Button variant="default" size="sm" asChild>
+        <Button variant="default" size="sm" asChild>
           <Link href={secretUrl} target="_blank">
             <ExternalLink className="h-4 w-4 mr-2" />
             Open
@@ -75,20 +74,7 @@ export function SecretCardActions({
         <CopyButton text={secretUrl} />
         <Button variant="outline" size="sm" onClick={onToggleQR}>
           <QrCode className="h-4 w-4" />
-        </Button> */}
-        <Dialog open={showLogsDialog} onOpenChange={onToggleLogsDialog}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <ScrollText className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[90vw] md:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col">
-            <DialogHeader>
-              <DialogTitle>Access Logs for {secretId}</DialogTitle>
-            </DialogHeader>
-            <SecretAccessLogs secretId={secretId} />
-          </DialogContent>
-        </Dialog>
+        </Button>
 
         {status === "active" && (
           <>
