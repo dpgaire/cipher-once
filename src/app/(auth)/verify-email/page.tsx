@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
               Please check your email inbox (and spam folder) for a message from CipherOnce. Click the verification link
               to activate your account and start sharing secrets securely.
             </p>
-            <Link href="/auth/login" className="block">
+            <Link href="/login" className="block">
               <Button variant="outline" className="w-full bg-transparent">
                 Back to sign in
               </Button>

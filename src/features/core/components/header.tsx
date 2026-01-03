@@ -73,10 +73,10 @@ export function Header() {
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/auth/login">Sign in</Link>
+                <Link href="/login">Sign in</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/auth/sign-up">Get Started</Link>
+                <Link href="/sign-up">Get Started</Link>
               </Button>
             </>
           )}
@@ -148,7 +148,7 @@ export function Header() {
                         asChild
                         className="w-full hover:scale-105 transition-transform duration-150"
                       >
-                        <Link href="/auth/login">Sign in</Link>
+                        <Link href="/login">Sign in</Link>
                       </Button>
                     </SheetClose>
                     <SheetClose asChild>
@@ -157,7 +157,7 @@ export function Header() {
                         asChild
                         className="w-full  font-semibold hover:scale-105 transition-transform duration-150"
                       >
-                        <Link href="/auth/sign-up">Get Started</Link>
+                        <Link href="/sign-up">Get Started</Link>
                       </Button>
                     </SheetClose>
                   </div>

@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 -   **`/create/success`** - Displayed after a secret is successfully created, showing the one-time shareable link.
 -   **`/s/[shortId]`** - The page where a recipient views a secret. It reads the key from the URL fragment to decrypt the content.
 -   **`/dashboard`** - A protected route where authenticated users can view and manage their created secrets.
--   **`/auth/login`** & **`/auth/sign-up`** - User authentication pages.
--   **`/auth/callback`** - Server-side route to handle the OAuth callback from providers like GitHub.
+-   **`/login`** & **`/sign-up`** - User authentication pages.
+-   **`/callback`** - Server-side route to handle the OAuth callback from providers like GitHub.
 -   **`/about`**, **`/privacy`**, **`/terms`** - Static content pages.
 -   **`/docs`** - (Removed in favor of `ARCHITECTURE.md`) This document itself.

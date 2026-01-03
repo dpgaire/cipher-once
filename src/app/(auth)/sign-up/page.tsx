@@ -12,6 +12,7 @@ import { useState } from "react"
 import { Lock } from "lucide-react"
 import { GitHubAuthButton } from "@/features/auth/components/github-auth-button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { BackButton } from "@/features/core/components/back-button"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
@@ -60,7 +61,7 @@ export default function SignUpPage() {
         },
       })
       if (error) throw error
-      router.push("/auth/verify-email")
+      router.push("/verify-email")
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
@@ -71,6 +72,7 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
       <div className="w-full max-w-md">
+         <BackButton/>
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <Lock className="h-6 w-6 text-primary" />
@@ -160,7 +162,7 @@ export default function SignUpPage() {
               </div>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link href="/auth/login" className="font-medium text-primary underline-offset-4 hover:underline">
+                <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
                   Sign in
                 </Link>
               </div>

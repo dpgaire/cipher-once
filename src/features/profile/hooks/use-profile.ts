@@ -30,7 +30,7 @@ export function useProfile() {
             });
         }
       } else {
-        router.push("/auth/login");
+        router.push("/login");
       }
       setLoading(false);
     }

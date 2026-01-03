@@ -16,7 +16,7 @@ export default async function AdminLayoutPage({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/auth/login")
+    redirect("/login")
   }
 
   const { data: profile } = await supabase

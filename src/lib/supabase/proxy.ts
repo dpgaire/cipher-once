@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
   // Protect dashboard routes
   if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
     const url = request.nextUrl.clone()
-    url.pathname = "/auth/login"
+    url.pathname = "/login"
     return NextResponse.redirect(url)
   }
 

@@ -35,7 +35,7 @@ export function useSettings() {
                     setSettings((s) => ({ ...s, ...savedSettings }));
                 }
             } else {
-                router.push("/auth/login");
+                router.push("/login");
             }
             setLoading(false);
         };

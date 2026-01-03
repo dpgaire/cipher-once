@@ -17,7 +17,7 @@ export default async function DashboardPageWrapper({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/auth/login")
+    redirect("/login")
   }
 
   const { data: secrets } = await supabase
