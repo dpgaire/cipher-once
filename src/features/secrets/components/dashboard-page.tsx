@@ -145,6 +145,8 @@ function DashboardPageComponent({ initialSecrets, searchParams, stats }: Dashboa
   )
 }
 
+import { DashboardSkeleton } from "./dashboard-skeleton"
+
 interface DashboardPageProps {
   secrets: Secret[];
   searchParams: { tab?: string };
@@ -157,7 +159,7 @@ interface DashboardPageProps {
 
 export function DashboardPage({ secrets, searchParams, stats }: DashboardPageProps) {
   return (
-    <Suspense fallback={<div className="flex flex-1 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+    <Suspense fallback={<DashboardSkeleton />}>
       <DashboardPageComponent initialSecrets={secrets} searchParams={searchParams} stats={stats} />
     </Suspense>
   )
