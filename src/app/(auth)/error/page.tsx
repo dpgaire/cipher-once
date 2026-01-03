@@ -31,7 +31,7 @@ export default async function AuthErrorPage({
             ) : (
               <p className="text-sm text-muted-foreground">An unspecified error occurred during authentication.</p>
             )}
-            <Link href="/auth/login" className="block">
+            <Link href="/login" className="block">
               <Button className="w-full">Try again</Button>
             </Link>
           </CardContent>

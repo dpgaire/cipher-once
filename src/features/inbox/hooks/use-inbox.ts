@@ -16,7 +16,7 @@ export function useInbox() {
     const fetchUserAndMessages = useCallback(async () => {
         const currentUser = await getUser();
         if (!currentUser) {
-            router.push("/auth/login");
+            router.push("/login");
         } else {
             setUser(currentUser);
             const inboxMessages = await getMessages(currentUser.id);

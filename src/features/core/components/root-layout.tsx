@@ -17,9 +17,11 @@ export function RootLayout({ children }: RootLayoutProps) {
 
   const isSecretPage = pathname.startsWith("/s/")
   const isAdmin = pathname.startsWith("/admin")
+  const isLogin = pathname.startsWith("/login")
+  const isSignup = pathname.startsWith("/sign-up")
+  const isCreateSecrete = pathname.startsWith("/create")
 
-
-  const showGlobalHeaderFooter = !isDashboard && !isSecretPage && !isAdmin && !isInbox
+  const showGlobalHeaderFooter = !isDashboard && !isSecretPage && !isAdmin && !isInbox && !isLogin && !isSignup && !isCreateSecrete
 
   if (showGlobalHeaderFooter) {
     return (

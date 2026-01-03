@@ -391,9 +391,6 @@ export function ViewSecretPage() {
         <div className="w-full max-w-md">
             {/* Header */}
             <div className="mb-8 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                    <Lock className="h-8 w-8 text-primary" />
-                </div>
                 <h1 className="mb-2 text-3xl font-bold text-balance">
                     <Skeleton className="h-8 w-3/4 mx-auto" />
                 </h1>
@@ -410,22 +407,20 @@ export function ViewSecretPage() {
                 <CardContent className="space-y-4">
                     <div className="grid gap-4 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
                         <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-muted-foreground" />
                             <div className="space-y-1">
                                 <Skeleton className="h-3 w-20" />
                                 <Skeleton className="h-4 w-24" />
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Eye className="h-5 w-5 text-muted-foreground" />
                             <div className="space-y-1">
                                 <Skeleton className="h-3 w-20" />
                                 <Skeleton className="h-4 w-24" />
                             </div>
                         </div>
                     </div>
-                    <Skeleton className="h-10 w-full" /> {/* Passphrase input */}
-                    <Skeleton className="h-10 w-full" /> {/* Reveal button */}
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" /> 
                 </CardContent>
             </Card>
 

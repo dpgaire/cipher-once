@@ -27,7 +27,7 @@ export function GitHubAuthButton({ disabled }: { disabled?: boolean }) {
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/callback`,
         queryParams: {
           terms_accepted: 'true',
         },
