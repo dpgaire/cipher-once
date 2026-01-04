@@ -10,7 +10,7 @@ export function BackButton() {
   return (
     <Button
       variant="outline"
-      className="p-2 cursor-pointer"
+      className="hidden lg:flex p-2 cursor-pointer"
       onClick={() => router.back()}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
