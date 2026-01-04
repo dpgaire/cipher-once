@@ -45,8 +45,8 @@ export function Header() {
           href="/"
           className="flex items-center gap-3 font-bold transition-opacity hover:opacity-90"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
-            <Lock className="h-5 w-5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl  text-primary-foreground shadow-md">
+            <img src="/icon-512.png" className="rounded-md" />
           </div>
           <span className="text-lg md:text-xl tracking-tight">CipherOnce</span>
         </Link>
@@ -106,7 +106,7 @@ export function Header() {
               {/* Logo at top */}
               <div className="flex items-center gap-3 mb-12">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-inner">
-                  <Lock className="h-6 w-6" />
+                  <img src="/icon-512.png" className="rounded-md" />
                 </div>
                 <span className="text-2xl font-bold tracking-tight">
                   CipherOnce

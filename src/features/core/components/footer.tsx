@@ -8,9 +8,9 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-3">
           <div>
             <Link href="/" className="flex items-center gap-2 font-bold mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Lock className="h-4 w-4" />
-              </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl  text-primary-foreground shadow-md">
+            <img src="/icon-512.png" className="rounded-md" />
+          </div>
               <span>CipherOnce</span>
             </Link>
             <p className="text-sm text-muted-foreground">
