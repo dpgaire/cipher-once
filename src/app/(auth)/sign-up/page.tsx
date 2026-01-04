@@ -1,52 +1,58 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { Eye, EyeOff, Lock } from "lucide-react"
-import { GitHubAuthButton } from "@/features/auth/components/github-auth-button"
-import { Checkbox } from "@/components/ui/checkbox"
+import type React from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Eye, EyeOff, Lock } from "lucide-react";
+import { GitHubAuthButton } from "@/features/auth/components/github-auth-button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SignUpPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [fullName, setFullName] = useState("")
-  const [agreedToTerms, setAgreedToTerms] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [fullName, setFullName] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!agreedToTerms) {
-      setError("You must agree to the Terms of Service and Privacy Policy.")
-      return
+      setError("You must agree to the Terms of Service and Privacy Policy.");
+      return;
     }
 
-    const supabase = createClient()
-    setIsLoading(true)
-    setError(null)
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters")
-      setIsLoading(false)
-      return
+      setError("Password must be at least 8 characters");
+      setIsLoading(false);
+      return;
     }
 
     try {
@@ -54,21 +60,23 @@ const [showPassword, setShowPassword] = useState(false)
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+          emailRedirectTo:
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+            `${window.location.origin}/dashboard`,
           data: {
             full_name: fullName,
             terms_accepted: agreedToTerms,
           },
         },
-      })
-      if (error) throw error
-      router.push("/verify-email")
+      });
+      if (error) throw error;
+      router.push("/verify-email");
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
@@ -78,13 +86,17 @@ const [showPassword, setShowPassword] = useState(false)
             <Lock className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-sm text-muted-foreground">Get started with secure secret sharing</p>
+          <p className="text-sm text-muted-foreground">
+            Get started with secure secret sharing
+          </p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Sign up</CardTitle>
-            <CardDescription>Create an account to manage and track your secrets</CardDescription>
+            <CardDescription>
+              Create an account to manage and track your secrets
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignUp}>
@@ -113,36 +125,42 @@ const [showPassword, setShowPassword] = useState(false)
                   />
                 </div>
                 <div className="grid gap-2">
-  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Password</Label>
 
-  <div className="relative">
-    <Input
-      id="password"
-      type={showPassword ? "text" : "password"}
-      autoComplete="new-password"
-      placeholder="Min. 8 characters"
-      required
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      className="pr-10"
-    />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Min. 8 characters"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pr-10"
+                    />
 
-    <button
-      type="button"
-      onClick={() => setShowPassword((prev) => !prev)}
-      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-      aria-label={showPassword ? "Hide password" : "Show password"}
-    >
-      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-    </button>
-  </div>
-</div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
                 <div className="grid gap-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <Input
                     id="confirmPassword"
-                     type={showPassword ? "text" : "password"}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Re-enter password"
                     required
                     value={confirmPassword}
@@ -151,32 +169,53 @@ const [showPassword, setShowPassword] = useState(false)
                 </div>
 
                 <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(c) => setAgreedToTerms(!!c.valueOf())} />
+                  <Checkbox
+                    id="terms"
+                    checked={agreedToTerms}
+                    onCheckedChange={(c) => setAgreedToTerms(!!c.valueOf())}
+                  />
                   <label
                     htmlFor="terms"
                     className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     I agree to the{" "}
-                    <Link href="/terms" className="text-primary underline-offset-4 hover:underline">
+                    <Link
+                      href="/terms"
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-primary underline-offset-4 hover:underline">
+                    <Link
+                      href="/privacy"
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
                       Privacy Policy
                     </Link>
                     .
                   </label>
                 </div>
 
-                {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
+                {error && (
+                  <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                    {error}
+                  </div>
+                )}
 
-                <Button type="submit" className="w-full" disabled={isLoading || !agreedToTerms}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || !agreedToTerms}
+                >
                   {isLoading ? "Creating account..." : "Create account"}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
+                <Link
+                  href="/login"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
                   Sign in
                 </Link>
               </div>
@@ -187,7 +226,9 @@ const [showPassword, setShowPassword] = useState(false)
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
 
@@ -196,5 +237,5 @@ const [showPassword, setShowPassword] = useState(false)
         </Card>
       </div>
     </div>
-  )
+  );
 }

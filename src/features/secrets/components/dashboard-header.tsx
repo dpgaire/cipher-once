@@ -1,26 +1,28 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Lock, Plus, Mail } from "lucide-react"
-import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown"
-import { Skeleton } from "@/components/ui/skeleton"
-import { NotificationBell } from "@/features/notifications/components/notification-bell"
-import type { User } from "@supabase/supabase-js" // New Import
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Lock, Plus, Mail } from "lucide-react";
+import { UserProfileDropdown } from "@/features/auth/components/user-profile-dropdown";
+import { Skeleton } from "@/components/ui/skeleton";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
+import type { User } from "@supabase/supabase-js"; // New Import
 
 interface DashboardHeaderProps {
-  user: User | null
-  loading: boolean
+  user: User | null;
+  loading: boolean;
 }
 
 export function DashboardHeader({ user, loading }: DashboardHeaderProps) {
-
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background hidden md:flex">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2.5 font-bold transition-opacity hover:opacity-80">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2.5 font-bold transition-opacity hover:opacity-80"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Lock className="h-4.5 w-4.5" />
+            <img src="/icon-512.png" className="rounded-md" />
           </div>
           <span className="text-xl">CipherOnce</span>
         </Link>
@@ -46,7 +48,6 @@ export function DashboardHeader({ user, loading }: DashboardHeaderProps) {
           ) : null}
         </div>
       </div>
-     
     </header>
-  )
+  );
 }
