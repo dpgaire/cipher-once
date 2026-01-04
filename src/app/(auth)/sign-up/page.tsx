@@ -9,15 +9,16 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Lock } from "lucide-react"
+import { Eye, EyeOff, Lock } from "lucide-react"
 import { GitHubAuthButton } from "@/features/auth/components/github-auth-button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { BackButton } from "@/features/core/components/back-button"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+const [showPassword, setShowPassword] = useState(false)
+
   const [fullName, setFullName] = useState("")
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +73,6 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
       <div className="w-full max-w-md">
-         <BackButton/>
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <Lock className="h-6 w-6 text-primary" />
@@ -113,22 +113,36 @@ export default function SignUpPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    autoComplete="new-password"
-                    placeholder="Min. 8 characters"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
+  <Label htmlFor="password">Password</Label>
+
+  <div className="relative">
+    <Input
+      id="password"
+      type={showPassword ? "text" : "password"}
+      autoComplete="new-password"
+      placeholder="Min. 8 characters"
+      required
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="pr-10"
+    />
+
+    <button
+      type="button"
+      onClick={() => setShowPassword((prev) => !prev)}
+      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+      aria-label={showPassword ? "Hide password" : "Show password"}
+    >
+      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  </div>
+</div>
+
                 <div className="grid gap-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <Input
                     id="confirmPassword"
-                    type="password"
+                     type={showPassword ? "text" : "password"}
                     placeholder="Re-enter password"
                     required
                     value={confirmPassword}
