@@ -92,7 +92,7 @@ export default function SignUpPage() {
         </div>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="text-center">
             <CardTitle className="text-xl">Sign up</CardTitle>
             <CardDescription>
               Create an account to manage and track your secrets

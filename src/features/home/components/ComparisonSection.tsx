@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, X } from 'lucide-react';
+import { comparisonData } from '../utils/comparison-data';
 
 export function ComparisonSection() {
   return (
@@ -21,16 +22,7 @@ export function ComparisonSection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {[
-                ["End-to-end encrypted", false, true],
-                ["Self-destructs after reading", false, true],
-                ["No server-side storage", false, true],
-                ["Zero knowledge architecture", false, true],
-                ["No permanent logs", false, true],
-                ["Cannot be forwarded", false, true],
-                ["Time-based expiration", false, true],
-                ["No account required", false, true],
-              ].map((item) => {
+              {comparisonData.map((item) => {
                 const featureName = item[0] as string;
                 const email = item[1];
                 const cipher = item[2];

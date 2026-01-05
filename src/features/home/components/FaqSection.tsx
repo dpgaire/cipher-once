@@ -1,35 +1,9 @@
 "use client";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { faqs } from '../utils/faq-data';
 
 export function FaqSection() {
-  const faqs = [
-    {
-      q: "How is this different from password managers?",
-      a: "Password managers are for storing your own credentials long-term. CipherOnce is for securely sharing secrets with others that self-destruct after being viewed once."
-    },
-    {
-      q: "Can you recover a secret after it's been viewed?",
-      a: "No. Once a secret is viewed or expires, it's permanently deleted from our systems. There is no recovery mechanism, not even for our administrators."
-    },
-    {
-      q: "What happens if I lose the link?",
-      a: "The link contains the encryption key. If you lose it before the secret is viewed, the encrypted data becomes permanently inaccessible. We recommend copying secrets to your clipboard before closing the page."
-    },
-    {
-      q: "Is my data really secure?",
-      a: "Yes. We use AES-256-GCM encryption performed entirely in your browser. The encryption key never reaches our servers. Even if our systems were compromised, attackers would only find encrypted data they cannot decrypt."
-    },
-    {
-      q: "Do you keep any logs?",
-      a: "We maintain minimal operational logs for security monitoring (failed access attempts, rate limiting) but do not log IP addresses, user agents, or any content-related information."
-    },
-    {
-      q: "Can I use this for business/commercial purposes?",
-      a: "Absolutely. Many businesses use CipherOnce for securely sharing credentials, API keys, and confidential documents with partners, contractors, and team members."
-    }
-  ];
-
   return (
     <section className="border-t border-border py-10 md:py-28">
       <div className="container mx-auto px-6">
