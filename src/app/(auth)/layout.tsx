@@ -1,19 +1,17 @@
 import type { Metadata } from 'next'
 import type React from 'react'
-import { DashboardLayout } from './dashboard-layout'
 
 export const metadata: Metadata = {
-  title: 'Dashboard',
   robots: {
     index: false,
     follow: false,
   },
 }
 
-export default function Layout({
+export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <DashboardLayout>{children}</DashboardLayout>
+  return <>{children}</>
 }

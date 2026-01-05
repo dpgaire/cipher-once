@@ -81,13 +81,13 @@ export function LoginForm() {
         </div>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="text-center">
             <CardTitle className="text-xl">Sign in</CardTitle>
             <CardDescription>
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent> 
             <GitHubAuthButton />
           </CardContent>
           <div className="relative my-6">

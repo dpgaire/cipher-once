@@ -3,6 +3,15 @@ import { redirect } from "next/navigation"
 import { ReactNode } from "react"
 import type { User } from "@supabase/supabase-js"
 import { AdminLayoutWrapper } from "@/features/admin/components/admin-layout" // New import
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default async function AdminLayoutPage({
   children,

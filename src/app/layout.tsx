@@ -1,54 +1,92 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Toaster } from "sonner"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { RootLayout } from "@/features/core/components/root-layout"
+import type React from "react";
+import type { Metadata } from "next";
+import { Toaster } from "sonner";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { RootLayout } from "@/features/core/components/root-layout";
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const _geist = Geist({ subsets: ["latin"] });
+const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 const siteConfig = {
   name: "CipherOnce",
   url: "https://cipheronce.com",
   description:
-    "Share secrets, passwords, and API keys securely with end-to-end encrypted, self-destructing links. A zero-knowledge platform for ephemeral and secure data transfer.",
-}
+    "A zero-knowledge platform for secure messaging, file sharing, and one-time secrets with end-to-end encryption, access control, and automatic expiration.",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} - Secure, Ephemeral, Zero-Knowledge Secret Sharing`,
+    default: `${siteConfig.name} - Secure File, Message, and Secret Sharing`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: [
-    "secret sharing",
-    "secure sharing",
-    "one-time secret",
-    "file sharing",
-    "ephemeral sharing",
-    "self-destructing message",
-    "zero-knowledge",
-    "encrypted message",
-    "password sharing",
-    "share password securely",
-    "API key sharing",
-    "burn after reading",
+    // Core intent
+    "secure file sharing",
+    "secure message sharing",
+    "secure secret sharing",
+    "one time secret",
+    "one time link",
+    "self destructing message",
+    "self destructing file",
+    "ephemeral file sharing",
+    "ephemeral messaging",
+
+    // Security & encryption
+    "end to end encrypted sharing",
+    "encrypted file sharing",
+    "encrypted messaging app",
+    "zero knowledge encryption",
+    "zero knowledge sharing",
+    "privacy focused sharing",
     "secure data transfer",
-    "credential sharing",
-    "privacy",
-    "security",
+    "no log secure sharing",
+
+    // Passwords & credentials
+    "share password securely",
+    "password sharing tool",
+    "secure credential sharing",
+    "API key sharing",
+    "share api keys securely",
+    "token sharing securely",
+
+    // File & download control
+    "secure file sharing without download",
+    "disable file download sharing",
+    "controlled file sharing",
+    "private file sharing",
+    "temporary file sharing",
+
+    // Product & SaaS intent
+    "secure sharing platform",
+    "secure collaboration tool",
+    "developer security tools",
+    "secure communication platform",
+
+    // Modern auth / device-first (future-proof)
+    "passwordless login",
+    "qr code login",
+    "secure login with phone",
+    "passkey authentication",
+
+    // Trust & compliance signals
+    "privacy first app",
+    "secure alternative to pastebin",
+    "secure alternative to email",
+    "confidential information sharing",
   ],
+
   authors: [{ name: "CipherOnce Team" }],
   creator: "CipherOnce",
   manifest: "/manifest.json",
 
   // Canonical URL
   alternates: {
-    canonical: siteConfig.url,
+    canonical: "./",
   },
 
   openGraph: {
@@ -78,13 +116,13 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any", type: "image/x-icon" },
-      { url: "/icon.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: "/apple-icon.png",
   },
-}
+};
 
 export const viewport = {
   themeColor: [
@@ -95,12 +133,12 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-}
+};
 
 export default function Layout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -144,5 +182,5 @@ export default function Layout({
         <Analytics />
       </body>
     </html>
-  )
+  );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { Code, Briefcase, Users, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import { useCases } from '../utils/use-cases-data';
 
 export function UseCasesSection() {
   return (
@@ -12,41 +13,7 @@ export function UseCasesSection() {
         </div>
 
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-          {[
-            {
-              icon: Code,
-              title: "Developers & Engineers",
-              items: [
-                "Share API keys and access tokens",
-                "Distribute database credentials",
-                "Send SSH keys and certificates",
-                "Avoid credential leaks in Slack",
-                "Secure CI/CD secrets delivery"
-              ],
-            },
-            {
-              icon: Briefcase,
-              title: "Business & Legal",
-              items: [
-                "Share contract details with clients",
-                "Distribute investor information",
-                "Send compliance documents",
-                "Secure M&A communications",
-                "GDPR-compliant data sharing"
-              ],
-            },
-            {
-              icon: Users,
-              title: "Teams & Agencies",
-              items: [
-                "Client login credentials",
-                "Campaign access codes",
-                "Partner portal passwords",
-                "Vendor payment details",
-                "Temporary access provisioning"
-              ],
-            },
-          ].map((group) => {
+          {useCases.map((group) => {
             const Icon = group.icon;
             return (
               <div key={group.title} className="rounded-xl border border-border bg-background p-8">

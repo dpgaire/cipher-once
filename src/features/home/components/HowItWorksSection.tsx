@@ -1,10 +1,10 @@
 "use client";
 
-import { Lock, Key, Flame, Shield, Server, Trash2 } from "lucide-react";
+import { howItWorksSteps, technicalDetails } from "../utils/how-it-works-data";
 
 export function HowItWorksSection() {
   return (
-    <section id="how" className="py-10 lg:py-28">
+    <section id="how-it-works" className="py-10 lg:py-28">
       <div className="container mx-auto px-4 lg:px-6">
         <div className="mx-auto mb-16 max-w-3xl text-center">
           <h2 className="mb-4 text-3xl font-bold md:text-5xl">How It Works</h2>
@@ -15,26 +15,7 @@ export function HowItWorksSection() {
 
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-12 grid-cols-1 lg:grid-cols-3">
-            {[
-              {
-                step: "1",
-                icon: Lock,
-                title: "Encrypt locally",
-                desc: "Your secret is encrypted with AES-256 in your browser. The server never sees unencrypted data.",
-              },
-              {
-                step: "2",
-                icon: Key,
-                title: "Share the link",
-                desc: "The encryption key stays in the URL fragment. It never reaches our servers or appears in logs.",
-              },
-              {
-                step: "3",
-                icon: Flame,
-                title: "Auto-destruct",
-                desc: "After one view or when the timer expires, the encrypted data is permanently erased. No recovery possible.",
-              },
-            ].map((item) => {
+            {howItWorksSteps.map((item) => {
               const Icon = item.icon;
               return (
                 <div
@@ -75,58 +56,24 @@ export function HowItWorksSection() {
             Technical Implementation
           </h3>
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Shield className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <div className="mb-1 text-sm font-semibold">
-                  AES-256-GCM Encryption
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Industry standard authenticated encryption
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Key className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <div className="mb-1 text-sm font-semibold">
-                  Random Key Generation
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Cryptographically secure 256-bit keys
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Server className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <div className="mb-1 text-sm font-semibold">
-                  Zero Server Knowledge
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Server only stores encrypted blobs
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Trash2 className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <div className="mb-1 text-sm font-semibold">
-                  Immediate Deletion
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Permanent erasure after retrieval
-                </div>
-              </div>
-            </div>
+            {technicalDetails.map((detail) => {
+                const Icon = detail.icon;
+                return (
+                    <div className="flex gap-4" key={detail.title}>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <Icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                            <div className="mb-1 text-sm font-semibold">
+                                {detail.title}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                                {detail.desc}
+                            </div>
+                        </div>
+                    </div>
+                )
+            })}
           </div>
         </div>
       </div>
