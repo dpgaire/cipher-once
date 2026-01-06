@@ -41,9 +41,6 @@ export default async function DashboardPageWrapper({
       <Suspense fallback={<DashboardSkeleton />}>
         <DashboardPage secrets={(secrets as Secret[]) || []} searchParams={searchParams} stats={profile} />
       </Suspense>
-      {/* <Suspense fallback={null}>
-        <DashboardMobileNavWrapper />
-      </Suspense> */}
     </>
   )
 }

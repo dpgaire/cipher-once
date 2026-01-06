@@ -9,7 +9,15 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-export default function PdfCanvasPreview({ url }: { url: string }) {
+type PdfCanvasPreviewProps = {
+  url: string;
+  watermarkText: string;
+};
+
+export default function PdfCanvasPreview({
+  url,
+  watermarkText,
+}: PdfCanvasPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,11 +68,6 @@ export default function PdfCanvasPreview({ url }: { url: string }) {
             viewport,
           }).promise;
 
-          /* ===============================
-   High-Contrast Watermark
-=============================== */
-
-          const watermarkText = "cipheronce.com";
           const fontSize = Math.max(16, viewport.width * 0.022);
           const padding = fontSize * 0.9;
 

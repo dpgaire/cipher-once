@@ -1,8 +1,6 @@
 "use client"
 
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { CopyButton } from "./copy-button"
 import {
   Dialog,
   DialogContent,
@@ -17,8 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ExternalLink, Trash2, QrCode, Flame, PlusCircle } from "lucide-react"
-import { QRCodeDisplay } from "./qr-code-display"
+import {  Trash2, Flame, PlusCircle } from "lucide-react"
 import { SECRET_EXPIRATION_OPTIONS } from "@/features/secrets/domain/secret-utils"
 
 interface SecretCardActionsProps {
@@ -53,8 +50,8 @@ export function SecretCardActions({
   onExtend,
   isBurning,
   isExtending,
-  showLogsDialog, // Removed
-  onToggleLogsDialog, // Removed
+  showLogsDialog, 
+  onToggleLogsDialog, 
   showBurnDialog,
   onToggleBurnDialog,
   showExtendExpiryDialog,
@@ -63,19 +60,8 @@ export function SecretCardActions({
   setNewExpirationHours,
 }: SecretCardActionsProps) {
   return (
-    <div className="flex items-center justify-between border-t bg-muted/20 p-4">
+    <div className="flex items-center justify-between w-full rounded-md border-t bg-muted/20 p-4">
       <div className="flex gap-2">
-        <Button variant="default" size="sm" asChild>
-          <Link href={secretUrl} target="_blank">
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Open
-          </Link>
-        </Button>
-        <CopyButton text={secretUrl} />
-        <Button variant="outline" size="sm" onClick={onToggleQR}>
-          <QrCode className="h-4 w-4" />
-        </Button>
-
         {status === "active" && (
           <>
             <Dialog open={showBurnDialog} onOpenChange={onToggleBurnDialog}>
