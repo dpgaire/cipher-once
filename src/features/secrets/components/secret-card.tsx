@@ -87,7 +87,6 @@ export function SecretCard({ secret, onDelete }: SecretCardProps) {
           maxViews={secret.max_views}
         />
       </CardHeader>
-
       <CardContent className="space-y-4">
         <SecretCardInfo
           expiresAt={secret.expires_at}

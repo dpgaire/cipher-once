@@ -23,6 +23,7 @@ export interface SecretMetadata {
   has_passphrase?: boolean;
   require_auth?: boolean;
   allow_download?:boolean;
+  watermarkText?:string;
   allowed_domains?: string[];
   custom_labels?: string[];
 }

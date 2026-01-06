@@ -389,51 +389,51 @@ export function ViewSecretPage() {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-md">
-            {/* Header */}
-            <div className="mb-8 text-center">
-                <h1 className="mb-2 text-3xl font-bold text-balance">
-                    <Skeleton className="h-8 w-3/4 mx-auto" />
-                </h1>
-                <div className="text-muted-foreground">
-                    <Skeleton className="h-4 w-1/2 mx-auto" />
-                </div>
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 text-3xl font-bold text-balance">
+              <Skeleton className="h-8 w-3/4 mx-auto" />
+            </h1>
+            <div className="text-muted-foreground">
+              <Skeleton className="h-4 w-1/2 mx-auto" />
             </div>
+          </div>
 
-            {/* Secret Info Card Skeleton */}
-            <Card className="mb-6">
-                <CardHeader>
-                    <Skeleton className="h-6 w-1/2" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid gap-4 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
-                        <div className="flex items-center gap-3">
-                            <div className="space-y-1">
-                                <Skeleton className="h-3 w-20" />
-                                <Skeleton className="h-4 w-24" />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="space-y-1">
-                                <Skeleton className="h-3 w-20" />
-                                <Skeleton className="h-4 w-24" />
-                            </div>
-                        </div>
-                    </div>
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" /> 
-                </CardContent>
-            </Card>
+          {/* Secret Info Card Skeleton */}
+          <Card className="mb-6">
+            <CardHeader>
+              <Skeleton className="h-6 w-1/2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
+                <div className="flex items-center gap-3">
+                  <div className="space-y-1">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="space-y-1">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </div>
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
 
-            {/* Warning Card Skeleton */}
-            <Card className="border-amber-500/20 bg-amber-500/5">
-                <CardHeader>
-                    <Skeleton className="h-6 w-2/3 text-amber-600" />
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                </CardContent>
-            </Card>
+          {/* Warning Card Skeleton */}
+          <Card className="border-amber-500/20 bg-amber-500/5">
+            <CardHeader>
+              <Skeleton className="h-6 w-2/3 text-amber-600" />
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -768,7 +768,10 @@ export function ViewSecretPage() {
                           className="max-w-full max-h-[500px] mx-auto rounded-md"
                         />
                       ) : (
-                        <ImageCanvasPreview url={decryptedFileUrl} />
+                        <ImageCanvasPreview
+                          url={decryptedFileUrl}
+                          watermarkText={secret.metadata?.watermarkText ?? "cipheronce.com"}
+                        />
                       );
 
                     case "video":
@@ -785,7 +788,7 @@ export function ViewSecretPage() {
                           {/* Watermark */}
                           {!secret.metadata?.allow_download && (
                             <div className="pointer-events-none absolute bottom-3 right-3 text-white/60 text-xs font-medium select-none">
-                              cipheronce.com
+                             {secret.metadata?.watermarkText ?? ""}
                             </div>
                           )}
                         </div>
@@ -808,7 +811,10 @@ export function ViewSecretPage() {
                           className="w-full h-[500px] rounded-md border"
                         />
                       ) : (
-                        <PdfCanvasPreview url={decryptedFileUrl} />
+                        <PdfCanvasPreview url={decryptedFileUrl} 
+                          watermarkText={secret.metadata?.watermarkText ?? "cipheronce.com"}
+                        
+                        />
                       );
 
                     default:

@@ -74,7 +74,7 @@ export function CreateSecretForm() {
   const [requirePassphrase, setRequirePassphrase] = useState(false);
   const [passphrase, setPassphrase] = useState("");
   const [allowFileDownload, setAllowFileDownload] = useState(false);
-
+  const [watermarkText,setWaterMarkText] = useState("")
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,7 +132,11 @@ export function CreateSecretForm() {
         typeof defaultSettings.defaultPassword === "string" &&
         defaultSettings.defaultPassword.length > 0;
 
+        const hasWatermarkText =   typeof defaultSettings.watermarkText === "string" &&
+        defaultSettings.watermarkText.length > 0;
+
       setAllowFileDownload(defaultSettings.defaultAllowDownload ?? false);
+      setWaterMarkText(hasWatermarkText ? defaultSettings.watermarkText:'cipheronce.com')
 
       setRequirePassphrase(hasDefaultPassword);
       setPassphrase(hasDefaultPassword ? defaultSettings.defaultPassword : "");
@@ -283,6 +287,7 @@ export function CreateSecretForm() {
         has_passphrase: requirePassphrase,
         require_auth: requireAuth,
         allow_download: allowFileDownload,
+        watermarkText:watermarkText,
         allowed_domains:
           allowed_domains.length > 0 ? allowed_domains : undefined,
         custom_labels: custom_labels.length > 0 ? custom_labels : undefined,

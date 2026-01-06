@@ -4,4 +4,5 @@ export interface Settings {
   defaultViewLimit: number | string;
   defaultAllowDownload: boolean;
   defaultPassword?: string;
+  watermarkText?:string;
 }
