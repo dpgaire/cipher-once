@@ -15,7 +15,7 @@ export function AdminLayoutWrapper({ user, children }: AdminLayoutWrapperProps) 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
+    setIsSidebarOpen((pre)=>!pre)
   }
 
   return (
@@ -24,10 +24,10 @@ export function AdminLayoutWrapper({ user, children }: AdminLayoutWrapperProps) 
       <div
         className={`
           fixed inset-y-0 left-0 z-50 transform 
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          ${isSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full"}
           lg:relative lg:translate-x-0
           transition-transform duration-200 ease-in-out
-          w-64 shrink-0
+          max-w-full shrink-0
         `}
       >
         <AdminNav
