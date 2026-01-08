@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ReactNode } from "react"
-import type { User } from "@supabase/supabase-js"
 import { AdminLayoutWrapper } from "@/features/admin/components/admin-layout" // New import
 import { Metadata } from "next"
 
