@@ -29,6 +29,9 @@ export type UserForAdmin = {
   is_admin: boolean | null
   is_blocked: boolean | null
   created_at: string | null
+  total_secrets_created: number | null
+  total_secrets_viewed: number | null
+  total_secrets_burned: number | null
 }
 
 interface UsersTableProps {
@@ -59,7 +62,7 @@ export function UsersTable({ users }: UsersTableProps) {
       }
     })
   }
-  
+
   const handleDelete = (id: string) => {
     if (!confirm("Are you sure you want to delete this user? This action is irreversible.")) {
       return
@@ -79,6 +82,7 @@ export function UsersTable({ users }: UsersTableProps) {
       <CardHeader>
         <CardTitle>Users</CardTitle>
       </CardHeader>
+
       <CardContent>
         <Table>
           <TableHeader>
@@ -87,15 +91,21 @@ export function UsersTable({ users }: UsersTableProps) {
               <TableHead>Full Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Secrets Created</TableHead>
+              <TableHead>Secrets Viewed</TableHead>
+              <TableHead>Secrets Burned</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.email ?? "-"}</TableCell>
+
                 <TableCell>{user.full_name ?? "-"}</TableCell>
+
                 <TableCell>
                   {user.is_blocked ? (
                     <Badge variant="destructive">Blocked</Badge>
@@ -103,31 +113,49 @@ export function UsersTable({ users }: UsersTableProps) {
                     <Badge variant="outline">Active</Badge>
                   )}
                 </TableCell>
+
                 <TableCell>
                   {user.is_admin ? (
-                    <Badge variant="default">Admin</Badge>
+                    <Badge>Admin</Badge>
                   ) : (
                     <Badge variant="secondary">User</Badge>
                   )}
                 </TableCell>
+
                 <TableCell>
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : "-"}
+                  {user.created_at
+                    ? new Date(user.created_at).toLocaleDateString()
+                    : "-"}
                 </TableCell>
-                <TableCell>
+
+                <TableCell>{user.total_secrets_created ?? 0}</TableCell>
+                <TableCell>{user.total_secrets_viewed ?? 0}</TableCell>
+                <TableCell>{user.total_secrets_burned ?? 0}</TableCell>
+
+                <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                      <Button size="icon" variant="ghost" disabled={isPending}>
                         <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
+                        <span className="sr-only">Actions</span>
                       </Button>
                     </DropdownMenuTrigger>
+
                     <DropdownMenuContent align="end">
                       {user.is_blocked ? (
-                        <DropdownMenuItem onSelect={() => handleUnblock(user.id)}>Unblock</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleUnblock(user.id)}>
+                          Unblock
+                        </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem onSelect={() => handleBlock(user.id)}>Block</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleBlock(user.id)}>
+                          Block
+                        </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem className="text-destructive" onSelect={() => handleDelete(user.id)}>
+
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onSelect={() => handleDelete(user.id)}
+                      >
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>

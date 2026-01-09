@@ -14,7 +14,6 @@ async function getUsers(): Promise<UserForAdmin[]> {
 
 export default async function AdminUsersPage() {
   const users = await getUsers()
-
   return (
     <Card>
       <CardHeader>
