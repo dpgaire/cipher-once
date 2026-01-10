@@ -81,7 +81,7 @@ export default function PdfCanvasPreview({
           ctx.lineWidth = Math.max(2, fontSize * 0.08);
           ctx.strokeStyle = "rgba(255,255,255,0.85)";
           ctx.strokeText(
-            watermarkText,
+            watermarkText ? watermarkText:'cipheronce.com',
             canvas.width - padding,
             canvas.height - padding
           );
@@ -89,7 +89,7 @@ export default function PdfCanvasPreview({
           // Fill (dark text)
           ctx.fillStyle = "rgba(0,0,0,0.45)";
           ctx.fillText(
-            watermarkText,
+            watermarkText ? watermarkText:'cipheronce.com',
             canvas.width - padding,
             canvas.height - padding
           );

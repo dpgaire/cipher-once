@@ -64,7 +64,7 @@ export default function ImageCanvasPreview({
       ctx.shadowBlur = 4;
 
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText(watermarkText, drawWidth - padding, drawHeight - padding);
+      ctx.fillText(watermarkText ? watermarkText:'cipheronce.com', drawWidth - padding, drawHeight - padding);
 
       ctx.restore();
     };
