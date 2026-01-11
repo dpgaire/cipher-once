@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { RootLayout } from "@/features/core/components/root-layout";
+import { TrackPageView } from "@/features/analytics/components/TrackPageView";
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -140,6 +141,7 @@ export default function Layout({
           enableSystem
           disableTransitionOnChange
         >
+          <TrackPageView />
           {/* JSON-LD Structured Data for SEO */}
           <script
             type="application/ld+json"

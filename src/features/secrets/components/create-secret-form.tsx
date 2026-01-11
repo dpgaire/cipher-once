@@ -10,6 +10,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -40,16 +50,14 @@ import {
   exportKey,
   encrypt,
   encryptFile,
-  generateShortId,
   hashPassphrase,
   generateSalt,
   deriveKeyFromPassphrase,
-  base64ToBuffer, // Imported base64ToBuffer
+  base64ToBuffer,
 } from "../services/encryption";
 import {
   SECRET_EXPIRATION_OPTIONS,
   MAX_VIEW_OPTIONS,
-  sanitizeContent,
   validateSecretContent,
   validatePassphrase,
   calculateExpirationDate,
@@ -74,9 +82,10 @@ export function CreateSecretForm() {
   const [requirePassphrase, setRequirePassphrase] = useState(false);
   const [passphrase, setPassphrase] = useState("");
   const [allowFileDownload, setAllowFileDownload] = useState(false);
-  const [watermarkText,setWaterMarkText] = useState("")
+  const [watermarkText, setWaterMarkText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLimitReached, setIsLimitReached] = useState(false);
 
   // New states for V2 rules
   const [requireAuth, setRequireAuth] = useState(false);
@@ -112,8 +121,6 @@ export function CreateSecretForm() {
     fetchDefaultSettings();
   }, []);
 
-  console.log("defaultSettings", defaultSettings);
-
   useEffect(() => {
     if (useDefaultSettings && defaultSettings) {
       setExpirationHours(
@@ -121,23 +128,21 @@ export function CreateSecretForm() {
           ? Number(defaultSettings.defaultExpiration)
           : 24
       );
-
       setMaxViews(
         defaultSettings.defaultViewLimit !== undefined
           ? Number(defaultSettings.defaultViewLimit)
           : 1
       );
-
       const hasDefaultPassword =
         typeof defaultSettings.defaultPassword === "string" &&
         defaultSettings.defaultPassword.length > 0;
-
-        const hasWatermarkText =   typeof defaultSettings.watermarkText === "string" &&
+      const hasWatermarkText =
+        typeof defaultSettings.watermarkText === "string" &&
         defaultSettings.watermarkText.length > 0;
-
       setAllowFileDownload(defaultSettings.defaultAllowDownload ?? false);
-      setWaterMarkText(hasWatermarkText ? defaultSettings.watermarkText:'cipheronce.com')
-
+      setWaterMarkText(
+        hasWatermarkText ? defaultSettings.watermarkText : "cipheronce.com"
+      );
       setRequirePassphrase(hasDefaultPassword);
       setPassphrase(hasDefaultPassword ? defaultSettings.defaultPassword : "");
     }
@@ -147,19 +152,17 @@ export function CreateSecretForm() {
     setError(null);
     setIsLoading(true);
 
+    let encryptionKey: CryptoKey;
+
     try {
       const contentTrimmed = content.trim();
 
-      // Validate content IF it's provided and no file is selected
-      if (contentTrimmed && !selectedFile) {
-        const contentValidation = validateSecretContent(contentTrimmed);
-        if (!contentValidation.valid) {
-          // Only check for content validation if content is provided
-          throw new Error(contentValidation.error);
-        }
+      if (!contentTrimmed && !selectedFile) {
+        throw new Error(
+          "Secret must contain either text content or a file attachment."
+        );
       }
 
-      // Validate passphrase if required
       if (requirePassphrase) {
         const passphraseValidation = validatePassphrase(passphrase);
         if (!passphraseValidation.valid) {
@@ -167,8 +170,6 @@ export function CreateSecretForm() {
         }
       }
 
-      // Generate encryption key
-      let encryptionKey: CryptoKey;
       let salt: string | null = null;
       if (requirePassphrase) {
         salt = generateSalt();
@@ -177,7 +178,6 @@ export function CreateSecretForm() {
         encryptionKey = await generateKey();
       }
 
-      // Encrypt the content (if any)
       let ciphertext: string | undefined;
       let iv: string | undefined;
       if (contentTrimmed) {
@@ -186,7 +186,6 @@ export function CreateSecretForm() {
         iv = encryptedText.iv;
       }
 
-      // Handle file upload if a file is selected
       let fileUrl: string | undefined;
       let fileType: string | undefined;
       let fileName: string | undefined;
@@ -195,30 +194,20 @@ export function CreateSecretForm() {
 
       if (selectedFile) {
         setIsUploadingFile(true);
-
-        // 👉 STEP 1: Convert HEIC / HEIF if needed
         const { file: fileToProcess } = await convertIfNeeded(selectedFile);
-
-        // 👉 STEP 2: Enforce mobile-safe size limit (IMPORTANT)
-        const MAX_CLIENT_FILE_SIZE = 20 * 1024 * 1024; // 4MB
-
+        const MAX_CLIENT_FILE_SIZE = 20 * 1024 * 1024;
         if (fileToProcess.size > MAX_CLIENT_FILE_SIZE) {
           throw new Error("File too large. Please choose a smaller image.");
         }
-
-        // 👉 STEP 3: Encrypt converted (or original) file
         const fileBuffer = await fileToProcess.arrayBuffer();
         const encryptedFileResult = await encryptFile(
           fileBuffer,
           encryptionKey
         );
-
         const encryptedFileBlob = new Blob(
           [base64ToBuffer(encryptedFileResult.ciphertext)],
           { type: "application/octet-stream" }
         );
-
-        // 👉 STEP 4: Upload encrypted blob
         const formData = new FormData();
         formData.append("encryptedFile", encryptedFileBlob);
         formData.append("fileName", fileToProcess.name);
@@ -226,18 +215,17 @@ export function CreateSecretForm() {
         formData.append("fileSize", fileToProcess.size.toString());
         formData.append("fileIv", encryptedFileResult.iv);
 
-        const response = await fetch("/api/upload-file", {
+        const fileUploadResponse = await fetch("/api/upload-file", {
           method: "POST",
           body: formData,
         });
 
-        if (!response.ok) {
-          const text = await response.text();
+        if (!fileUploadResponse.ok) {
+          const text = await fileUploadResponse.text();
           throw new Error(text || "File upload failed");
         }
 
-        const result = await response.json();
-
+        const result = await fileUploadResponse.json();
         fileUrl = result.blobUrl;
         fileType = result.fileType;
         fileName = result.fileName;
@@ -247,31 +235,12 @@ export function CreateSecretForm() {
         setIsUploadingFile(false);
       }
 
-      // If neither content nor file, throw an error
-      if (!contentTrimmed && !selectedFile) {
-        throw new Error(
-          "Secret must contain either text content or a file attachment."
-        );
-      }
-
-      // Generate short ID for URL
-      const shortId = generateShortId();
-
-      // Hash passphrase if provided (for verification, not decryption)
       const passphraseHash = requirePassphrase
         ? await hashPassphrase(passphrase)
         : null;
 
-      // Calculate expiration date
       const expiresAt = calculateExpirationDate(expirationHours);
 
-      // Get user if authenticated
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      // Parse allowed domains and custom labels
       const allowed_domains = allowedDomainsInput
         .split(",")
         .map((d) => d.trim())
@@ -281,74 +250,53 @@ export function CreateSecretForm() {
         .map((l) => l.trim())
         .filter(Boolean);
 
-      // Construct metadata object
       const secretMetadata: SecretMetadata = {
         ...(salt && { salt }),
         has_passphrase: requirePassphrase,
         require_auth: requireAuth,
         allow_download: allowFileDownload,
-        watermarkText:watermarkText,
+        watermarkText: watermarkText,
         allowed_domains:
           allowed_domains.length > 0 ? allowed_domains : undefined,
         custom_labels: custom_labels.length > 0 ? custom_labels : undefined,
       };
 
-      // Store in database
-      const { data, error: dbError } = await supabase
-        .from("secrets")
-        .insert({
-          encrypted_content: ciphertext || null,
-          encryption_iv: iv || null,
-          short_id: shortId,
-          passphrase_hash: passphraseHash,
-          max_views: maxViews,
-          expires_at: expiresAt.toISOString(),
-          user_id: user?.id || null,
-          metadata: secretMetadata,
-          has_file: !!selectedFile,
-          file_url: fileUrl || null,
-          file_type: fileType || null,
-          file_name: fileName || null,
-          file_size: fileSize || null,
-          file_encryption_iv: fileIv || null,
-        })
-        .select()
-        .single();
+      const payload = {
+        expires_at: expiresAt.toISOString(),
+        max_views: maxViews,
+        passphrase_hash: passphraseHash,
+        encrypted_content: ciphertext,
+        encryption_iv: iv,
+        metadata: secretMetadata,
+        has_file: !!selectedFile,
+        file_url: fileUrl,
+        file_type: fileType,
+        file_name: fileName,
+        file_size: fileSize,
+        file_encryption_iv: fileIv,
+      };
 
-      if (dbError) throw dbError;
+      const createResponse = await fetch("/api/links/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-      // Increment the user's created secret count
-      if (user) {
-        try {
-          const { data: success, error: rpcError } = await supabase.rpc(
-            "increment_created_secret_count",
-            { p_user_id: user.id }
-          );
-          if (rpcError) {
-            console.error(
-              "RPC Error incrementing created secret count:",
-              rpcError
-            );
-          } else if (!success) {
-            console.warn(
-              "Failed to increment created secret count for user:",
-              user.id
-            );
-          }
-        } catch (rpcError) {
-          console.error(
-            "Exception calling increment_created_secret_count:",
-            rpcError
-          );
+      if (!createResponse.ok) {
+        if (createResponse.status === 429) {
+          setIsLimitReached(true);
+          return;
         }
+        const errorData = await createResponse.json();
+        throw new Error(errorData.error || "Failed to create secret.");
       }
 
-      // Export the encryption key to include in URL
-      const keyString = await exportKey(encryptionKey);
+      const { short_id } = await createResponse.json();
 
-      // Navigate to success page with the full URL
+      // The rest of the logic remains the same: navigate to success page
+      const keyString = await exportKey(encryptionKey);
       router.push(
-        `/create/success?id=${shortId}&key=${encodeURIComponent(keyString)}`
+        `/create/success?id=${short_id}&key=${encodeURIComponent(keyString)}`
       );
     } catch (err) {
       console.error("Error creating secret:", err);
@@ -361,9 +309,25 @@ export function CreateSecretForm() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <AlertDialog open={isLimitReached} onOpenChange={setIsLimitReached}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Secure link limit reached</AlertDialogTitle>
+            <AlertDialogDescription>
+              For security reasons, free users can create up to 3 encrypted
+              links. Create an account to continue with unlimited access.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => router.push("/sign-up")}>
+              Sign Up
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="container max-w-3xl flex-1 py-12">
-        {/* Header - unchanged */}
-        <BackButton/>
+        <BackButton />
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
             <Shield className="h-8 w-8 text-primary" />
@@ -401,7 +365,6 @@ export function CreateSecretForm() {
                 </label>
               </div>
             )}
-            {/* Always-visible: Text Content */}
             <div className="space-y-2">
               <Label htmlFor="content">Your Secret Text</Label>
               <Textarea
@@ -416,7 +379,6 @@ export function CreateSecretForm() {
               </p>
             </div>
 
-            {/* Always-visible: File Attachment */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Paperclip className="h-4 w-4" />
@@ -462,9 +424,7 @@ export function CreateSecretForm() {
               </p>
             </div>
 
-            {/* Collapsible Configuration Sections */}
             <Accordion type="multiple" className="space-y-4">
-              {/* File sharing */}
               {selectedFile && (
                 <AccordionItem value="file-options">
                   <AccordionTrigger className="text-base font-medium">
@@ -475,7 +435,6 @@ export function CreateSecretForm() {
                   </AccordionTrigger>
 
                   <AccordionContent className="space-y-6 pt-4">
-                    {/* Allow Download Toggle */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label className="flex items-center gap-2">
@@ -493,7 +452,6 @@ export function CreateSecretForm() {
                       />
                     </div>
 
-                    {/* Security Notice */}
                     {!allowFileDownload && (
                       <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
                         🔒 Download is disabled. The file can only be viewed
@@ -503,7 +461,6 @@ export function CreateSecretForm() {
                   </AccordionContent>
                 </AccordionItem>
               )}
-              {/* Basic Limits */}
               <AccordionItem value="limits">
                 <AccordionTrigger className="text-base font-medium">
                   <div className="flex items-center gap-2">
@@ -580,7 +537,6 @@ export function CreateSecretForm() {
                 </AccordionContent>
               </AccordionItem>
 
-              {/* Passphrase Protection */}
               <AccordionItem value="passphrase">
                 <AccordionTrigger className="text-base font-medium">
                   <div className="flex items-center gap-2">
@@ -625,7 +581,6 @@ export function CreateSecretForm() {
                 </AccordionContent>
               </AccordionItem>
 
-              {/* Access Rules */}
               <AccordionItem value="access">
                 <AccordionTrigger className="text-base font-medium">
                   <div className="flex items-center gap-2">
@@ -654,26 +609,6 @@ export function CreateSecretForm() {
                     />
                   </div>
 
-                  {/* <div className="space-y-2">
-                    <Label
-                      htmlFor="allowed-domains"
-                      className="flex items-center gap-2"
-                    >
-                      <Globe className="h-4 w-4" />
-                      Allowed Domains
-                    </Label>
-                    <Input
-                      id="allowed-domains"
-                      type="text"
-                      placeholder="e.g., example.com, secure.example.org"
-                      value={allowedDomainsInput}
-                      onChange={(e) => setAllowedDomainsInput(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Comma-separated list. Leave empty for any domain.
-                    </p>
-                  </div> */}
-
                   <div className="space-y-2">
                     <Label
                       htmlFor="custom-labels"
@@ -697,7 +632,6 @@ export function CreateSecretForm() {
               </AccordionItem>
             </Accordion>
 
-            {/* Error & Submit - unchanged */}
             {error && (
               <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
                 {error}
@@ -728,7 +662,6 @@ export function CreateSecretForm() {
           </CardContent>
         </Card>
 
-        {/* Security Notice - unchanged */}
         <div className="mt-6 rounded-lg border bg-blue-500/5 p-4 border-blue-500/20">
           <div className="flex gap-3">
             <Shield className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />

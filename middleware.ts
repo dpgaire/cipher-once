@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
+import { nanoid } from "nanoid";
 
 const IS_DEV = process.env.NODE_ENV === "development"
 
@@ -53,9 +54,9 @@ function buildCSP(nonce: string) {
 }
 
 // =====================
-// Proxy Handler
+// Middleware Handler
 // =====================
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const ip = getClientIP(request)
 
   // Rate limiting
@@ -75,8 +76,21 @@ export async function proxy(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   })
+  
+  // Set anonymous user cookie
+  const anonCookie = request.cookies.get("cipheronce_anon_id");
+  if (!anonCookie) {
+    const anonId = nanoid(32);
+    response.cookies.set("cipheronce_anon_id", anonId, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: "strict",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30 // 30 days
+    });
+  }
 
-  // Set security headers
+  // Set security headers on response
   response.headers.set("Content-Security-Policy", csp)
   response.headers.set("X-Content-Type-Options", "nosniff")
   response.headers.set("X-Frame-Options", "DENY")
