@@ -1,6 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { GlobalStatsResponse } from "@/lib/types/analytics";
 
+export type DeviceAnalytics = {
+    devices: { device: string; count: number }[];
+    browsers: { browser: string; count: number }[];
+    operating_systems: { os: string; count: number }[];
+}
+
 export async function getPageViewStats() {
     const supabase = await createClient();
 
@@ -25,4 +31,20 @@ export async function getGlobalStats(): Promise<GlobalStatsResponse | null> {
     }
 
     return data as GlobalStatsResponse | null;
+}
+
+export async function getDeviceAnalytics(): Promise<DeviceAnalytics> {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc('get_device_analytics');
+
+    if (error) {
+        console.error('Error fetching device analytics:', error);
+        throw new Error('Could not fetch device analytics.');
+    }
+
+    if (data.error) {
+        throw new Error(data.error);
+    }
+    
+    return data;
 }
