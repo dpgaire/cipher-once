@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { nanoid } from 'nanoid'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     const supabase = await createClient()
     const {
         data: { user },

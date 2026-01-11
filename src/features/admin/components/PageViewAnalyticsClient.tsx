@@ -101,7 +101,7 @@ export function PageViewAnalyticsClient({
                 radius={4}
                 fill="var(--color-value)"
               />
-              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+              <ChartTooltip content={<ChartTooltipContent  />} />
             </BarChart>
           </ChartContainer>
 
