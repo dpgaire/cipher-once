@@ -1,42 +1,28 @@
-"use server"
+import { createClient } from "@/lib/supabase/server";
+import { GlobalStatsResponse } from "@/lib/types/analytics";
 
-import { createClient as createServerClient } from "@/lib/supabase/server"
-import { createClient } from "@supabase/supabase-js"
+export async function getPageViewStats() {
+    const supabase = await createClient();
 
-async function getSupabaseAdmin() {
-  // This client uses the service role key to bypass RLS.
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+    const { data, error } = await supabase.rpc('get_page_view_stats');
+
+    if (error) {
+        console.error('Error fetching page view stats:', error);
+        throw new Error('Could not fetch page view stats.');
     }
-  )
+
+    return data;
 }
 
-async function checkAdmin() {
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Not authenticated")
+export async function getGlobalStats(): Promise<GlobalStatsResponse | null> {
+    const supabase = await createClient();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single()
+    const { data, error } = await supabase.rpc('get_global_stats').single();
 
-  if (!profile?.is_admin) {
-    throw new Error("Not an admin")
-  }
-}
+    if (error) {
+        console.error('Error fetching global stats:', error);
+        throw new Error('Could not fetch global stats.');
+    }
 
-export async function getPageViews() {
-  await checkAdmin()
-  const supabase = await getSupabaseAdmin()
-  const { data, error } = await supabase.from("page_views").select("path, created_at, user_id")
-  if (error) throw error
-  return data
+    return data as GlobalStatsResponse | null;
 }

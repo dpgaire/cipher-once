@@ -1,12 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const { path } = await request.json();
 
   if (!path) {
     return NextResponse.json({ error: "Path is required" }, { status: 400 });
   }
+
+  // Get country from Vercel headers
+  const country = request.headers.get("x-vercel-ip-country") || null;
+
+  // Get anonymous user ID from cookie
+  const anonId = request.cookies.get("cipheronce_anon_id")?.value || null;
 
   const supabase = await createClient();
   const {
@@ -16,6 +22,8 @@ export async function POST(request: Request) {
   const { error } = await supabase.from("page_views").insert({
     path,
     user_id: user?.id,
+    country_code: country,
+    fingerprint_id: anonId,
   });
 
   if (error) {
