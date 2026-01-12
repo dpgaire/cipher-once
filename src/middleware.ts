@@ -33,25 +33,23 @@ function isRateLimited(ip: string) {
 // =====================
 // Content Security Policy
 // =====================
-function buildCSP(nonce: string) {
+function buildCSP() {
   return `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' https: ${IS_DEV ? "'unsafe-eval'" : ""};
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data:;
     font-src 'self';
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co ws:;
+    frame-src https://vercel.live;
+    frame-ancestors 'self';
     object-src 'none';
     base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'none';
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co ${IS_DEV ? "ws:" : ""};
-    media-src 'self' blob:;
-    block-all-mixed-content;
-    upgrade-insecure-requests;
   `
     .replace(/\s{2,}/g, " ")
     .trim()
 }
+
 
 // =====================
 // Middleware Handler
@@ -66,7 +64,7 @@ export async function middleware(request: NextRequest) {
 
   // CSP nonce
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64")
-  const csp = buildCSP(nonce)
+  const csp = buildCSP()
 
   // Set request headers
   const requestHeaders = new Headers(request.headers)
