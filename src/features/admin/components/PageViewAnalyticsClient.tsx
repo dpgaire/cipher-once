@@ -26,13 +26,18 @@ import { TrendingUp, Globe } from "lucide-react"
 import type { PageViewStat } from "./PageViewAnalytics"
 
 // ---------------- helpers ----------------
-
 function processStats(stats: PageViewStat[]) {
+  // ✅ remove /admin paths
+  const filteredStats = stats.filter(
+    (s) => !s.path.startsWith("/admin")
+  )
+
   const pages: Record<string, number> = {}
   const countries: Record<string, number> = {}
 
-  for (const s of stats) {
+  for (const s of filteredStats) {
     pages[s.path] = (pages[s.path] || 0) + s.view_count
+
     const country = s.country_code ?? "Unknown"
     countries[country] = (countries[country] || 0) + s.view_count
   }
@@ -58,6 +63,7 @@ function processStats(stats: PageViewStat[]) {
     })),
   }
 }
+
 
 // ---------------- component ----------------
 
@@ -143,7 +149,7 @@ export function PageViewAnalyticsClient({
         <CardContent className="space-y-4">
           <ChartContainer config={chartConfig} className="h-[200px]">
             <BarChart data={countryChartData}>
-              <XAxis dataKey="label" hide />
+              <XAxis dataKey="label" />
               <YAxis hide />
               <Bar
                 dataKey="value"

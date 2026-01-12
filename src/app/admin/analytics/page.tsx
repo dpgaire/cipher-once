@@ -1,6 +1,7 @@
 import { PageViewAnalytics } from "@/features/admin/components/PageViewAnalytics";
 import { GlobalStats } from "@/features/admin/components/GlobalStats";
 import { DeviceAnalytics } from "@/features/admin/components/DeviceAnalytics";
+import { EngagementCharts } from "@/features/admin/components/EngagementCharts"; // Import EngagementCharts
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +13,11 @@ export default function AdminAnalyticsPage() {
 
       <Suspense fallback={<GlobalStatsSkeleton />}>
         <GlobalStats />
+      </Suspense>
+
+      {/* Add EngagementCharts here */}
+      <Suspense fallback={<EngagementChartsSkeleton />}>
+        <EngagementCharts />
       </Suspense>
 
       <Suspense
@@ -66,6 +72,25 @@ function DeviceAnalyticsSkeleton() {
           </CardContent>
         </Card>
       ))}
+    </div>
+  );
+}
+
+// Skeleton for EngagementCharts
+function EngagementChartsSkeleton() {
+  return (
+    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+        {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+                <CardHeader>
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-full mt-2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-48 w-full" />
+                </CardContent>
+            </Card>
+        ))}
     </div>
   );
 }

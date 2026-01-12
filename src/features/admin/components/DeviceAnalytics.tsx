@@ -44,6 +44,12 @@ function AnalyticsCard({ title, description, icon, data }: AnalyticsCardProps) {
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+                {/* <ChartContainer config={chartConfig} className="w-full h-[200px]">
+                    <BarChart accessibilityLayer data={chartData}>
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                    </BarChart>
+                </ChartContainer> */}
                 <Table>
                     <TableHeader>
                         <TableRow>
