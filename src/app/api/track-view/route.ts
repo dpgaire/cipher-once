@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
+import { UAParser } from "ua-parser-js";
 
 export async function POST(request: NextRequest) {
   const { path } = await request.json();
@@ -14,6 +15,15 @@ export async function POST(request: NextRequest) {
   // Get anonymous user ID from cookie
   const anonId = request.cookies.get("cipheronce_anon_id")?.value || null;
 
+  // Get User-Agent info
+  const uaString = request.headers.get("user-agent");
+  const parser = new UAParser(uaString || "");
+  const result = parser.getResult();
+  
+  const device = result.device.type || 'desktop'; // Default to desktop
+  const browser = result.browser.name || 'Unknown';
+  const os = result.os.name || 'Unknown';
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,6 +34,9 @@ export async function POST(request: NextRequest) {
     user_id: user?.id,
     country_code: country,
     fingerprint_id: anonId,
+    device,
+    browser,
+    os,
   });
 
   if (error) {
