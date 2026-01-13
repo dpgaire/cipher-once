@@ -16,9 +16,10 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { GitHubAuthButton } from "../components/github-auth-button"; // Relative import within feature
 import { BackButton } from "@/features/core/components/back-button";
+import { GoogleAuthButton } from "./google-auth-button";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -87,8 +88,11 @@ export function LoginForm() {
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          <CardContent> 
+          <CardContent>
             <GitHubAuthButton />
+          </CardContent>
+          <CardContent>
+            <GoogleAuthButton />
           </CardContent>
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
@@ -143,6 +147,17 @@ export function LoginForm() {
                         <Eye className="h-4 w-4" />
                       )}
                     </button>
+                  </div>
+                  <div className="text-right">
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm inline-flex items-center gap-1 group/link"
+                    >
+                      Forgot password?
+                      <span className="group-hover/link:translate-x-0.5 transition-transform duration-200">
+                        <ArrowRight className="w-4 h-4" />
+                      </span>
+                    </Link>
                   </div>
                 </div>
 
