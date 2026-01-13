@@ -15,14 +15,14 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, User2Icon } from "lucide-react";
 import { GitHubAuthButton } from "@/features/auth/components/github-auth-button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { GoogleAuthButton } from "@/features/auth/components/google-auth-button";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const [fullName, setFullName] = useState("");
@@ -42,12 +42,6 @@ export default function SignUpPage() {
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters");
@@ -79,7 +73,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-6">
+    <div className="flex min-h-screen w-full items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
@@ -98,6 +92,22 @@ export default function SignUpPage() {
               Create an account to manage and track your secrets
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <GitHubAuthButton />
+              <GoogleAuthButton />
+            </div>
+          </CardContent>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
           <CardContent>
             <form onSubmit={handleSignUp}>
               <div className="flex flex-col gap-4">
@@ -155,19 +165,6 @@ export default function SignUpPage() {
                     </button>
                   </div>
                 </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Re-enter password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                </div>
-
                 <div className="flex items-center space-x-2 pt-2">
                   <Checkbox
                     id="terms"
@@ -220,19 +217,6 @@ export default function SignUpPage() {
                 </Link>
               </div>
             </form>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <GitHubAuthButton disabled={!agreedToTerms} />
           </CardContent>
         </Card>
       </div>

@@ -36,7 +36,7 @@ export function GitHubAuthButton({ disabled }: { disabled?: boolean }) {
   }
 
   return (
-    <Button variant="outline" className="w-full" onClick={handleGitHubLogin} disabled={disabled}>
+    <Button variant="outline" className="cursor-pointer w-full" onClick={handleGitHubLogin} disabled={disabled}>
       <GitHubIcon className="mr-2 h-4 w-4" />
       Sign in with GitHub
     </Button>
