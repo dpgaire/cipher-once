@@ -19,12 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 import {
   MAX_VIEW_OPTIONS,
   SECRET_EXPIRATION_OPTIONS,
 } from "@/features/secrets/domain/secret-utils";
 import { CardSkeleton } from "@/features/core/components";
+import { useState } from "react";
+import { PasswordPatternModal } from "./password-pattern-modal";
 
 function SettingsSkeleton() {
   return (
@@ -38,6 +40,7 @@ function SettingsSkeleton() {
 export function SettingsForm() {
   const { loading, saving, settings, handleSave, handleInputChange } =
     useSettings();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (loading) {
     return <SettingsSkeleton />;
@@ -143,7 +146,13 @@ export function SettingsForm() {
           </div>
 
           <div className="space-y-2">
-            <Label>Default Password</Label>
+            <div className="flex items-center gap-2">
+              <Label>Default Password</Label>
+              <Info
+                className="h-4 w-4 text-muted-foreground cursor-pointer"
+                onClick={() => setIsModalOpen(true)}
+              />
+            </div>
             <Input
               type="password"
               value={settings.defaultPassword}
@@ -159,6 +168,10 @@ export function SettingsForm() {
           </Button>
         </CardContent>
       </Card>
+      <PasswordPatternModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

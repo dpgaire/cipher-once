@@ -44,6 +44,7 @@ import {
   X,
   Loader2,
   ArrowLeft,
+  Info,
 } from "lucide-react";
 import {
   generateKey,
@@ -72,10 +73,12 @@ import {
 } from "@/components/ui/accordion";
 import { useHeicToJpeg } from "../hooks/useHeicToJpeg";
 import { BackButton } from "@/features/core/components/back-button";
+import { PasswordPatternModal } from "@/features/settings/components/password-pattern-modal";
 
 export function CreateSecretForm() {
   const router = useRouter();
   const { convertIfNeeded } = useHeicToJpeg();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [content, setContent] = useState("");
   const [expirationHours, setExpirationHours] = useState(24);
   const [maxViews, setMaxViews] = useState(1);
@@ -547,12 +550,22 @@ export function CreateSecretForm() {
                 <AccordionContent className="space-y-4 pt-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
                       <Label htmlFor="passphrase-toggle">
                         Require password
                       </Label>
+                       <Info
+                                      className="h-4 w-4 text-muted-foreground cursor-pointer"
+                                      onClick={() => setIsModalOpen(true)}
+                                    />
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         Add an extra layer of protection
                       </p>
+                      <PasswordPatternModal
+                              isOpen={isModalOpen}
+                              onClose={() => setIsModalOpen(false)}
+                            />
                     </div>
                     <Switch
                       id="passphrase-toggle"
