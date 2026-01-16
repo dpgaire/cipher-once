@@ -1,4 +1,4 @@
-#CipherOnce — Secure, Ephemeral, Human-Centric Secret Sharing
+# CipherOnce — Secure, Ephemeral, Human-Centric Secret Sharing
 
 CipherOnce is a **privacy-first, zero-knowledge secret sharing platform** designed for sharing sensitive information such as passwords, API keys, confidential messages, and files — **securely and temporarily**.
 
