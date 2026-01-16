@@ -1,27 +1,48 @@
-# CipherOnce: Secure, Ephemeral, Zero-Knowledge Secret Sharing
+#CipherOnce — Secure, Ephemeral, Human-Centric Secret Sharing
 
-CipherOnce is a **secure, ephemeral sharing platform** for sensitive information like passwords, API keys, confidential files, and private messages. It is built on a **zero-knowledge architecture**, meaning the server never sees the unencrypted secret content. All encryption and decryption happen client-side in your browser.  
+CipherOnce is a **privacy-first, zero-knowledge secret sharing platform** designed for sharing sensitive information such as passwords, API keys, confidential messages, and files — **securely and temporarily**.
 
-With CipherOnce, you can create **one-time links**, share **files and secrets**, and ensure **automatic deletion** after access or expiration.
+Unlike traditional secret sharing tools, CipherOnce introduces **human-decodable patterns**, allowing secrets to be shared in a way that only the intended recipient can mentally reconstruct.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-github/cipher-once)
+All encryption and decryption happen **client-side**. The server never sees your plaintext data.
 
-**Live Demo:** [https://www.cipheronce.com](https://www.cipheronce.com)
+**Live Demo:** https://www.cipheronce.com
 
 ---
 
 ## Core Features
 
-- **End-to-End Encryption:** Secrets are encrypted in your browser using the Web Crypto API (AES-256-GCM) before reaching our servers.
-- **Zero-Knowledge:** The server only stores encrypted blobs. The encryption key never leaves your device.
-- **Self-Destructing Secrets:** Secrets automatically delete after a configurable number of views or expiration time.
-- **One-Time Links & QR Sharing:** Generate secure, ephemeral links or QR codes for in-person or device-first sharing.
-- **Time & Access Controls:** Set expiration times (5 minutes to 7 days) and one-time access restrictions.
-- **Secure File Sharing:** Attach documents, images, and files up to 20MB with the same encryption standards.
-- **Passwordless & Passkey Login (Upcoming):** Login securely with QR codes or device authentication.
-- **Privacy-First:** No logs of content, IPs, or user data. No tracking or analytics scripts.
-- **Admin Dashboard:** Manage users, secrets, and view system analytics (for registered admins).
-- **Cross-Platform & Social Sharing:** Easily share links via email, WhatsApp, Telegram, LinkedIn, Facebook, or copy the link.
+- **End-to-End Encryption**
+  - Secrets are encrypted in the browser using the Web Crypto API (AES-256-GCM).
+  - Encryption keys never leave the client device.
+
+- **Zero-Knowledge Architecture**
+  - Servers only store encrypted data.
+  - CipherOnce cannot read or recover secrets.
+
+- **Self-Destructing Secrets**
+  - Secrets automatically delete after a defined number of views or expiration time.
+
+- **One-Time Links & QR Sharing**
+  - Share secrets via secure links or QR codes for in-person or cross-device use.
+
+- **Password Pattern Decoding (Signature Feature)**
+  - Secrets can be shared using **pattern numbers**.
+  - The receiver decodes the password using predefined mental rules.
+  - The stored password alone is incomplete without knowing the pattern.
+  - No formulas or decoding logic are stored on the server.
+
+- **Time & Access Controls**
+  - Set expiration times from minutes to days.
+  - Restrict access by number of views.
+
+- **Secure File Sharing**
+  - Share files and documents with the same encryption and auto-deletion guarantees.
+
+- **Privacy-First by Design**
+  - No content logging.
+  - No tracking or analytics scripts.
+  - Minimal metadata retention.
 
 ---
 
@@ -29,134 +50,149 @@ With CipherOnce, you can create **one-time links**, share **files and secrets**,
 
 CipherOnce is ideal for:
 
-- **Developers & Engineers:** Share API keys, tokens, SSH keys, database credentials, or CI/CD secrets securely.
-- **Business, Legal & Finance:** Share contracts, investor info, payroll, compliance docs, or M&A materials.
-- **Teams & Agencies:** Provide temporary access to clients, partners, or vendors for portals, campaigns, or tools.
-- **Secure File Sharing:** Share sensitive files without leaving traces; control downloads and expiration.
-- **In-Person & Mobile Sharing:** Use QR codes to share secrets directly to phones safely.
-- **Privacy-Sensitive Situations:** Send sensitive information anonymously without creating accounts.
+- **Developers & Engineers**
+  - Sharing API keys, tokens, credentials, and internal access data.
+
+- **Teams & Organizations**
+  - Temporarily sharing credentials with clients, vendors, or partners.
+
+- **Security-Conscious Users**
+  - Sending sensitive information without storing passwords anywhere.
+
+- **Mobile & In-Person Sharing**
+  - QR-based sharing without exposing secrets in chats or emails.
+
+- **Pattern-Based Sharing**
+  - Situations where passwords must be remembered, not stored.
 
 ---
 
 ## Technology Stack
 
-- **Framework:** [Next.js](https://nextjs.org/) (App Router)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL + Auth)
-- **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Encryption:** [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
-- **Deployment:** [Vercel](https://vercel.com/)
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Backend & Database:** Supabase (PostgreSQL + Auth)
+- **UI Components:** shadcn/ui
+- **Styling:** Tailwind CSS
+- **Encryption:** Web Crypto API
+- **Deployment:** Vercel
 
 ---
 
 ## Getting Started
 
-Follow these instructions to set up the project for local development.
-
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/en/) (v18 or later)
-- [pnpm](https://pnpm.io/)
-- A [Supabase](https://supabase.com/) account
+- Node.js v18+
+- pnpm
+- Supabase account
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/dpgaire/cipher-once.git
 cd cipher-once
-````
 
-### 2. Install Dependencies
+2. Install Dependencies
 
-```bash
 pnpm install
-```
 
-### 3. Set Up Environment Variables
+3. Environment Variables
 
-Create a `.env.local` file in the project root and add:
+Create a .env.local file:
 
-```
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-### 4. Set Up the Database
+4. Database Setup
 
-Run the SQL scripts located in `/scripts` in order using your Supabase SQL editor. These will create tables, policies, and necessary indexes.
+Run the SQL scripts inside /scripts using the Supabase SQL editor.
 
-### 5. Run the Development Server
+5. Run the Development Server
 
-```bash
 pnpm dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) to view the app.
+Visit: http://localhost:3000
 
----
-
-## Deployment
-
-Optimized for [Vercel](https://vercel.com/):
-
-1. Connect your GitHub repository to Vercel.
-2. Set the same `.env.local` environment variables in Vercel’s dashboard.
-3. Vercel will automatically build and deploy your app.
 
 ---
 
-## Available Scripts
+Deployment
 
-* `pnpm dev` – Start the development server.
-* `pnpm build` – Create a production build.
-* `pnpm start` – Start the production server.
-* `pnpm lint` – Lint the codebase using ESLint.
+CipherOnce is optimized for Vercel:
 
----
+1. Connect the GitHub repository to Vercel.
 
-## Security & Privacy
 
-CipherOnce is designed to **protect your secrets**:
+2. Add the same environment variables.
 
-* All encryption is **client-side**; we never see your data.
-* Secrets **auto-delete** after viewing or expiration.
-* No logs, analytics, or tracking scripts.
-* Zero-knowledge architecture ensures only you and recipients can access the content.
+
+3. Deploy — Vercel handles the rest.
+
+
+
 
 ---
 
-## Social & Sharing
+Available Scripts
 
-* Share links or QR codes via:
+pnpm dev — Start development server
 
-  * **Email**
-  * **WhatsApp**
-  * **Telegram**
-  * **LinkedIn**
-  * **Facebook**
+pnpm build — Production build
 
-Open Graph and Twitter Cards are configured for rich previews.
+pnpm start — Start production server
 
----
+pnpm lint — Lint codebase
 
-## Contributing
 
-1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'Add my feature'`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Open a Pull Request.
 
 ---
 
-## License
+Security & Privacy
 
-MIT © CipherOnce Team
+CipherOnce is built with a strict security mindset:
+
+Client-side encryption only
+
+Automatic secret destruction
+
+No logs of secret content
+
+Zero-knowledge data handling
+
+Designed to minimize trust requirements
+
+
 
 ---
 
-**CipherOnce — Share secrets securely, privately, and temporarily.**
+Roadmap (High-Level)
 
-```
+Pattern vaults (user-defined mental patterns)
 
+Context-based secret access
+
+Advanced access controls
+
+Passwordless authentication improvements
+
+More human-centric security mechanisms
+
+
+
+---
+
+Contributing
+
+Contributions are welcome:
+
+1. Fork the repository
+
+
+2. Create a feature branch
+
+
+3. Commit your changes
+
+
+4. Open a Pull Requests 
