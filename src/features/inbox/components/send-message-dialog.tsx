@@ -141,7 +141,7 @@ export function SendMessageDialog({ isOpen, onOpenChange }: SendMessageDialogPro
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="col-span-3"
-              placeholder="Your secure message..."
+              placeholder="Your secure message or link..."
             />
           </div>
         </div>

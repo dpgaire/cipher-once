@@ -19,12 +19,15 @@ import { useState } from "react";
 import { Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { GitHubAuthButton } from "../components/github-auth-button"; // Relative import within feature
 import { BackButton } from "@/features/core/components/back-button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { createBrowserClient } from "@supabase/ssr";
 import { GoogleAuthButton } from "./google-auth-button";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,9 +35,22 @@ export function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
+
+    const cookieOptions = rememberMe
+      ? {
+          maxAge: 60 * 60 * 24 * 30, // 30 days
+        }
+      : undefined;
+
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookieOptions,
+      },
+    );
 
     try {
       const {
@@ -148,13 +164,25 @@ export function LoginForm() {
                       )}
                     </button>
                   </div>
-                  <div className="text-right">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember-me"
+                        checked={rememberMe}
+                        onCheckedChange={(checked) =>
+                          setRememberMe(Boolean(checked))
+                        }
+                      />
+                      <Label htmlFor="remember-me" className="text-sm">
+                        Remember me
+                      </Label>
+                    </div>
                     <Link
                       href="/forgot-password"
-                      className="text-sm inline-flex items-center gap-1 group/link"
+                      className="inline-flex items-center gap-1 text-sm group/link"
                     >
                       Forgot password?
-                      <span className="group-hover/link:translate-x-0.5 transition-transform duration-200">
+                      <span className="duration-200 group-hover/link:translate-x-0.5 transition-transform">
                         <ArrowRight className="w-4 h-4" />
                       </span>
                     </Link>
