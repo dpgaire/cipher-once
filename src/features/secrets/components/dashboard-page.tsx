@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, Suspense } from "react"
+import Link from "next/link"
+
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SecretCard } from "../components/secret-card"
 import { EmptyState } from "@/components/ui/empty"
-import { Shield, Loader2, FileText, Activity, Flame, Clock } from "lucide-react"
-import Link from "next/link"
+import { Shield, Loader2, FileText, Activity, Flame, Clock, UserCircle2, User } from "lucide-react"
+
 import { cn } from "@/lib/utils"
 import type { Secret } from "@/features/secrets/types"
 
@@ -17,13 +19,21 @@ interface DashboardPageComponentProps {
     total_secrets_created: number;
     total_secrets_viewed: number;
     total_secrets_burned: number;
+    is_admin:boolean;
   } | null;
 }
 
 function DashboardPageComponent({ initialSecrets, searchParams, stats }: DashboardPageComponentProps) {
   const activeTab = searchParams.tab || "active"
+
+  const isAdmin = Boolean(stats?.is_admin)
+
   
   const [secrets, setSecrets] = useState<Secret[]>(initialSecrets)
+
+  console.log(
+    'stats',stats
+  )
 
   const handleDeleteSecret = async (secretId: string) => {
     if (!confirm("Are you sure you want to delete this secret? This action is irreversible.")) return
@@ -48,7 +58,15 @@ function DashboardPageComponent({ initialSecrets, searchParams, stats }: Dashboa
     { label: "Total Created", value: stats?.total_secrets_created ?? 0, icon: FileText, color: "text-blue-600", bgColor: "bg-blue-500/10" },
     { label: "Total Views", value: stats?.total_secrets_viewed ?? 0, icon: Activity, color: "text-purple-600", bgColor: "bg-purple-500/10" },
     { label: "Burned", value: stats?.total_secrets_burned ?? 0, icon: Flame, color: "text-red-600", bgColor: "bg-red-500/10" },
+    { label: "Admin", value: stats?.is_admin, icon: User, color: "text-white", bgColor: "bg-blue-500/10" },
+
+    
   ]
+
+  const visibleStatsCards = statsCards.filter(
+  (stat) => stat.label !== "Admin" || isAdmin
+)
+
 
   const navItems = [
     { name: "Active", value: "active", count: activeSecrets.length, icon: Shield },
@@ -90,25 +108,37 @@ function DashboardPageComponent({ initialSecrets, searchParams, stats }: Dashboa
   return (
     <div className="container max-w-7xl flex-1 py-8">
       {/* Stats Grid */}
-      <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4">
-        {statsCards.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <Card key={stat.label}>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${stat.bgColor}`}>
-                    <Icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+     <div
+  className={`mb-8 grid gap-4 grid-cols-2 ${
+    isAdmin ? "md:grid-cols-5" : "md:grid-cols-4"
+  }`}
+>{visibleStatsCards.map((stat) => {
+  const Icon = stat.icon
+  const cardContent = (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-3">
+          <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${stat.bgColor}`}>
+            <Icon className={`h-6 w-6 ${stat.color}`} />
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{stat.value}</p>
+            <p className="text-xs text-muted-foreground">{stat.label}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  return stat.label === "Admin" ? (
+    <Link key={stat.label} href="/admin" className="cursor-pointer hover:opacity-90">
+      {cardContent}
+    </Link>
+  ) : (
+    <div key={stat.label}>{cardContent}</div>
+  )
+})}
+
       </div>
 
       {/* Secrets List */}
@@ -154,6 +184,7 @@ interface DashboardPageProps {
     total_secrets_created: number;
     total_secrets_viewed: number;
     total_secrets_burned: number;
+    is_admin:boolean;
   } | null;
 }
 

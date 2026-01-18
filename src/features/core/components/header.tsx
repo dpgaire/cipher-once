@@ -19,7 +19,6 @@ import { User } from "@supabase/supabase-js";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
-  const pathname = usePathname();
   const { isAuthenticated, loading, user } = useAuthSession();
   const [open, setOpen] = useState(false);
 

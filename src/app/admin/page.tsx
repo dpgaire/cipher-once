@@ -1,67 +1,96 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { createClient } from "@/lib/supabase/server"
-import { Users, FileText, Eye } from "lucide-react"
+import { PageViewAnalytics } from "@/features/admin/components/PageViewAnalytics";
+import { GlobalStats } from "@/features/admin/components/GlobalStats";
+import { DeviceAnalytics } from "@/features/admin/components/DeviceAnalytics";
+import { EngagementCharts } from "@/features/admin/components/EngagementCharts"; // Import EngagementCharts
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-async function getStats() {
-  const supabase = await createClient()
+export default function AdminDashbaord() {
+  return (
+    <div className="h-[calc(100vh-4rem)] overflow-y-auto space-y-6">
+      <h1 className="text-3xl font-bold">Dashbaord</h1>
 
-  const { data:userCount, error } = await supabase.rpc("get_all_users")
+      <Suspense fallback={<GlobalStatsSkeleton />}>
+        <GlobalStats />
+      </Suspense>
 
-  const { count: secretCount } = await supabase
-    .from("secrets")
-    .select("id", { count: "exact", head: true })
+      {/* Add EngagementCharts here */}
+      <Suspense fallback={<EngagementChartsSkeleton />}>
+        <EngagementCharts />
+      </Suspense>
 
-  const { count: viewCount } = await supabase
-    .from("secret_access_logs")
-    .select("id", { count: "exact", head: true })
+      <Suspense
+        fallback={
+          <Card>
+            <CardContent>
+              <Skeleton className="h-96" />
+            </CardContent>
+          </Card>
+        }
+      >
+        <PageViewAnalytics />
+      </Suspense>
 
-  return { userCount, secretCount, viewCount }
+      <Suspense fallback={<DeviceAnalyticsSkeleton />}>
+        <DeviceAnalytics />
+      </Suspense>
+    </div>
+  );
 }
 
-export default async function AdminDashboardPage() {
-  const { userCount, secretCount, viewCount } = await getStats()
-
-  const stats = [
-    {
-      label: "Total Users",
-      value: userCount.length ?? 0,
-      icon: Users,
-    },
-    {
-      label: "Total Secrets Created",
-      value: secretCount ?? 0,
-      icon: FileText,
-    },
-    {
-      label: "Total Secrets Viewed",
-      value: viewCount ?? 0,
-      icon: Eye,
-    },
-  ]
-
+function GlobalStatsSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold">Dashboard</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {stats.map((stat) => {
-            const Icon = stat.icon
-            return (
-              <Card key={stat.label}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      {[...Array(4)].map((_, i) => (
+        <Card key={i}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-8 w-16" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function DeviceAnalyticsSkeleton() {
+  return (
+    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+      {[...Array(3)].map((_, i) => (
+        <Card key={i}>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-48 mt-2" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// Skeleton for EngagementCharts
+function EngagementChartsSkeleton() {
+  return (
+    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+        {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+                <CardHeader>
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-full mt-2" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
+                    <Skeleton className="h-48 w-full" />
                 </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      </CardContent>
-    </Card>
-  )
+            </Card>
+        ))}
+    </div>
+  );
 }
