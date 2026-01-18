@@ -32,7 +32,6 @@ interface AdminNavProps {
 const navItems: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: Home },
   { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart },
   { href: "/admin/logs", label: "Access Logs", icon: History },
 ];
 

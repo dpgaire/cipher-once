@@ -9,7 +9,7 @@ interface RootLayoutProps {
   children: React.ReactNode
 }
 
-export function RootLayout({ children }: RootLayoutProps) {
+export function  RootLayout({ children }: RootLayoutProps) {
   const pathname = usePathname()
 
   const isDashboard = pathname.startsWith("/dashboard")

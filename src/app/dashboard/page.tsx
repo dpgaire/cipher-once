@@ -31,7 +31,7 @@ export default async function DashboardPageWrapper({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('total_secrets_created, total_secrets_viewed, total_secrets_burned')
+    .select('total_secrets_created, total_secrets_viewed, total_secrets_burned, is_admin')
     .eq('id', user?.id)
     .single();
 
