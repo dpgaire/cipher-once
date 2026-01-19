@@ -1,5 +1,5 @@
+import { ViewSecretPage } from '@/features/secrets';
 import { Metadata } from 'next'
-import { ViewSecretPage } from "@/features/secrets/components/view-secret";
 
 export const metadata: Metadata = {
   title: "View Secret",
