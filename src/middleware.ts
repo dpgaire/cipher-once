@@ -41,6 +41,7 @@ function buildCSP() {
     img-src 'self' blob: data:;
     font-src 'self';
     connect-src 'self' https://*.supabase.co wss://*.supabase.co ws: blob:;
+    media-src 'self' blob: data:;
     frame-src https://vercel.live;
     frame-ancestors 'self';
     object-src 'none';
