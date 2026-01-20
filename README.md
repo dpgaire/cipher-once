@@ -89,7 +89,7 @@ CipherOnce is ideal for:
 
 ### 1. Clone the Repository
 
-```bash
+
 git clone https://github.com/dpgaire/cipher-once.git
 cd cipher-once
 
