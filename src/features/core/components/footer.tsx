@@ -38,6 +38,11 @@ export function Footer() {
                   Create Secret
                 </Link>
               </li>
+               <li>
+                <Link href="/docs" className="text-muted-foreground hover:text-foreground">
+                  Docs
+                </Link>
+              </li>
             </ul>
           </div>
 

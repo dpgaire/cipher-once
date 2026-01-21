@@ -1,0 +1,13 @@
+import { Skeleton } from "@/components/ui/skeleton"
+
+export default function Loading() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <div className="w-[300px] space-y-4">
+        <Skeleton className="h-6 w-3/4 mx-auto" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6 mx-auto" />
+      </div>
+    </div>
+  )
+}
