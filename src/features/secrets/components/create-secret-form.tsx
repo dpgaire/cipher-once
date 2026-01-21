@@ -394,8 +394,24 @@ export function CreateSecretForm() {
                 onChange={(e) =>
                   setSelectedFile(e.target.files ? e.target.files[0] : null)
                 }
-                accept="image/*,audio/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain"
+                accept="
+    image/*,
+    audio/*,
+    video/*,
+    application/pdf,
+    application/msword,
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+    application/vnd.ms-excel,
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+    application/vnd.ms-powerpoint,
+    application/vnd.openxmlformats-officedocument.presentationml.presentation,
+    text/plain,
+    application/zip,
+    application/x-zip-compressed,
+    .zip
+  "
               />
+
               {!selectedFile ? (
                 <Button
                   type="button"
@@ -551,21 +567,21 @@ export function CreateSecretForm() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                      <Label htmlFor="passphrase-toggle">
-                        Require password
-                      </Label>
-                       <Info
-                                      className="h-4 w-4 text-muted-foreground cursor-pointer"
-                                      onClick={() => setIsModalOpen(true)}
-                                    />
+                        <Label htmlFor="passphrase-toggle">
+                          Require password
+                        </Label>
+                        <Info
+                          className="h-4 w-4 text-muted-foreground cursor-pointer"
+                          onClick={() => setIsModalOpen(true)}
+                        />
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Add an extra layer of protection
                       </p>
                       <PasswordPatternModal
-                              isOpen={isModalOpen}
-                              onClose={() => setIsModalOpen(false)}
-                            />
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                      />
                     </div>
                     <Switch
                       id="passphrase-toggle"

@@ -1,43 +1,68 @@
 import { NextResponse } from "next/server"
-import { type NextRequest } from "next/server"
+import type { NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  // Get user from session (if authenticated)
-  const { data: { user } } = await supabase.auth.getUser()
-
   try {
-    const { secret_id, status, error_message, metadata } = await request.json()
+    const supabase = await createClient()
 
-    // Get IP address and user agent
-    const ip_address = request.headers.get("x-forwarded-for")
-    const user_agent = request.headers.get("user-agent")
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    // Ensure secret_id is a valid UUID
-    if (!secret_id) {
-      return NextResponse.json({ error: "secret_id is required" }, { status: 400 })
+    
+
+    if (authError) {
+      console.warn("Auth warning:", authError.message)
     }
 
-    const { error } = await supabase.from("secret_access_logs").insert({
-      secret_id,
-      status,
-      error_message,
-      ip_address,
-      user_agent,
-      accessed_by_user_id: user?.id || null, // Log the user ID if authenticated
-      metadata, // Any additional metadata
-    })
+    const body = await request.json()
+
+    const { secret_id, status, error_message = null, metadata = null } = body
+
+    if (!secret_id) {
+      return NextResponse.json(
+        { error: "secret_id is required" },
+        { status: 400 }
+      )
+    }
+
+    // Normalize IP (take first if multiple)
+    const rawIp = request.headers.get("x-forwarded-for")
+    const ip_address = rawIp?.split(",")[0]?.trim() ?? null
+
+    const user_agent = request.headers.get("user-agent") ?? null
+
+    const { error } = await supabase
+      .from("secret_access_logs")
+      .insert({
+        secret_id,
+        status,
+        error_message,
+        ip_address,
+        user_agent,
+        accessed_by_user_id: user?.id ?? null,
+        metadata,
+      })
 
     if (error) {
-      console.error("Error logging secret access:", error)
-      return NextResponse.json({ error: "Failed to log access" }, { status: 500 })
+      console.error("Supabase insert error:", error)
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
     }
 
-    return NextResponse.json({ message: "Access logged successfully" }, { status: 200 })
-  } catch (e) {
-    console.error("Error parsing request body or logging access:", e)
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 })
+    return NextResponse.json(
+      { message: "Access logged successfully" },
+      { status: 200 }
+    )
+  } catch (err) {
+    console.error("Unhandled error:", err)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
   }
 }
