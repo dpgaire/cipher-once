@@ -152,6 +152,7 @@ export default function DocsPage() {
              gairhedurga13@gmail.com
             </Link>
           </p>
+         
           <p className="text-sm text-muted-foreground">
             Responsible disclosure is appreciated.
           </p>

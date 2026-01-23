@@ -1,188 +1,253 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "Read the Privacy Policy for CipherOnce to understand how we handle your data with a zero-knowledge commitment. Your privacy is our priority.",
-  keywords: ["privacy policy", "data protection", "zero-knowledge", "encryption", "user rights", "secure sharing"],
+  title: "Privacy Policy | CipherOnce",
+  description:
+    "CipherOnce Privacy Policy. Learn how we protect your data using client-side encryption, zero-knowledge architecture, and minimal metadata collection.",
+  keywords: [
+    "CipherOnce privacy",
+    "zero-knowledge",
+    "client-side encryption",
+    "secure secret sharing",
+    "data protection",
+  ],
   openGraph: {
     title: "Privacy Policy | CipherOnce",
-    description: "Understand how we handle your data with a zero-knowledge commitment.",
+    description:
+      "Understand how CipherOnce handles your data with a strict zero-knowledge commitment.",
     url: "/privacy",
   },
   twitter: {
     title: "Privacy Policy | CipherOnce",
-    description: "Understand how we handle your data with a zero-knowledge commitment.",
+    description:
+      "Understand how CipherOnce protects your privacy with zero-knowledge encryption.",
   },
 }
 
-export default async function PrivacyPage() {
+export default function PrivacyPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen overflow-auto flex-col">
       <main className="flex-1 py-12">
         <div className="container max-w-4xl">
           <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Privacy Policy for CipherOnce</h1>
-            <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+            <h1 className="mb-2 text-4xl font-bold">
+              Privacy Policy
+            </h1>
+            <p className="text-muted-foreground">
+              Last updated: {new Date().toLocaleDateString()}
+            </p>
           </div>
 
           <div className="space-y-8 prose prose-sm max-w-none dark:prose-invert">
+
             <p>
-              Welcome to CipherOnce. We are committed to protecting your privacy and ensuring you have a transparent
-              understanding of how we handle your data. This Privacy Policy outlines our practices concerning the
-              collection, use, and protection of your information. Our core principle is zero-knowledge; your secrets
-              are yours alone.
+              CipherOnce is built with privacy as a core principle. This Privacy
+              Policy explains what data we collect, why we collect it, and—most
+              importantly—what we <strong>cannot</strong> see or access.
             </p>
 
+            {/* Zero Knowledge */}
             <section>
-              <h2 className="text-2xl font-semibold">Our Zero-Knowledge Commitment</h2>
+              <h2 className="text-2xl font-semibold">
+                Zero-Knowledge Architecture
+              </h2>
               <p>
-                CipherOnce is fundamentally designed as a <strong>zero-knowledge</strong> service. When you create a
-                secret, it is encrypted and decrypted exclusively within your browser using strong, modern
-                cryptography (AES-256-GCM). The encryption key is appended to the shareable URL and is never transmitted
-                to our servers. This means we, the operators of CipherOnce, have no ability to view, access, or decrypt
-                your secret content.
+                CipherOnce is designed as a <strong>zero-knowledge</strong> service.
+                Secrets and files are encrypted and decrypted entirely within your
+                browser using modern cryptography (AES-256-GCM).
               </p>
+              <p>
+                The encryption key is embedded in the URL fragment
+                (<code>#key</code>) and is never transmitted to our servers.
+                As a result:
+              </p>
+              <ul>
+                <li>We cannot read your secrets</li>
+                <li>We cannot recover lost secrets</li>
+                <li>We cannot decrypt your files</li>
+              </ul>
             </section>
 
+            {/* Data Collected */}
             <section>
-              <h2 className="text-2xl font-semibold">Information We Collect</h2>
-              <p>To provide our service, we collect a minimal amount of information:</p>
+              <h2 className="text-2xl font-semibold">
+                Information We Collect
+              </h2>
+
               <div className="space-y-4">
+
                 <Card>
                   <CardHeader>
-                    <CardTitle>Information You Provide</CardTitle>
+                    <CardTitle>Data You Provide</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul>
                       <li>
-                        <strong>Encrypted Secret Data:</strong> The content of your secret, in its fully encrypted
-                        form. We cannot read this.
+                        <strong>Encrypted Secret Content:</strong> Stored only in
+                        encrypted form. We never see plaintext.
                       </li>
                       <li>
-                        <strong>Secret Metadata:</strong> The settings you choose for a secret, such as its expiration
-                        time, maximum number of views, and whether it is protected by a passphrase.
+                        <strong>Secret Configuration:</strong> Expiration time,
+                        view limits, passphrase usage, and feature flags.
                       </li>
                       <li>
-                        <strong>Account Information:</strong> If you create an account, we collect your email address
-                        and associate it with your authentication provider (e.g., GitHub). This is used for account
-                        management and security.
+                        <strong>Account Information:</strong> Email address and
+                        authentication identifiers if you register an account.
                       </li>
                     </ul>
                   </CardContent>
                 </Card>
+
                 <Card>
                   <CardHeader>
-                    <CardTitle>Information Collected Automatically</CardTitle>
+                    <CardTitle>Automatically Collected Data</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul>
                       <li>
-                        <strong>Access Logs:</strong> For secrets created by registered users, we log access attempts.
-                        This log includes the viewer&apos;s IP address, browser User-Agent, and the time of access.
-                        These logs are only visible to the secret&apos;s owner and are a feature to enhance security.
+                        <strong>Access Logs:</strong> When a secret is accessed,
+                        we may log:
+                        <ul>
+                          <li>IP address</li>
+                          <li>Browser User-Agent</li>
+                          <li>Access timestamp</li>
+                          <li>Access status (success, expired, invalid, etc.)</li>
+                          <li>Error metadata (when applicable)</li>
+                        </ul>
+                        These logs are visible only to the secret owner and are
+                        used for transparency and abuse prevention.
                       </li>
                       <li>
-                        <strong>Server Logs:</strong> Like most web services, our servers may automatically log basic
-                        information for security and debugging purposes, such as your IP address, browser type, and
-                        the pages you visit. This data is not linked to specific secrets.
+                        <strong>Server Logs:</strong> Basic operational logs
+                        required for security, rate limiting, and debugging.
+                        These logs are not used for tracking or profiling.
                       </li>
                     </ul>
                   </CardContent>
                 </Card>
+
               </div>
             </section>
 
+            {/* Usage */}
             <section>
-              <h2 className="text-2xl font-semibold">How We Use Your Information</h2>
-              <p>Your information is used for the following purposes:</p>
+              <h2 className="text-2xl font-semibold">
+                How We Use Your Information
+              </h2>
+              <ul>
+                <li>To store and deliver encrypted secrets</li>
+                <li>To enforce expiration and view limits</li>
+                <li>To secure accounts and prevent abuse</li>
+                <li>To display access history to secret owners</li>
+                <li>To communicate critical service or security notices</li>
+              </ul>
+              <p>
+                We do <strong>not</strong> use your data for advertising,
+                behavioral analytics, or profiling.
+              </p>
+            </section>
+
+            {/* Retention */}
+            <section>
+              <h2 className="text-2xl font-semibold">
+                Data Retention & Deletion
+              </h2>
               <ul>
                 <li>
-                  <strong>To Operate the Service:</strong> To store your encrypted secrets, enforce the access rules
-                  you define, and allow you to manage your secrets via your dashboard.
+                  <strong>Secrets:</strong> Permanently deleted after expiration,
+                  view limit, or manual destruction.
                 </li>
                 <li>
-                  <strong>For Security:</strong> To protect your account, monitor for malicious activity, and allow you
-                  to track access to your secrets.
+                  <strong>Access Logs:</strong> Deleted automatically when the
+                  associated secret is deleted.
                 </li>
                 <li>
-                  <strong>To Communicate With You:</strong> To send important notices regarding your account, such as
-                  security alerts or password reset emails. We will not send you marketing emails.
+                  <strong>Accounts:</strong> You may delete your account at any
+                  time, which removes all associated data.
                 </li>
               </ul>
             </section>
 
+            {/* Third Parties */}
             <section>
-              <h2 className="text-2xl font-semibold">Data Retention and Deletion</h2>
-              <p>We retain data only for as long as necessary:</p>
+              <h2 className="text-2xl font-semibold">
+                Third-Party Services
+              </h2>
+              <p>
+                CipherOnce uses a minimal set of trusted infrastructure providers:
+              </p>
               <ul>
                 <li>
-                  <strong>Secrets:</strong> A secret is permanently and irrecoverably deleted from our database
-                  immediately when its expiration time is reached, its maximum view count is met, or it is manually
-                  "burned" by its creator.
-                </li>
-                <li>
-                  <strong>Access Logs:</strong> Access logs associated with a secret are permanently deleted when the
-                  secret itself is deleted.
-                </li>
-                <li>
-                  <strong>User Accounts:</strong> Your account information is retained as long as your account is
-                  active. You may delete your account at any time, which will also delete all associated secrets and
-                  logs.
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold">Data Sharing and Third Parties</h2>
-              <p>We do not sell, trade, or rent your personal information to others. We limit data sharing to the
-                essential third-party services that help us operate CipherOnce:</p>
-              <ul>
-                <li>
-                  <strong>Supabase:</strong> We use Supabase for our database, authentication, and serverless
-                  functions. Supabase is our primary data processor. You can view the{" "}
-                  <Link href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">
-                    Supabase Privacy Policy here
+                  <strong>Supabase:</strong> Database, authentication, and server
+                  functions.{" "}
+                  <Link
+                    href="https://supabase.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Privacy Policy
                   </Link>
-                  .
                 </li>
                 <li>
-                  <strong>Hosting Provider:</strong> Our application is hosted on Vercel. Standard server logs may be
-                  collected and stored by our hosting provider for security and operational purposes.
+                  <strong>Vercel:</strong> Hosting and edge infrastructure.
+                  Standard operational logs may apply.
                 </li>
               </ul>
+              <p>
+                We never sell or share your data with advertisers or data brokers.
+              </p>
             </section>
-            
+
+            {/* Cookies */}
             <section>
               <h2 className="text-2xl font-semibold">Cookies</h2>
               <p>
-                We use cookies for essential functionlity only. Specifically, we use them to manage your authentication session if you are logged in. We do not use cookies for tracking or advertising purposes.
+                CipherOnce uses <strong>essential cookies only</strong> for
+                authentication and session management. We do not use tracking,
+                analytics, or advertising cookies.
               </p>
             </section>
 
+            {/* Rights */}
             <section>
               <h2 className="text-2xl font-semibold">Your Rights</h2>
+              <ul>
+                <li>Access or delete your account data</li>
+                <li>Delete secrets at any time</li>
+                <li>Request account removal</li>
+              </ul>
+            </section>
+
+            {/* Changes */}
+            <section>
+              <h2 className="text-2xl font-semibold">
+                Changes to This Policy
+              </h2>
               <p>
-                As a user, you have the right to access, correct, or delete your personal information. If you have an account, you can manage your secrets directly from your dashboard. To request account deletion, please contact us.
+                We may update this policy as CipherOnce evolves. Updates will be
+                reflected on this page with a revised date.
               </p>
             </section>
 
+            {/* Contact */}
             <section>
-              <h2 className="text-2xl font-semibold">Changes to This Policy</h2>
+              <h2 className="text-2xl font-semibold">Contact</h2>
               <p>
-                We may update this Privacy Policy from time to time. We will notify you of any significant changes by
-                posting the new policy on this page and updating the "Last updated" date.
+                For privacy questions, data requests, or security disclosures:
+              </p>
+              <p>
+                <Link
+                  href="https://www.durgagairhe.com.np/"
+                  className="font-medium underline"
+                  target="_blank"
+                >
+                 Developer profile
+                </Link>
               </p>
             </section>
 
-            <section>
-              <h2 className="text-2xl font-semibold">Contact Us</h2>
-              <p>
-                If you have any questions about this Privacy Policy, please{" "}
-                <Link href="/contact">contact us</Link>.
-              </p>
-            </section>
           </div>
         </div>
       </main>
