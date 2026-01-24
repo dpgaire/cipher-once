@@ -89,6 +89,7 @@ export function CreateSecretForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLimitReached, setIsLimitReached] = useState(false);
+  const [openAccordionItems, setOpenAccordionItems] = useState<string[]>([]);
 
   // New states for V2 rules
   const [requireAuth, setRequireAuth] = useState(false);
@@ -126,6 +127,7 @@ export function CreateSecretForm() {
 
   useEffect(() => {
     if (useDefaultSettings && defaultSettings) {
+      setOpenAccordionItems([]);
       setExpirationHours(
         defaultSettings.defaultExpiration !== undefined
           ? Number(defaultSettings.defaultExpiration)
@@ -150,6 +152,14 @@ export function CreateSecretForm() {
       setPassphrase(hasDefaultPassword ? defaultSettings.defaultPassword : "");
     }
   }, [useDefaultSettings, defaultSettings]);
+
+  useEffect(() => {
+    if (!useDefaultSettings && (content || selectedFile)) {
+      setOpenAccordionItems((prev) =>
+        prev.includes("limits") ? prev : [...prev, "limits"]
+      );
+    }
+  }, [content, selectedFile, useDefaultSettings]);
 
   const handleCreateSecret = async () => {
     setError(null);
@@ -369,7 +379,7 @@ export function CreateSecretForm() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="content">Your Secret Text</Label>
+              <Label htmlFor="content">Your Secret Message</Label>
               <Textarea
                 id="content"
                 placeholder="Enter passwords, API keys, confidential messages, or any sensitive information..."
@@ -443,7 +453,12 @@ export function CreateSecretForm() {
               </p>
             </div>
 
-            <Accordion type="multiple" className="space-y-4">
+            <Accordion
+              type="multiple"
+              className="space-y-4"
+              value={openAccordionItems}
+              onValueChange={setOpenAccordionItems}
+            >
               {selectedFile && (
                 <AccordionItem value="file-options">
                   <AccordionTrigger className="text-base font-medium">
@@ -499,7 +514,16 @@ export function CreateSecretForm() {
                       </Label>
                       <Select
                         value={expirationHours.toString()}
-                        onValueChange={(v) => setExpirationHours(Number(v))}
+                        onValueChange={(v) => {
+                          setExpirationHours(Number(v));
+                          if (!useDefaultSettings) {
+                            setOpenAccordionItems((prev) =>
+                              prev.includes("passphrase")
+                                ? prev
+                                : [...prev, "passphrase"]
+                            );
+                          }
+                        }}
                         disabled={useDefaultSettings}
                       >
                         <SelectTrigger id="expiration">
@@ -531,7 +555,16 @@ export function CreateSecretForm() {
                       </Label>
                       <Select
                         value={maxViews.toString()}
-                        onValueChange={(v) => setMaxViews(Number(v))}
+                        onValueChange={(v) => {
+                          setMaxViews(Number(v));
+                          if (!useDefaultSettings) {
+                            setOpenAccordionItems((prev) =>
+                              prev.includes("passphrase")
+                                ? prev
+                                : [...prev, "passphrase"]
+                            );
+                          }
+                        }}
                         disabled={useDefaultSettings}
                       >
                         <SelectTrigger id="maxViews">
