@@ -122,7 +122,7 @@ export default function AboutPage() {
           <h2 className="mb-8 text-center text-3xl font-bold">Learn More</h2>
           <div className="grid gap-6 md:grid-cols-2">
             <Link
-              href="/one-time-secret-alternative"
+              href="/onetimesecretalternative"
               className="group rounded-xl border bg-card p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
