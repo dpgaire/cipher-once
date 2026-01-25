@@ -4,7 +4,7 @@ import {
   decrypt,
   importKey,
 } from "@/features/secrets/services/encryption";
-import type { Message } from "../types";
+import type { Message, Profile } from "../types";
 
 const supabase = createClient();
 
@@ -54,20 +54,17 @@ export async function getMessages(userId: string): Promise<Message[]> {
     })
   );
 
-  const formattedData = decryptedMessages.map((msg) => ({
+  const formattedMessages = decryptedMessages.map((msg) => ({
     ...msg,
-    sender_profile:
-      Array.isArray(msg.sender_profile) && msg.sender_profile.length > 0
-        ? msg.sender_profile[0]
-        : null,
-    recipient_profile:
-      Array.isArray(msg.recipient_profile) &&
-      msg.recipient_profile.length > 0
-        ? msg.recipient_profile[0]
-        : null,
+    sender_profile: (msg.sender_profile && Array.isArray(msg.sender_profile) && msg.sender_profile.length > 0)
+      ? (msg.sender_profile[0] as Profile)
+      : null,
+    recipient_profile: (msg.recipient_profile && Array.isArray(msg.recipient_profile) && msg.recipient_profile.length > 0)
+      ? (msg.recipient_profile[0] as Profile)
+      : null,
   }));
 
-  return formattedData as Message[];
+  return formattedMessages as Message[];
 }
 
 export async function deleteMessage(messageId: string): Promise<boolean> {

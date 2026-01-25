@@ -1,4 +1,4 @@
-type Profile = {
+export type Profile = {
   full_name: string | null;
 } | null;
 
