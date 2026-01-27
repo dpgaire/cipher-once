@@ -72,7 +72,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useHeicToJpeg } from "../hooks/useHeicToJpeg";
-import { BackButton } from "@/features/core/components/back-button";
 import { PasswordPatternModal } from "@/features/settings/components/password-pattern-modal";
 
 export function CreateSecretForm() {
@@ -340,7 +339,6 @@ export function CreateSecretForm() {
         </AlertDialogContent>
       </AlertDialog>
       <div className="container max-w-3xl flex-1 py-12">
-        <BackButton />
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
             <Shield className="h-8 w-8 text-primary" />
