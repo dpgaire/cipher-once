@@ -53,9 +53,9 @@ function buildCSP() {
 
 
 // =====================
-// Middleware Handler
+// Proxy Handler
 // =====================
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const ip = getClientIP(request)
 
   // Rate limiting
