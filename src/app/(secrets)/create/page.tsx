@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const DynamicCreateSecretForm = dynamic(
-  () => import('@/features/secrets/components/create-secret-form').then(mod => mod.CreateSecretForm),
+  () => import('@/features/secrets/create/create-secret-form').then(mod => mod.CreateSecretForm),
   { ssr: false }
 );
 
