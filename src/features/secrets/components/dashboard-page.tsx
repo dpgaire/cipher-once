@@ -31,10 +31,7 @@ function DashboardPageComponent({ initialSecrets, searchParams, stats }: Dashboa
   
   const [secrets, setSecrets] = useState<Secret[]>(initialSecrets)
 
-  console.log(
-    'stats',stats
-  )
-
+ 
   const handleDeleteSecret = async (secretId: string) => {
     if (!confirm("Are you sure you want to delete this secret? This action is irreversible.")) return
 

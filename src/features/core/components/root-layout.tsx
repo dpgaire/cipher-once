@@ -9,7 +9,7 @@ interface RootLayoutProps {
   children: React.ReactNode
 }
 
-export function  RootLayout({ children }: RootLayoutProps) {
+export function RootLayout({ children }: RootLayoutProps) {
   const pathname = usePathname()
 
   const isDashboard = pathname.startsWith("/dashboard")
@@ -21,7 +21,14 @@ export function  RootLayout({ children }: RootLayoutProps) {
   const isSignup = pathname.startsWith("/sign-up")
   const isCreateSecrete = pathname.startsWith("/create")
 
-  const showGlobalHeaderFooter = !isDashboard && !isSecretPage && !isAdmin && !isInbox && !isLogin && !isSignup && !isCreateSecrete
+  const showGlobalHeaderFooter =
+    !isDashboard &&
+    !isSecretPage &&
+    !isAdmin &&
+    !isInbox &&
+    !isLogin &&
+    !isSignup &&
+    !isCreateSecrete
 
   if (showGlobalHeaderFooter) {
     return (

@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    console.log("API /admin/logs: Authentication required.")
     return NextResponse.json(
       { error: "Authentication required" },
       { status: 401 }
@@ -36,15 +35,8 @@ export async function GET(request: NextRequest) {
   }
 
   const isAdmin = profile?.is_admin === true
-  console.log(
-    "API /admin/logs: Admin check for user:",
-    user?.id,
-    "isAdmin:",
-    isAdmin
-  )
-
+ 
   if (!isAdmin) {
-    console.log("API /admin/logs: Forbidden - User is not an admin.")
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
