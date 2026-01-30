@@ -1,6 +1,7 @@
 "use client";
 
 import { features } from '../utils/features-data';
+import Link from 'next/link'; // Import Link
 
 export function FeaturesSection() {
   return (
@@ -14,7 +15,7 @@ export function FeaturesSection() {
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => {
             const Icon = feature.icon;
-            return (
+            const content = (
               <div
                 key={feature.title}
                 className="rounded-xl flex flex-col justify-center items-center border border-border bg-background p-6 transition-all hover:border-primary/50 hover:shadow-lg"
@@ -25,6 +26,14 @@ export function FeaturesSection() {
                 <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
                 <p className="text-sm leading-relaxed text-center text-muted-foreground">{feature.desc}</p>
               </div>
+            );
+
+            return feature.href ? (
+              <Link href={feature.href} key={feature.title}>
+                {content}
+              </Link>
+            ) : (
+              content
             );
           })}
         </div>
