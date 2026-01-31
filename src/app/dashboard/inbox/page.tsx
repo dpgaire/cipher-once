@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useInbox } from "@/features/inbox/hooks/use-inbox";
-import { InboxList } from "@/features/inbox/components/inbox-list";
-import { SendMessageButton } from "@/features/inbox/components/send-message-button";
+import { useInbox } from "@/app/dashboard/inbox/_hooks/use-inbox";
+import { InboxList } from "@/app/dashboard/inbox/_components/inbox-list";
+import { SendMessageButton } from "@/app/dashboard/inbox/_components/send-message-button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { CardSkeleton } from "@/features/core/components";
+import { CardSkeleton } from "@/components/core";
 
 function InboxSkeleton() {
   return (

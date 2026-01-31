@@ -1,9 +1,9 @@
 'use client';
 
-import { useAuthSession } from "@/features/auth/hooks/use-auth-session";
-import { MobileDashboardHeader } from "@/features/core/components/mobile-dashboard-header"
-import { DashboardHeader } from "@/features/secrets/components/dashboard-header"
-import { DashboardMobileNav } from "@/features/secrets/components/dashboard-mobile-nav"
+import { useAuthSession } from "@/app/(auth)/_hooks/use-auth-session";
+import { MobileDashboardHeader } from "@/components/core/mobile-dashboard-header"
+import { DashboardHeader } from "@/app/dashboard/_components/dashboard-header"
+import { DashboardMobileNav } from "@/app/dashboard/_components/dashboard-mobile-nav"
 
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {

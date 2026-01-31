@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { DashboardPage } from "@/features/secrets/components/dashboard-page"
-import type { Secret } from "@/features/secrets/types"
+import { DashboardPage } from "@/app/dashboard/_components/dashboard-page"
+import type { Secret } from "@/app/(secrets)/s/[shortId]/_types"
 import { Suspense } from "react"
-import { DashboardSkeleton } from "@/features/secrets/components/dashboard-skeleton"
+import { DashboardSkeleton } from "@/app/dashboard/_components/dashboard-skeleton"
 
 export default async function DashboardPageWrapper({
   searchParams,

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ReactNode } from "react"
-import { AdminLayoutWrapper } from "@/features/admin/components/admin-layout" // New import
+import { AdminLayoutWrapper } from "@/app/admin/_components/admin-layout" // New import
 import { Metadata } from "next"
 
 export const metadata: Metadata = {

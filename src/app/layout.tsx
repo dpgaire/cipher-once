@@ -5,8 +5,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { RootLayout } from "@/features/core/components/root-layout";
-import { TrackPageView } from "@/features/analytics/components/TrackPageView";
+import { RootLayout } from "@/components/core/root-layout";
+import { TrackPageView } from "@/components/core/TrackPageView";
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });

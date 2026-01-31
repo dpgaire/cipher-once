@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // CardDescription no longer needed
-import { SecretAccessLogs } from "@/features/admin/components/secret-access-logs";
+import { SecretAccessLogs } from "@/app/admin/_components/secret-access-logs";
 
 export default function AdminLogsPage() {
   return (

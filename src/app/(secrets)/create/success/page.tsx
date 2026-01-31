@@ -5,11 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/client";
-import {
-  generateKey,
-  encrypt,
-  exportKey,
-} from "@/features/secrets/services/encryption";
+
 
 import {
   Card,
@@ -23,11 +19,11 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CopyButton } from "@/features/secrets/components/copy-button";
-import { QRCodeDisplay } from "@/features/secrets/components/qr-code-display";
-import { SocialShareButtons } from "@/features/secrets/components/social-share-buttons";
-
 import { CheckCircle2, AlertTriangle, Share2, Send } from "lucide-react";
+import { CopyButton } from "../../s/[shortId]/_components/copy-button";
+import { QRCodeDisplay } from "@/app/dashboard/_components/qr-code-display";
+import { encrypt, exportKey, generateKey } from "../../s/[shortId]/_services/encryption";
+import { SocialShareButtons } from "@/app/dashboard/_components/social-share-buttons";
 
 function SuccessContent() {
   const router = useRouter();
