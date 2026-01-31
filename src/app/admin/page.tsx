@@ -1,7 +1,7 @@
-import { PageViewAnalytics } from "@/features/admin/components/PageViewAnalytics";
-import { GlobalStats } from "@/features/admin/components/GlobalStats";
-import { DeviceAnalytics } from "@/features/admin/components/DeviceAnalytics";
-import { EngagementCharts } from "@/features/admin/components/EngagementCharts"; // Import EngagementCharts
+import { PageViewAnalytics } from "@/app/admin/_components/PageViewAnalytics";
+import { GlobalStats } from "@/app/admin/_components/GlobalStats";
+import { DeviceAnalytics } from "@/app/admin/_components/DeviceAnalytics";
+import { EngagementCharts } from "@/app/admin/_components/EngagementCharts"; // Import EngagementCharts
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";

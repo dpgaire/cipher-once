@@ -16,9 +16,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Lock, User2Icon } from "lucide-react";
-import { GitHubAuthButton } from "@/features/auth/components/github-auth-button";
+import { GitHubAuthButton } from "@/app/(auth)/_components/github-auth-button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GoogleAuthButton } from "@/features/auth/components/google-auth-button";
+import { GoogleAuthButton } from "@/app/(auth)/_components/google-auth-button";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");

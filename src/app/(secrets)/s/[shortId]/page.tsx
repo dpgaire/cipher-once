@@ -1,4 +1,4 @@
-import { ViewSecretPage } from '@/features/secrets';
+import { ViewSecretPage } from '@/app/(secrets)/s/[shortId]/_components/view-secret';
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {

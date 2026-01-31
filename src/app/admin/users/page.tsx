@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
-import { UsersTable, UserForAdmin } from "@/features/admin/components/users-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { UserForAdmin, UsersTable } from "../_components/users-table"
 
 async function getUsers(): Promise<UserForAdmin[]> {
   const supabase = await createClient()

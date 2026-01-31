@@ -1,6 +1,6 @@
 "use client"
 
-import { LoginForm } from "@/features/auth/components/login-form";
+import { LoginForm } from "@/app/(auth)/_components/login-form";
 
 export default function LoginPageWrapper() {
   return <LoginForm />;
