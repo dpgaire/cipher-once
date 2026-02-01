@@ -79,6 +79,22 @@ CipherOnce is ideal for:
 
 ---
 
+## Project Architecture
+
+This project follows a **co-located feature-based architecture** designed for scalability, maintainability, and performance within a Next.js App Router environment.
+
+**Key principles:**
+
+-   **Feature Co-location:** Components, hooks, services, and types related to a specific feature (e.g., `admin`, `auth`, `inbox`, `profile`, `secrets`, `settings`) are placed directly within their respective route segments under the `src/app` directory. This keeps related code together, making it easier to understand and manage feature-specific logic.
+    -   Example: `src/app/dashboard/profile/_components`, `src/app/(auth)/_hooks`, `src/app/(secrets)/create/_services`.
+-   **Global Components & Utilities:** Shared UI components (like `ThemeToggle`, `CardSkeleton`) and general utility functions (`formatTimeRemaining`, `getFileCategory`) are centralized in `src/components/core` and `src/lib/utils` respectively.
+-   **Hooks:** Reusable custom hooks are located in `src/hooks`.
+-   **Services:** Common services (e.g., `secrets-api`) are in `src/services`.
+
+This approach enhances developer experience by minimizing context switching and clearly delineating ownership of code modules.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
