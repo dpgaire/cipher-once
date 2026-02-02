@@ -295,7 +295,7 @@ export function ViewSecretPage() {
         // Verify passphrase
         const passphraseHashInput = await hashPassphrase(passphrase);
         if (passphraseHashInput !== secret.passphrase_hash) {
-          throw new Error("Incorrect passphrase");
+          throw new Error("Incorrect password! Reload to try again");
         }
 
         // Derive key from passphrase
@@ -568,7 +568,8 @@ export function ViewSecretPage() {
                       <Input
                         id="passphrase"
                         type="password"
-                        placeholder="Enter the passphrase you received"
+                        autoComplete="new-password"
+                        placeholder="Enter the password you received"
                         value={passphrase}
                         onChange={(e) => setPassphrase(e.target.value)}
                         onKeyDown={(e) => {
@@ -580,7 +581,6 @@ export function ViewSecretPage() {
                     </div>
                   </div>
                 )}
-
                 {error && (
                   <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
                     {error}
