@@ -61,15 +61,14 @@ export default function SecurePasswordSharingPage() {
           Don't compromise on security when sharing passwords. Use CipherOnce for a truly private and secure exchange.
         </p>
         {/* Call to Action - Placeholder for a Button/Link */}
-        <div className="mt-6 text-center">
-        <Link href="/create">
-          <button className="group relative inline-flex items-center justify-center h-14 px-10 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/70 transition-all duration-300 hover:scale-105">
-            <span className="relative z-10">Create a secure secret</span>
-            <ArrowRight className="ml-2 h-5 w-5 relative z-10 transition-transform group-hover:translate-x-1" />
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
-          </button>
-        </Link>
-      </div>
+        <div className="flex mt-6 flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link href="/create" passHref>
+                <button className="group flex w-full items-center justify-center gap-3 rounded-lg bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 sm:w-auto">
+                  Create a Secure Share
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </button>
+              </Link>
+            </div>
       </section>
     </div>
   );
