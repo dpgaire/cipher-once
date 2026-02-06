@@ -48,17 +48,15 @@ const ImageCanvasPreview = dynamic(
   {
     ssr: false,
     loading: () => <MediaSkeleton className="h-40 w-full" />,
-  }
+  },
 );
 const PdfCanvasPreview = dynamic(
   () => import("@/components/core/PdfCanvasPreview"),
   {
     ssr: false,
     loading: () => <MediaSkeleton className="h-40 w-full" />,
-  }
+  },
 );
-
-
 
 export function ViewSecretPage() {
   const params = useParams();
@@ -83,7 +81,7 @@ export function ViewSecretPage() {
     currentSecretId: string,
     status: string,
     errorMessage?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ) => {
     try {
       await fetch("/api/log-access", {
@@ -195,7 +193,8 @@ export function ViewSecretPage() {
         const currentHostname = window.location.hostname;
         const allowed = secretData.metadata.allowed_domains.some(
           (domain) =>
-            currentHostname === domain || currentHostname.endsWith(`.${domain}`)
+            currentHostname === domain ||
+            currentHostname.endsWith(`.${domain}`),
         );
         if (!allowed) {
           const errorMessage = `Access to this secret is restricted to specific domains. Current domain: ${currentHostname}`;
@@ -216,7 +215,7 @@ export function ViewSecretPage() {
 
       const { data: rpcSuccess, error: updateError } = await supabase.rpc(
         "update_secret_view_and_burn",
-        { p_secret_id: secretData.id }
+        { p_secret_id: secretData.id },
       );
 
       if (updateError) {
@@ -224,12 +223,12 @@ export function ViewSecretPage() {
         await logAccess(
           secretData.id,
           "failure",
-          `Failed to update view count via RPC: ${updateError.message}`
+          `Failed to update view count via RPC: ${updateError.message}`,
         );
       } else if (!rpcSuccess) {
         console.warn(
           "RPC call to update_secret_view_and_burn did not succeed for secret:",
-          secretData.id
+          secretData.id,
         );
       } else {
         setSecret((prevSecret) => {
@@ -307,7 +306,7 @@ export function ViewSecretPage() {
       } else {
         if (!hash) {
           throw new Error(
-            "The secret link is incomplete. Please make sure you copied the entire URL, including the part after the # symbol."
+            "The secret link is incomplete. Please make sure you copied the entire URL, including the part after the # symbol.",
           );
         }
         // Import key from URL fragment
@@ -318,7 +317,7 @@ export function ViewSecretPage() {
         const decrypted = await decrypt(
           secret.encrypted_content,
           secret.encryption_iv,
-          encryptionKey
+          encryptionKey,
         );
         setDecryptedContent(decrypted);
       }
@@ -329,7 +328,7 @@ export function ViewSecretPage() {
         const fileResponse = await fetch(secret.file_url);
         if (!fileResponse.ok) {
           throw new Error(
-            `Failed to fetch encrypted file from ${secret.file_url}`
+            `Failed to fetch encrypted file from ${secret.file_url}`,
           );
         }
         const encryptedFileBuffer = await fileResponse.arrayBuffer();
@@ -338,7 +337,7 @@ export function ViewSecretPage() {
         const decryptedBuffer = await decryptFile(
           bufferToBase64(encryptedFileBuffer),
           secret.file_encryption_iv,
-          encryptionKey
+          encryptionKey,
         );
         setDecryptedFileBuffer(decryptedBuffer);
 
@@ -692,7 +691,7 @@ export function ViewSecretPage() {
                     </Button>
                   </div>
                   <pre
-                    className={`whitespace-pre-wrap font-mono text-sm ${
+                    className={`whitespace-pre-wrap break-all font-mono text-sm ${
                       showContent ? "" : "blur-sm select-none"
                     }`}
                   >
@@ -762,7 +761,9 @@ export function ViewSecretPage() {
                       ) : (
                         <ImageCanvasPreview
                           url={decryptedFileUrl}
-                          watermarkText={secret.metadata?.watermarkText ?? "cipheronce.com"}
+                          watermarkText={
+                            secret.metadata?.watermarkText ?? "cipheronce.com"
+                          }
                         />
                       );
 
@@ -780,7 +781,7 @@ export function ViewSecretPage() {
                           {/* Watermark */}
                           {!secret.metadata?.allow_download && (
                             <div className="pointer-events-none absolute bottom-3 right-3 text-white/60 text-xs font-medium select-none">
-                             {secret.metadata?.watermarkText ?? ""}
+                              {secret.metadata?.watermarkText ?? ""}
                             </div>
                           )}
                         </div>
@@ -803,9 +804,11 @@ export function ViewSecretPage() {
                           className="w-full h-[500px] rounded-md border"
                         />
                       ) : (
-                        <PdfCanvasPreview url={decryptedFileUrl} 
-                          watermarkText={secret.metadata?.watermarkText ?? "cipheronce.com"}
-                        
+                        <PdfCanvasPreview
+                          url={decryptedFileUrl}
+                          watermarkText={
+                            secret.metadata?.watermarkText ?? "cipheronce.com"
+                          }
                         />
                       );
 

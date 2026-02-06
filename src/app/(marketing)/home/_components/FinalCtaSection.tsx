@@ -22,9 +22,9 @@ export function FinalCtaSection() {
             Everything is encrypted, temporary, and under your control.
           </p>
 
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center sm:flex-row">
             <Link href="/create" passHref>
-              <button className="group flex w-full items-center justify-center gap-3 rounded-lg bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 sm:w-auto">
+              <button className="group flex w-full items-center justify-center gap-3 rounded-lg bg-primary text-sm px-2 py-4 lg:px-8 lg:py-4 lg:text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 sm:w-auto">
                 Create Your First Secure Share
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </button>
