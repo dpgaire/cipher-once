@@ -101,7 +101,7 @@ export function SocialShareButtons({
           onClick={handleNativeShare}
           className="h-14 w-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white shadow-lg transition-transform hover:scale-105"
         >
-          <Share2 className="h-7 w-7" /> Share link
+          <Share2 className="h-7 w-7" /> 
         </Button>
       ) : (
         <>
