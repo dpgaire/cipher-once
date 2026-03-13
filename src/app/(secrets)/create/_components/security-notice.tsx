@@ -1,20 +1,17 @@
-import { Shield } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
-/**
- * Component to display security information
- */
 export function SecurityNotice() {
   return (
-    <div className="mt-6 rounded-lg border bg-blue-500/5 p-4 border-blue-500/20">
-      <div className="flex gap-3">
-        <Shield className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
-        <div className="space-y-1 text-sm">
-          <p className="font-medium text-blue-600">End-to-End Encrypted</p>
-          <p className="text-muted-foreground">
-            Your secret is encrypted in your browser before being sent to our
-            servers. We never see your unencrypted data.
-          </p>
-        </div>
+    <div className="mt-5 flex items-start gap-4 rounded-xl border border-[#C9A84C]/15 bg-[#C9A84C]/[0.04] px-5 py-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#C9A84C]/20 bg-[#C9A84C]/10">
+        <ShieldCheck className="h-4 w-4 text-[#C9A84C]" />
+      </div>
+      <div>
+        <p className="mb-0.5 text-sm font-bold text-[#C9A84C]">End-to-End Encrypted</p>
+        <p className="text-xs leading-relaxed text-[#6a6a7a]">
+          Your secret is encrypted in your browser before being sent to our servers.
+          We never see your unencrypted data — not even briefly.
+        </p>
       </div>
     </div>
   );

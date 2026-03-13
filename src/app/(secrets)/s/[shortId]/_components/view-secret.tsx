@@ -3,17 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CopyButton } from "../_components/copy-button"; // Relative import within feature
+import { CopyButton } from "../_components/copy-button";
 import {
   AlertCircle,
   CheckCircle2,
@@ -26,9 +16,11 @@ import {
   AlertTriangle,
   Loader2,
   Download,
-  File,
+  FileIcon,
+  ArrowRight,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client"; // Stays as shared utility
+import { Skeleton } from "@/components/ui/skeleton";
+import { createClient } from "@/lib/supabase/client";
 import {
   decrypt,
   decryptFile,
@@ -36,12 +28,11 @@ import {
   hashPassphrase,
   deriveKeyFromPassphrase,
   bufferToBase64,
-} from "../_services/encryption"; // Added decryptFile, bufferToBase64
+} from "../_services/encryption";
 import { formatTimeRemaining } from "@/lib/utils";
-import type { Secret } from "../_types"; // Import Secret from feature types file
+import type { Secret } from "../_types";
 import { MediaSkeleton } from "@/components/core";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getFileCategory } from "@/lib/utils"; // New import
+import { getFileCategory } from "@/lib/utils";
 
 const ImageCanvasPreview = dynamic(
   () => import("@/components/core/ImageCanvasPreview"),
@@ -58,9 +49,39 @@ const PdfCanvasPreview = dynamic(
   },
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared layout shell
+// ─────────────────────────────────────────────────────────────────────────────
+function PageShell({
+  glowColor = "#C9A84C",
+  children,
+}: {
+  glowColor?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f] px-4 py-16">
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[600px] -translate-x-1/2 rounded-full blur-[120px]"
+        style={{ background: `${glowColor}0D` }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, #C9A84C 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+      <div className="container relative mx-auto max-w-lg">{children}</div>
+    </div>
+  );
+}
+
 export function ViewSecretPage() {
   const params = useParams();
   const shortId = params.shortId as string;
+
   const [secret, setSecret] = useState<Secret | null>(null);
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
   const [passphrase, setPassphrase] = useState("");
@@ -70,13 +91,10 @@ export function ViewSecretPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasViewed, setHasViewed] = useState(false);
   const [missingKey, setMissingKey] = useState(false);
-
-  // New states for decrypted file
   const [decryptedFileBuffer, setDecryptedFileBuffer] =
     useState<ArrayBuffer | null>(null);
   const [decryptedFileUrl, setDecryptedFileUrl] = useState<string | null>(null);
 
-  // Helper function to log access attempts
   const logAccess = async (
     currentSecretId: string,
     status: string,
@@ -86,9 +104,7 @@ export function ViewSecretPage() {
     try {
       await fetch("/api/log-access", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           secret_id: currentSecretId,
           status,
@@ -115,8 +131,6 @@ export function ViewSecretPage() {
       }
       return true;
     };
-
-    // Only run checkForKey if secret is not yet loaded, or if secret is loaded but passphrase is null and hash is missing
     if (
       !secret ||
       (!secret.passphrase_hash && !window.location.hash.substring(1))
@@ -134,185 +148,114 @@ export function ViewSecretPage() {
         .select("*")
         .eq("short_id", shortId)
         .single();
-
       if (fetchError || !data) {
-        const errorMessage = "Secret not found or has been deleted";
-        setError(errorMessage);
-        await logAccess(shortId, "failure", errorMessage);
+        const m = "Secret not found or has been deleted";
+        setError(m);
+        await logAccess(shortId, "failure", m);
         return;
       }
-
-      const secretData: Secret = data as Secret; // Cast to new Secret interface
-
-      // Check if expired
+      const secretData: Secret = data as Secret;
       if (new Date(secretData.expires_at) < new Date()) {
-        const errorMessage = "This secret has expired";
-        setError(errorMessage);
-        await logAccess(secretData.id, "failure", errorMessage);
+        const m = "This secret has expired";
+        setError(m);
+        await logAccess(secretData.id, "failure", m);
         return;
       }
-
-      // Check if already burned
       if (secretData.is_burned) {
-        const errorMessage = "This secret has already been viewed and burned";
-        setError(errorMessage);
-        await logAccess(secretData.id, "failure", errorMessage);
+        const m = "This secret has already been viewed and burned";
+        setError(m);
+        await logAccess(secretData.id, "failure", m);
         return;
       }
-
-      // Check if max views reached
       if (
         secretData.max_views !== -1 &&
         secretData.view_count >= secretData.max_views
       ) {
-        const errorMessage = "This secret has reached its maximum view count";
-        setError(errorMessage);
-        await logAccess(secretData.id, "failure", errorMessage);
+        const m = "This secret has reached its maximum view count";
+        setError(m);
+        await logAccess(secretData.id, "failure", m);
         return;
       }
-
-      // NEW V2: METADATA-BASED RULE EVALUATION
       if (secretData.metadata?.require_auth) {
         const {
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) {
-          const errorMessage =
+          const m =
             "Authentication required to view this secret. Please sign in.";
-          setError(errorMessage);
-          await logAccess(secretData.id, "failure", errorMessage);
+          setError(m);
+          await logAccess(secretData.id, "failure", m);
           setIsLoading(false);
           return;
         }
       }
-
-      if (
-        secretData.metadata?.allowed_domains &&
-        secretData.metadata.allowed_domains.length > 0
-      ) {
-        const currentHostname = window.location.hostname;
-        const allowed = secretData.metadata.allowed_domains.some(
-          (domain) =>
-            currentHostname === domain ||
-            currentHostname.endsWith(`.${domain}`),
-        );
-        if (!allowed) {
-          const errorMessage = `Access to this secret is restricted to specific domains. Current domain: ${currentHostname}`;
-          setError(errorMessage);
-          await logAccess(secretData.id, "failure", errorMessage);
-          setIsLoading(false);
-          return;
-        }
-      }
-      // END NEW V2: METADATA-BASED RULE EVALUATION
-
+      // if (secretData.metadata?.allowed_domains?.length > 0) {
+      //   const currentHostname = window.location.hostname;
+      //   const allowed = secretData.metadata.allowed_domains.some((domain: string) => currentHostname === domain || currentHostname.endsWith(`.${domain}`));
+      //   if (!allowed) { const m = `Access restricted. Current domain: ${currentHostname}`; setError(m); await logAccess(secretData.id, "failure", m); setIsLoading(false); return; }
+      // }
       setSecret(secretData);
-
-      // Increment view count and update burn status immediately on valid access
       const newViewCount = secretData.view_count + 1;
       const shouldBurn =
         secretData.max_views !== -1 && newViewCount >= secretData.max_views;
-
       const { data: rpcSuccess, error: updateError } = await supabase.rpc(
         "update_secret_view_and_burn",
         { p_secret_id: secretData.id },
       );
-
-      if (updateError) {
-        console.error("RPC Error updating view count:", updateError);
-        await logAccess(
-          secretData.id,
-          "failure",
-          `Failed to update view count via RPC: ${updateError.message}`,
+      if (!updateError && rpcSuccess) {
+        setSecret((prev) =>
+          prev
+            ? { ...prev, view_count: newViewCount, is_burned: shouldBurn }
+            : null,
         );
-      } else if (!rpcSuccess) {
-        console.warn(
-          "RPC call to update_secret_view_and_burn did not succeed for secret:",
-          secretData.id,
-        );
-      } else {
-        setSecret((prevSecret) => {
-          if (!prevSecret) return null;
-          return {
-            ...prevSecret,
-            view_count: newViewCount,
-            is_burned: shouldBurn,
-          };
-        });
-        await logAccess(secretData.id, "view"); // Log a successful view
+        await logAccess(secretData.id, "view");
       }
     } catch (err) {
-      console.error("[v0] Error fetching secret:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load secret";
-      setError(errorMessage);
-      await logAccess(shortId, "failure", errorMessage);
+      const m = err instanceof Error ? err.message : "Failed to load secret";
+      setError(m);
+      await logAccess(shortId, "failure", m);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch secret metadata
   useEffect(() => {
-    if (!shortId) return;
-    fetchSecret();
+    if (shortId) fetchSecret();
   }, [shortId]);
-
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (hasViewed) {
-      timer = setTimeout(() => {
-        window.location.reload();
-      }, 60000); // 60 seconds
+      timer = setTimeout(() => window.location.reload(), 60000);
     }
-
     return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
+      if (timer) clearTimeout(timer);
     };
   }, [hasViewed]);
 
   const handleRevealSecret = async () => {
     if (!secret) return;
-
     setIsDecrypting(true);
     setError(null);
-
     try {
-      // Get encryption key from URL fragment
       const hash = window.location.hash.substring(1);
-
       let encryptionKey: CryptoKey;
-
-      // Check if passphrase is required
       if (secret.passphrase_hash) {
-        if (!passphrase) {
+        if (!passphrase)
           throw new Error("Passphrase is required to view this secret");
-        }
-
-        // Verify passphrase
         const passphraseHashInput = await hashPassphrase(passphrase);
-        if (passphraseHashInput !== secret.passphrase_hash) {
+        if (passphraseHashInput !== secret.passphrase_hash)
           throw new Error("Incorrect password! Reload to try again");
-        }
-
-        // Derive key from passphrase
-        const salt = secret.metadata?.salt; // Optional chaining
-        if (!salt) {
+        const salt = secret.metadata?.salt;
+        if (!salt)
           throw new Error("Salt missing for passphrase-protected secret");
-        }
         encryptionKey = await deriveKeyFromPassphrase(passphrase, salt);
       } else {
-        if (!hash) {
+        if (!hash)
           throw new Error(
-            "The secret link is incomplete. Please make sure you copied the entire URL, including the part after the # symbol.",
+            "The secret link is incomplete. Please copy the entire URL including the # part.",
           );
-        }
-        // Import key from URL fragment
         encryptionKey = await importKey(decodeURIComponent(hash));
       }
-      // Decrypt text content if available
       if (secret.encrypted_content && secret.encryption_iv) {
         const decrypted = await decrypt(
           secret.encrypted_content,
@@ -321,557 +264,490 @@ export function ViewSecretPage() {
         );
         setDecryptedContent(decrypted);
       }
-
-      // Decrypt file content if available
       if (secret.has_file && secret.file_url && secret.file_encryption_iv) {
-        // Fetch the encrypted file from Vercel Blob
         const fileResponse = await fetch(secret.file_url);
-        if (!fileResponse.ok) {
-          throw new Error(
-            `Failed to fetch encrypted file from ${secret.file_url}`,
-          );
-        }
+        if (!fileResponse.ok) throw new Error(`Failed to fetch encrypted file`);
         const encryptedFileBuffer = await fileResponse.arrayBuffer();
-
-        // Decrypt the file buffer
         const decryptedBuffer = await decryptFile(
           bufferToBase64(encryptedFileBuffer),
           secret.file_encryption_iv,
           encryptionKey,
         );
         setDecryptedFileBuffer(decryptedBuffer);
-
-        // Create an object URL for display/download
         const fileBlob = new Blob([decryptedBuffer], {
           type: secret.file_type || "application/octet-stream",
         });
         setDecryptedFileUrl(URL.createObjectURL(fileBlob));
       }
-
       setHasViewed(true);
-
-      // If the secret was burned on initial load, log a burn event here if not already done.
-      if (secret.is_burned && !hasViewed) {
-        // hasViewed check prevents redundant burn log if already viewed in session
-        await logAccess(secret.id, "burn");
-      }
+      if (secret.is_burned && !hasViewed) await logAccess(secret.id, "burn");
     } catch (err) {
-      console.error("[v0] Error decrypting secret:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to decrypt secret";
-      setError(errorMessage);
-      await logAccess(secret.id, "failure", errorMessage);
+      const m = err instanceof Error ? err.message : "Failed to decrypt secret";
+      setError(m);
+      await logAccess(secret.id, "failure", m);
     } finally {
       setIsDecrypting(false);
     }
   };
 
-  // Effect to revoke object URL when component unmounts or file changes
   useEffect(() => {
     return () => {
-      if (decryptedFileUrl) {
-        URL.revokeObjectURL(decryptedFileUrl);
-      }
+      if (decryptedFileUrl) URL.revokeObjectURL(decryptedFileUrl);
     };
   }, [decryptedFileUrl]);
 
-  // Loading state
+  // ── Loading skeleton ───────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="mb-8 text-center">
-            <h1 className="mb-2 text-3xl font-bold text-balance">
-              <Skeleton className="h-8 w-3/4 mx-auto" />
-            </h1>
-            <div className="text-muted-foreground">
-              <Skeleton className="h-4 w-1/2 mx-auto" />
-            </div>
-          </div>
-
-          {/* Secret Info Card Skeleton */}
-          <Card className="mb-6">
-            <CardHeader>
-              <Skeleton className="h-6 w-1/2" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
-                <div className="flex items-center gap-3">
-                  <div className="space-y-1">
-                    <Skeleton className="h-3 w-20" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="space-y-1">
-                    <Skeleton className="h-3 w-20" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                </div>
-              </div>
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </CardContent>
-          </Card>
-
-          {/* Warning Card Skeleton */}
-          <Card className="border-amber-500/20 bg-amber-500/5">
-            <CardHeader>
-              <Skeleton className="h-6 w-2/3 text-amber-600" />
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-            </CardContent>
-          </Card>
+      <PageShell>
+        <div className="mb-8 space-y-3 text-center">
+          <Skeleton className="mx-auto h-16 w-16 rounded-2xl bg-white/5" />
+          <Skeleton className="mx-auto h-8 w-56 rounded-lg bg-white/5" />
+          <Skeleton className="mx-auto h-4 w-40 rounded bg-white/5" />
         </div>
-      </div>
+        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-7 space-y-4">
+          <div className="grid gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:grid-cols-2">
+            <Skeleton className="h-10 rounded-lg bg-white/5" />
+            <Skeleton className="h-10 rounded-lg bg-white/5" />
+          </div>
+          <Skeleton className="h-11 w-full rounded-lg bg-white/5" />
+          <Skeleton className="h-11 w-full rounded-lg bg-white/5" />
+        </div>
+        <div className="mt-4 rounded-xl border border-amber-500/10 bg-amber-500/[0.03] p-5 space-y-2">
+          <Skeleton className="h-4 w-32 rounded bg-white/5" />
+          <Skeleton className="h-3 w-full rounded bg-white/5" />
+        </div>
+      </PageShell>
     );
   }
 
-  if (error) {
+  // ── Error state ────────────────────────────────────────────────────────────
+  if (error && !secret) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="w-full max-w-md flex flex-col gap-4 mb-8">
-          <div className=" mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <AlertCircle className="h-8 w-8 text-destructive" />
-            </div>
-            <h1 className="mb-2 text-2xl font-bold">Secret Not Available</h1>
+      <PageShell glowColor="#ef4444">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10">
+            <AlertCircle className="h-6 w-6 text-red-400" />
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-destructive">Error</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">{error}</p>
-
-              {missingKey && (
-                <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4 space-y-2">
-                  <p className="text-sm font-medium text-amber-600">
-                    What went wrong?
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Secret links contain an encryption key after the # symbol
-                    (e.g.,{" "}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                      /s/abc123#key...
-                    </code>
-                    ). This key is required to decrypt the secret.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Make sure you copied the complete URL provided when the
-                    secret was created.
-                  </p>
-                </div>
-              )}
-
-              <Button asChild className="w-full">
-                <a href="/create">Create Your Own Secret</a>
-              </Button>
-            </CardContent>
-          </Card>
+          <h1
+            className="mb-1 text-2xl font-bold text-white"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            Secret Not Available
+          </h1>
+          <p className="text-sm text-[#6a6a7a]">
+            This secret could not be accessed
+          </p>
         </div>
-      </div>
+
+        <div className="mb-5 rounded-2xl border border-white/5 bg-white/[0.02] p-6 space-y-4">
+          <p className="text-sm leading-relaxed text-[#8a8a9a]">{error}</p>
+
+          {missingKey && (
+            <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-4 space-y-2">
+              <p className="text-xs font-bold text-amber-400">
+                What went wrong?
+              </p>
+              <p className="text-xs leading-relaxed text-[#6a6a7a]">
+                Secret links include an encryption key after the{" "}
+                <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[#C9A84C]">
+                  #
+                </code>{" "}
+                symbol. Make sure you copied the complete URL.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <a href="/create">
+          <button className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#C9A84C] py-3.5 text-sm font-bold text-[#0a0a0f] transition-all hover:shadow-[0_0_30px_rgba(201,168,76,0.3)]">
+            Create Your Own Secret
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </button>
+        </a>
+      </PageShell>
     );
   }
 
-  // If secret is null even after loading, show a generic error (should ideally not happen if fetchSecret handles all errors)
   if (!secret) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <AlertCircle className="h-8 w-8 text-destructive" />
-            </div>
-            <h1 className="mb-2 text-2xl font-bold">Secret Not Available</h1>
-            <p className="text-muted-foreground">
-              The secret could not be loaded or accessed.
-            </p>
+      <PageShell glowColor="#ef4444">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10">
+            <AlertCircle className="h-6 w-6 text-red-400" />
           </div>
-          <Button asChild className="w-full">
-            <a href="/create">Create Your Own Secret</a>
-          </Button>
+          <h1
+            className="mb-2 text-2xl font-bold text-white"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            Secret Not Available
+          </h1>
+          <p className="mb-8 text-sm text-[#6a6a7a]">
+            The secret could not be loaded or accessed.
+          </p>
+          <a href="/create">
+            <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#C9A84C] py-3.5 text-sm font-bold text-[#0a0a0f]">
+              Create Your Own Secret <ArrowRight className="h-4 w-4" />
+            </button>
+          </a>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
-  // Secret found - show reveal interface
+  // ── Reveal interface ───────────────────────────────────────────────────────
   if (!hasViewed) {
     return (
-      <div className="min-h-screen p-2  lg:p-6">
-        <div className="container py-4 lg:py-12">
-          <div className="mx-auto max-w-2xl">
-            {/* Header */}
-            <div className="mb-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                <Lock className="h-8 w-8 text-primary" />
-              </div>
-              <h1 className="mb-2 text-3xl font-bold text-balance">
-                Encrypted Secret
-              </h1>
-              <p className="text-muted-foreground">
-                Someone has shared a secure message with you
-              </p>
+      <PageShell>
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#C9A84C]/30 bg-[#C9A84C]/10 shadow-[0_0_30px_rgba(201,168,76,0.15)]">
+            <Lock className="h-7 w-7 text-[#C9A84C]" />
+          </div>
+          <h1
+            className="mb-2 text-4xl font-bold text-white"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            Encrypted Secret
+          </h1>
+          <p className="text-sm text-[#6a6a7a]">
+            Someone has shared a secure message with you
+          </p>
+        </div>
+
+        {/* Info card */}
+        <div className="mb-4 rounded-2xl border border-white/5 bg-white/[0.02] p-7 space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#C9A84C]/20 bg-[#C9A84C]/10">
+              <Shield className="h-4 w-4 text-[#C9A84C]" />
             </div>
+            <p className="text-sm font-bold text-white">Secret Information</p>
+          </div>
 
-            {/* Secret Info Card */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Secret Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Expires in
-                      </p>
-                      <p className="font-medium">
-                        {formatTimeRemaining(secret.expires_at)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Eye className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Views remaining
-                      </p>
-                      <p className="font-medium">
-                        {secret.max_views === -1 ||
-                        secret.max_views === undefined
-                          ? "Unlimited"
-                          : secret.max_views - secret.view_count}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {secret.passphrase_hash && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <Lock className="h-4 w-4" />
-                      Password Required
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="passphrase">Enter Password</Label>
-                      <Input
-                        id="passphrase"
-                        type="password"
-                        autoComplete="new-password"
-                        placeholder="Enter the password you received"
-                        value={passphrase}
-                        onChange={(e) => setPassphrase(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleRevealSecret();
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-                {error && (
-                  <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
-                    {error}
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleRevealSecret}
-                  disabled={
-                    isDecrypting || (!!secret.passphrase_hash && !passphrase)
-                  }
-                  className="w-full cursor-pointer"
-                  size="lg"
-                >
-                  {isDecrypting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Decrypting...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Reveal Secret
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Warning Card */}
-            <Card className="border-amber-500/20 bg-amber-500/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-amber-600">
-                  <AlertTriangle className="h-5 w-5" />
-                  Warning: One-Time View
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p>
-                  This secret will be <strong>permanently deleted</strong> after
-                  you view it
-                  {secret.max_views !== undefined &&
-                    secret.max_views > 1 &&
-                    ` or after ${secret.max_views} total views`}
-                  .
+          <div className="grid gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:grid-cols-2">
+            <div className="flex items-center gap-3">
+              <Clock className="h-4 w-4 shrink-0 text-[#C9A84C]" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-[#4a4a5a]">
+                  Expires in
                 </p>
-                <p>
-                  Make sure you&apos;re ready to save or copy the information
-                  before revealing it.
+                <p className="text-sm font-semibold text-white">
+                  {formatTimeRemaining(secret.expires_at)}
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Eye className="h-4 w-4 shrink-0 text-[#C9A84C]" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-[#4a4a5a]">
+                  Views remaining
+                </p>
+                <p className="text-sm font-semibold text-white">
+                  {secret.max_views === -1 || secret.max_views === undefined
+                    ? "Unlimited"
+                    : secret.max_views - secret.view_count}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Passphrase input */}
+          {secret.passphrase_hash && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Lock className="h-3.5 w-3.5 text-[#C9A84C]" />
+                <p className="text-xs font-bold uppercase tracking-wider text-[#6a6a7a]">
+                  Password required
+                </p>
+              </div>
+              <input
+                id="passphrase"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Enter the password you received"
+                value={passphrase}
+                onChange={(e) => setPassphrase(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRevealSecret();
+                }}
+                className="w-full rounded-lg border border-white/5 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder-[#4a4a5a] outline-none transition-all focus:border-[#C9A84C]/40 focus:shadow-[0_0_0_3px_rgba(201,168,76,0.08)]"
+              />
+            </div>
+          )}
+
+          {/* Inline error */}
+          {error && (
+            <div className="flex items-start gap-3 rounded-lg border border-red-500/15 bg-red-500/5 px-4 py-3">
+              <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
+              <p className="text-xs leading-relaxed text-red-400">{error}</p>
+            </div>
+          )}
+
+          {/* Reveal CTA */}
+          <button
+            onClick={handleRevealSecret}
+            disabled={isDecrypting || (!!secret.passphrase_hash && !passphrase)}
+            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-[#C9A84C] py-4 text-sm font-bold text-[#0a0a0f] shadow-[0_0_30px_rgba(201,168,76,0.2)] transition-all hover:shadow-[0_0_50px_rgba(201,168,76,0.4)] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isDecrypting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Decrypting...
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4" />
+                Reveal Secret
+                <div className="absolute inset-0 -translate-x-full skew-x-12 bg-white/15 transition-transform duration-500 group-hover:translate-x-0" />
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Warning */}
+        <div className="flex items-start gap-4 rounded-xl border border-amber-500/15 bg-amber-500/[0.04] px-5 py-4">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-amber-400">
+              Warning: One-Time View
+            </p>
+            <p className="text-xs text-[#6a6a7a]">
+              This secret will be{" "}
+              <span className="font-semibold text-white">
+                permanently deleted
+              </span>{" "}
+              after you view it
+              {secret.max_views !== undefined &&
+                secret.max_views > 1 &&
+                ` or after ${secret.max_views} total views`}
+              .
+            </p>
+            <p className="text-xs text-[#6a6a7a]">
+              Make sure you're ready to save the information before revealing.
+            </p>
           </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
-  // Secret revealed - show content
-
+  // ── Revealed state ─────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen p-4 lg:p-6">
-      <div className="container py-4 lg:py-12">
-        <div className="mx-auto max-w-2xl">
-          {/* Success Header */}
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
-            </div>
-            <h1 className="mb-2 text-3xl font-bold">Secret Revealed</h1>
-            <p className="text-muted-foreground">
-              Copy the information below before leaving this page
-            </p>
-          </div>
-          {/* Content Card */}
-          {decryptedContent && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Decrypted Content
-                </CardTitle>
-                <CardDescription>
-                  This message will self-destruct
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Decrypted Text Content */}
-
-                <div className="relative rounded-lg bg-muted p-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowContent(!showContent)}
-                      className="h-auto p-0 text-xs hover:bg-transparent"
-                    >
-                      {showContent ? (
-                        <>
-                          <Eye className="mr-1 h-3 w-3" />
-                          Visible
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="mr-1 h-3 w-3" />
-                          Hidden
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <pre
-                    className={`whitespace-pre-wrap break-all font-mono text-sm ${
-                      showContent ? "" : "blur-sm select-none"
-                    }`}
-                  >
-                    {decryptedContent}
-                  </pre>
-                </div>
-
-                <CopyButton
-                  text={decryptedContent || ""}
-                  label="Copy to Clipboard"
-                  className="w-full"
-                  variant="default"
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Custom Labels */}
-
-          {secret?.metadata?.custom_labels &&
-            secret.metadata.custom_labels.length > 0 && (
-              <Card className="p-4">
-                <div className="mb-6">
-                  <p className="mb-2 text-xs font-medium text-muted-foreground">
-                    Labels
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {secret.metadata.custom_labels.map((label, index) => (
-                      <span
-                        key={`${label}-${index}`}
-                        className="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium"
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            )}
-
-          {/* Attached File Card */}
-          {secret.has_file && decryptedFileUrl && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <File className="h-5 w-5" />
-                  Attached File
-                </CardTitle>
-                <CardDescription className="text-xs truncate">
-                  {secret.file_name}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                {(() => {
-                  const type = getFileCategory(secret.file_type);
-
-                  switch (type) {
-                    case "image":
-                      return secret.metadata?.allow_download ? (
-                        <img
-                          src={decryptedFileUrl}
-                          alt={secret.file_name || "Image"}
-                          className="max-w-full max-h-[500px] mx-auto rounded-md"
-                        />
-                      ) : (
-                        <ImageCanvasPreview
-                          url={decryptedFileUrl}
-                          watermarkText={
-                            secret.metadata?.watermarkText ?? "cipheronce.com"
-                          }
-                        />
-                      );
-
-                    case "video":
-                      return (
-                        <div className="relative">
-                          <video
-                            src={decryptedFileUrl}
-                            controls
-                            controlsList="nodownload noplaybackrate"
-                            disablePictureInPicture
-                            className="w-full max-h-[500px] rounded-md"
-                          />
-
-                          {/* Watermark */}
-                          {!secret.metadata?.allow_download && (
-                            <div className="pointer-events-none absolute bottom-3 right-3 text-white/60 text-xs font-medium select-none">
-                              {secret.metadata?.watermarkText ?? ""}
-                            </div>
-                          )}
-                        </div>
-                      );
-
-                    case "audio":
-                      return (
-                        <audio
-                          src={decryptedFileUrl}
-                          controls
-                          controlsList="nodownload"
-                          className="w-full"
-                        />
-                      );
-
-                    case "pdf":
-                      return secret.metadata?.allow_download ? (
-                        <iframe
-                          src={decryptedFileUrl}
-                          className="w-full h-[500px] rounded-md border"
-                        />
-                      ) : (
-                        <PdfCanvasPreview
-                          url={decryptedFileUrl}
-                          watermarkText={
-                            secret.metadata?.watermarkText ?? "cipheronce.com"
-                          }
-                        />
-                      );
-
-                    default:
-                      return (
-                        <div className="text-sm text-muted-foreground text-center py-6">
-                          Preview not available for this file type.
-                        </div>
-                      );
-                  }
-                })()}
-
-                {/* Download button ONLY if allowed */}
-                {secret.metadata?.allow_download && (
-                  <Button asChild className="w-full">
-                    <a
-                      href={decryptedFileUrl}
-                      download={secret.file_name}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download File
-                    </a>
-                  </Button>
-                )}
-
-                {/* Security notice */}
-                {!secret.metadata?.allow_download && (
-                  <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
-                    🔒 Download disabled — preview only. This file cannot be
-                    saved.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Burn Notice */}
-          <Card className="border-red-500/20 bg-red-500/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
-                <Flame className="h-5 w-5" />
-                Secret Burned
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p>
-                This secret has been viewed and will be permanently deleted from
-                our servers.
-              </p>
-              <p>The link is no longer valid and cannot be used again.</p>
-            </CardContent>
-          </Card>
-
-          {/* Action */}
-          <div className="mt-8">
-            <Button asChild className="w-full" size="lg">
-              <a href="/create">Create Your Own Secret</a>
-            </Button>
+    <PageShell glowColor="#10b981">
+      {/* Header */}
+      <div className="mb-10 text-center">
+        <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-emerald-500/10 blur-xl" />
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+            <CheckCircle2 className="h-7 w-7 text-emerald-400" />
           </div>
         </div>
+        <h1
+          className="mb-2 text-4xl font-bold text-white"
+          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+        >
+          Secret Revealed
+        </h1>
+        <p className="text-sm text-[#6a6a7a]">
+          Copy the information below before leaving this page
+        </p>
       </div>
-    </div>
+
+      {/* Decrypted text content */}
+      {decryptedContent && (
+        <div className="mb-4 rounded-2xl border border-white/5 bg-white/[0.02] p-7 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
+                <Shield className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">
+                  Decrypted Content
+                </p>
+                <p className="text-xs text-[#4a4a5a]">
+                  This message will self-destruct
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowContent(!showContent)}
+              className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-[#6a6a7a] transition-all hover:text-white"
+            >
+              {showContent ? (
+                <>
+                  <EyeOff className="h-3 w-3" /> Hide
+                </>
+              ) : (
+                <>
+                  <Eye className="h-3 w-3" /> Show
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="rounded-xl border border-white/5 bg-[#0d0d14] p-4">
+            <pre
+              className={`whitespace-pre-wrap break-all font-mono text-sm text-[#8a8a9a] transition-all duration-200 ${showContent ? "" : "select-none blur-sm"}`}
+            >
+              {decryptedContent}
+            </pre>
+          </div>
+
+          <CopyButton
+            text={decryptedContent}
+            label="Copy to Clipboard"
+            className="w-full"
+            variant="default"
+          />
+        </div>
+      )}
+
+      {/* Custom labels */}
+      {/* {secret?.metadata?.custom_labels?.length > 0 && (
+        <div className="mb-4 rounded-2xl border border-white/5 bg-white/[0.02] px-5 py-4">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-[#4a4a5a]">
+            Labels
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {secret.metadata.custom_labels.map(
+              (label: string, index: number) => (
+                <span
+                  key={`${label}-${index}`}
+                  className="inline-flex items-center rounded-full border border-[#C9A84C]/15 bg-[#C9A84C]/5 px-3 py-1 text-xs font-medium text-[#C9A84C]"
+                >
+                  {label}
+                </span>
+              ),
+            )}
+          </div>
+        </div>
+      )} */}
+
+      {/* Attached file */}
+      {secret.has_file && decryptedFileUrl && (
+        <div className="mb-4 rounded-2xl border border-white/5 bg-white/[0.02] p-7 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+              <FileIcon className="h-4 w-4 text-[#C9A84C]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-white">Attached File</p>
+              <p className="truncate text-xs text-[#4a4a5a]">
+                {secret.file_name}
+              </p>
+            </div>
+          </div>
+
+          {(() => {
+            const type = getFileCategory(secret.file_type);
+            switch (type) {
+              case "image":
+                return secret.metadata?.allow_download ? (
+                  <img
+                    src={decryptedFileUrl}
+                    alt={secret.file_name || "Image"}
+                    className="max-h-[500px] w-full rounded-xl object-contain"
+                  />
+                ) : (
+                  <ImageCanvasPreview
+                    url={decryptedFileUrl}
+                    watermarkText={
+                      secret.metadata?.watermarkText ?? "cipheronce.com"
+                    }
+                  />
+                );
+              case "video":
+                return (
+                  <div className="relative overflow-hidden rounded-xl">
+                    <video
+                      src={decryptedFileUrl}
+                      controls
+                      controlsList="nodownload noplaybackrate"
+                      disablePictureInPicture
+                      className="w-full max-h-[500px]"
+                    />
+                    {!secret.metadata?.allow_download && (
+                      <div className="pointer-events-none absolute bottom-3 right-3 select-none text-[10px] font-medium text-white/50">
+                        {secret.metadata?.watermarkText ?? ""}
+                      </div>
+                    )}
+                  </div>
+                );
+              case "audio":
+                return (
+                  <audio
+                    src={decryptedFileUrl}
+                    controls
+                    controlsList="nodownload"
+                    className="w-full"
+                  />
+                );
+              case "pdf":
+                return secret.metadata?.allow_download ? (
+                  <iframe
+                    src={decryptedFileUrl}
+                    className="h-[500px] w-full rounded-xl border border-white/5"
+                  />
+                ) : (
+                  <PdfCanvasPreview
+                    url={decryptedFileUrl}
+                    watermarkText={
+                      secret.metadata?.watermarkText ?? "cipheronce.com"
+                    }
+                  />
+                );
+              default:
+                return (
+                  <p className="py-6 text-center text-sm text-[#6a6a7a]">
+                    Preview not available for this file type.
+                  </p>
+                );
+            }
+          })()}
+
+          {secret.metadata?.allow_download && (
+            <a
+              href={decryptedFileUrl}
+              download={secret.file_name}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#C9A84C] py-3 text-sm font-bold text-[#0a0a0f] transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.3)]">
+                <Download className="h-4 w-4" /> Download File
+              </button>
+            </a>
+          )}
+
+          {!secret.metadata?.allow_download && (
+            <div className="flex items-center gap-3 rounded-lg border border-amber-500/15 bg-amber-500/[0.04] px-4 py-3">
+              <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+              <p className="text-xs text-amber-400/80">
+                Download disabled — preview only. This file cannot be saved.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Burned notice */}
+      <div className="mb-6 flex items-start gap-4 rounded-xl border border-red-500/15 bg-red-500/[0.04] px-5 py-4">
+        <Flame className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+        <div className="space-y-1">
+          <p className="text-xs font-bold text-red-400">Secret Burned</p>
+          <p className="text-xs leading-relaxed text-[#6a6a7a]">
+            This secret has been viewed and will be permanently deleted from our
+            servers. The link is no longer valid.
+          </p>
+        </div>
+      </div>
+
+      <a href="/create">
+        <button className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-[#C9A84C] py-4 text-sm font-bold text-[#0a0a0f] transition-all hover:shadow-[0_0_40px_rgba(201,168,76,0.35)]">
+          Create Your Own Secret
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          <div className="absolute inset-0 -translate-x-full skew-x-12 bg-white/15 transition-transform duration-500 group-hover:translate-x-0" />
+        </button>
+      </a>
+    </PageShell>
   );
 }
