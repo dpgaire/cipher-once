@@ -90,11 +90,9 @@ export function SecurityArchitectureSection() {
                 </div>
 
                 {detail.example && (
-                  <div className="ml-17 rounded-lg border border-white/5 bg-[#0d0d14] p-4 font-mono text-xs">
+                  <div className="ml-17 rounded-lg border border-white/5 bg-[#0d0d14] p-4 font-mono text-xs wrap-break-word">
                     <span className="text-[#6a6a7a]">{detail.example}</span>
-                    <span className="text-[#C9A84C]">
-                      {detail.exampleKey}
-                    </span>
+                    <span className="text-[#C9A84C]">{detail.exampleKey}</span>
                   </div>
                 )}
               </div>
@@ -111,10 +109,7 @@ export function SecurityArchitectureSection() {
               researchers, auditors, and curious developers are welcome to
               review and verify every claim.
             </p>
-            <Link
-              href="https://github.com/dpgaire/cipher-once"
-              target="_blank"
-            >
+            <Link href="https://github.com/dpgaire/cipher-once" target="_blank">
               <button className="inline-flex items-center gap-2 rounded-lg border border-[#C9A84C]/30 bg-[#C9A84C]/10 px-6 py-3 text-sm font-bold text-[#C9A84C] transition-all hover:border-[#C9A84C]/50 hover:bg-[#C9A84C]/15">
                 View Source on GitHub
                 <ExternalLink className="h-3.5 w-3.5" />

@@ -40,7 +40,6 @@ export function UserProfileDropdown({ user }: UserProfileDropdownProps) {
     router.refresh();
   };
 
-  console.log("avatarUrl", avatarUrl);
 
   return (
     <DropdownMenu>
