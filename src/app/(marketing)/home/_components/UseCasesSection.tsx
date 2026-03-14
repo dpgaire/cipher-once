@@ -46,7 +46,7 @@ export function UseCasesSection() {
   return (
     <section className="relative border-t border-white/5 bg-[#0a0a0f] py-24 lg:py-36">
       {/* Subtle background glow */}
-      <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#C9A84C]/3 blur-[120px] pointer-events-none" />
+      <div className="absolute  max-w-full left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#C9A84C]/3 blur-[120px] pointer-events-none" />
 
       <div className="container relative mx-auto px-6 lg:px-8">
         <div className="mx-auto mb-20 max-w-2xl text-center">

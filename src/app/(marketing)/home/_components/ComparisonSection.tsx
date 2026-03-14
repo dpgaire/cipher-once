@@ -57,7 +57,6 @@ export function ComparisonSection() {
             </div>
           </div>
 
-          {/* Rows */}
           <div className="divide-y divide-white/[0.03]">
             {rows.map((row, i) => (
               <div
