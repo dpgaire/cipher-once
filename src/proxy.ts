@@ -38,19 +38,18 @@ function buildCSP() {
     default-src 'self';
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data:;
+    img-src 'self' blob: data: https://*.googleusercontent.com;
     font-src 'self';
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co ws: blob:;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co ws:;
     media-src 'self' blob: data:;
     frame-src https://vercel.live;
     frame-ancestors 'self';
     object-src 'none';
     base-uri 'self';
   `
-    .replace(/\s{2,}/g, " ")
-    .trim()
+  .replace(/\s{2,}/g, " ")
+  .trim()
 }
-
 
 // =====================
 // Proxy Handler

@@ -164,7 +164,7 @@ export function LoginForm() {
 
             {/* Error */}
             {error && (
-              <div className="flex items-start gap-3 rounded-lg border border-red-500/15 bg-red-500/5 px-4 py-3">
+              <div className="flex items-center  gap-3 rounded-lg border border-red-500/15 bg-red-500/5 px-4 py-3">
                 <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
                 <p className="text-xs leading-relaxed text-red-400">{error}</p>
               </div>

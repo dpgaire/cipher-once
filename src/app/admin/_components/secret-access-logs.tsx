@@ -2,17 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableFooter,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty";
 import { TableSkeleton } from "@/components/core";
 
@@ -28,218 +18,121 @@ interface SecretAccessLog {
   metadata: Record<string, any> | null;
 }
 
-interface SecretAccessLogsProps {
-  // secretId: string; // No longer needed for fetching all logs
+const statusConfig: Record<string, { label: string; cls: string }> = {
+  success: { label: "Success", cls: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" },
+  view:    { label: "View",    cls: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" },
+  failure: { label: "Failure", cls: "border-red-500/20 bg-red-500/10 text-red-400" },
+  burn:    { label: "Burned",  cls: "border-orange-500/20 bg-orange-500/10 text-orange-400" },
+  attempt: { label: "Attempt", cls: "border-white/10 bg-white/5 text-[#6a6a7a]" },
 }
 
-export function SecretAccessLogs({}: /* secretId */ SecretAccessLogsProps) {
-  const [logs, setLogs] = useState<SecretAccessLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const PAGE_SIZE = 100;
+function StatusBadge({ status }: { status: string }) {
+  const cfg = statusConfig[status] ?? { label: status, cls: "border-white/10 bg-white/5 text-[#6a6a7a]" }
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cfg.cls}`}>
+      {cfg.label}
+    </span>
+  )
+}
 
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+export function SecretAccessLogs() {
+  const [logs, setLogs] = useState<SecretAccessLog[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const PAGE_SIZE = 100
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch(
-          `/api/admin/logs?page=${page}&pageSize=${PAGE_SIZE}`
-        );
-
+        setIsLoading(true)
+        setError(null)
+        const response = await fetch(`/api/admin/logs?page=${page}&pageSize=${PAGE_SIZE}`)
         if (!response.ok) {
-          const contentType = response.headers.get("content-type");
-          let errorMessage = "Failed to fetch access logs";
-
-          if (contentType?.includes("application/json")) {
-            const err = await response.json();
-            errorMessage = err.error || errorMessage;
-          } else {
-            errorMessage = await response.text();
-          }
-
-          throw new Error(errorMessage);
+          const ct = response.headers.get("content-type")
+          const errorMessage = ct?.includes("application/json")
+            ? (await response.json()).error || "Failed to fetch logs"
+            : await response.text()
+          throw new Error(errorMessage)
         }
-
-        const result = await response.json();
-
-        setLogs(result.data);
-        setTotal(result.total);
+        const result = await response.json()
+        setLogs(result.data)
+        setTotal(result.total)
       } catch (err) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : "Failed to load logs.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchLogs();
-  }, [page]);
-
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-
-  if (isLoading) {
-    return (
-      <div className="max-h-[60vh] overflow-y-auto">
-        <TableSkeleton rows={10} cols={9} /> {/* Adjust cols for new data */}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <EmptyState
-        icon={AlertCircle}
-        title="Error loading logs"
-        description={error}
-      />
-    );
-  }
-
-  if (!logs || logs.length === 0) {
-    return (
-      <EmptyState
-        icon={AlertCircle}
-        title="No access logs found"
-        description="No access logs were recorded."
-      />
-    );
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "success":
-        return (
-          <Badge
-            variant="default"
-            className="bg-emerald-500 hover:bg-emerald-500"
-          >
-            Success
-          </Badge>
-        );
-      case "failure":
-        return <Badge variant="destructive">Failure</Badge>;
-      case "burn":
-        return (
-          <Badge variant="default" className="bg-red-500 hover:bg-red-500">
-            Burned
-          </Badge>
-        );
-      case "attempt":
-        return <Badge variant="secondary">Attempt</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+        setError(err instanceof Error ? err.message : "Failed to load logs.")
+      } finally { setIsLoading(false) }
     }
-  };
+    fetchLogs()
+  }, [page])
+
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+
+  if (isLoading) return <div className="max-h-[60vh] overflow-y-auto"><TableSkeleton rows={10} cols={9} /></div>
+  if (error) return <EmptyState icon={AlertCircle} title="Error loading logs" description={error} />
+  if (!logs?.length) return <EmptyState icon={AlertCircle} title="No access logs found" description="No access logs were recorded." />
+
+  const cols = ["Log ID", "Secret", "Status", "Accessed At", "IP", "User Agent", "User", "Error", "Metadata"]
 
   return (
-    <div className="max-h-[60vh] w-full overflow-y-auto rounded-lg border">
-      <Table>
-        <TableHeader className="sticky top-0 overflow-y-auto bg-muted z-10">
-          <TableRow>
-            <TableHead className="text-xs font-semibold">Log ID</TableHead>
-            <TableHead className="text-xs font-semibold">Secret</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Accessed</TableHead>
-            <TableHead>IP</TableHead>
-            <TableHead className="max-w-[220px]">User Agent</TableHead>
-            <TableHead>User</TableHead>
-            <TableHead>Error</TableHead>
-            <TableHead>Metadata</TableHead>
-          </TableRow>
-        </TableHeader>
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02]">
+      {/* Scrollable table */}
+      <div className="max-h-[60vh] overflow-auto">
+        <table className="w-full min-w-[900px] text-xs">
+          <thead className="sticky top-0 z-10 bg-[#0d0d14]">
+            <tr className="border-b border-white/5">
+              {cols.map((col) => (
+                <th key={col} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#4a4a5a]">
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {logs.map((log, i) => (
+              <tr key={log.id} className={`border-b border-white/[0.03] transition-colors hover:bg-white/[0.02] ${i % 2 === 0 ? "" : "bg-white/[0.01]"}`}>
+                <td className="px-4 py-3 font-mono text-[#6a6a7a]">{log.id.slice(0, 8)}…</td>
+                <td className="px-4 py-3 font-mono text-[#6a6a7a]">{log.secret_id.slice(0, 8)}…</td>
+                <td className="px-4 py-3"><StatusBadge status={log.status} /></td>
+                <td className="px-4 py-3 text-[#8a8a9a]">{format(new Date(log.accessed_at), "MMM d, yyyy HH:mm:ss")}</td>
+                <td className="px-4 py-3 font-mono text-[#6a6a7a]">{log.ip_address ?? "N/A"}</td>
+                <td className="max-w-[200px] truncate px-4 py-3 font-mono text-[#6a6a7a]">{log.user_agent ?? "N/A"}</td>
+                <td className="px-4 py-3 font-mono text-[#6a6a7a]">{log.accessed_by_user_id ? `${log.accessed_by_user_id.slice(0, 8)}…` : "N/A"}</td>
+                <td className="max-w-[140px] truncate px-4 py-3 text-red-400/70">{log.error_message || "—"}</td>
+                <td className="max-w-[140px] truncate px-4 py-3 font-mono text-[#4a4a5a]">{log.metadata ? JSON.stringify(log.metadata) : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-        <TableBody>
-          {logs.map((log) => (
-            <TableRow
-              key={log.id}
-              className="odd:bg-muted/30 hover:bg-muted/60 transition-colors"
-            >
-              <TableCell className="font-mono text-xs">
-                {log.id.slice(0, 8)}…
-              </TableCell>
-
-              <TableCell className="font-mono text-xs">
-                {log.secret_id.slice(0, 8)}…
-              </TableCell>
-
-              <TableCell>{getStatusBadge(log.status)}</TableCell>
-
-              <TableCell className="text-xs">
-                {format(new Date(log.accessed_at), "MMM d, yyyy HH:mm:ss")}
-              </TableCell>
-
-              <TableCell className="font-mono text-xs">
-                {log.ip_address ?? "N/A"}
-              </TableCell>
-
-              <TableCell className="font-mono text-xs max-w-[220px] truncate">
-                {log.user_agent ?? "N/A"}
-              </TableCell>
-
-              <TableCell className="font-mono text-xs">
-                {log.accessed_by_user_id
-                  ? `${log.accessed_by_user_id.slice(0, 8)}…`
-                  : "N/A"}
-              </TableCell>
-
-              <TableCell className="text-destructive max-w-[160px] truncate">
-                {log.error_message || "—"}
-              </TableCell>
-
-              <TableCell className="font-mono text-xs max-w-[160px] truncate">
-                {log.metadata ? JSON.stringify(log.metadata) : "—"}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter className="sticky bottom-0 bg-background border-t">
-          <TableRow>
-            <TableCell colSpan={9}>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>
-                  Showing{" "}
-                  <span className="font-medium">
-                    {(page - 1) * PAGE_SIZE + 1}
-                  </span>
-                  –
-                  <span className="font-medium">
-                    {Math.min(page * PAGE_SIZE, total)}
-                  </span>{" "}
-                  of <span className="font-medium">{total}</span> logs
-                </span>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    className="rounded-md border px-2 py-1 disabled:opacity-50"
-                    disabled={page === 1}
-                    onClick={() => setPage((p) => p - 1)}
-                  >
-                    Previous
-                  </button>
-
-                  <span>
-                    Page <span className="font-medium">{page}</span> of{" "}
-                    <span className="font-medium">{totalPages}</span>
-                  </span>
-
-                  <button
-                    className="rounded-md border px-2 py-1 disabled:opacity-50"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+      {/* Pagination footer */}
+      <div className="flex items-center justify-between border-t border-white/5 bg-[#0d0d14] px-5 py-3">
+        <span className="text-xs text-[#4a4a5a]">
+          Showing <span className="font-semibold text-white">{(page - 1) * PAGE_SIZE + 1}</span>–
+          <span className="font-semibold text-white">{Math.min(page * PAGE_SIZE, total)}</span> of{" "}
+          <span className="font-semibold text-white">{total}</span> logs
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 1}
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/5 bg-white/[0.02] text-[#6a6a7a] transition-all hover:border-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+          <span className="text-xs text-[#6a6a7a]">
+            <span className="font-semibold text-white">{page}</span> / <span className="font-semibold text-white">{totalPages}</span>
+          </span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= totalPages}
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/5 bg-white/[0.02] text-[#6a6a7a] transition-all hover:border-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

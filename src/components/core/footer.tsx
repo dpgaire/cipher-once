@@ -6,11 +6,11 @@ const productLinks = [
   { label: "Features", href: "/#features" },
   { label: "Security", href: "/#security" },
   { label: "Create Secret", href: "/create" },
-  { label: "API Docs", href: "/docs" },
+  { label: "User Manual", href: "/docs" },
 ];
 
 const companyLinks = [
-  { label: "About Us", href: "/about" },
+  { label: "About", href: "/about" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
   { label: "Security Disclosure", href: "/security" },

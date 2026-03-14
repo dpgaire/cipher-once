@@ -25,6 +25,8 @@ const features = [
     title: "Zero-Knowledge Architecture",
     desc: "Our servers receive only ciphertext. The decryption key travels exclusively in your URL fragment, invisible to our infrastructure and network logs.",
     badge: "Privacy",
+    href: "/zero-knowledge-secret-sharing",
+
   },
   {
     icon: Clock,

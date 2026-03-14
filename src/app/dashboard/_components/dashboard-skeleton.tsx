@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function DashboardSkeleton() {
   return (
@@ -7,49 +6,46 @@ export function DashboardSkeleton() {
       {/* Stats Grid Skeleton */}
       <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-12 w-12 rounded-lg" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-12" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
+          <div key={i} className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-12 w-12 rounded-xl bg-white/5" />
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-10 rounded bg-white/5" />
+                <Skeleton className="h-3 w-20 rounded bg-white/5" />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Secrets List Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-7 w-48" />
-          <Skeleton className="h-4 w-96" />
-        </CardHeader>
-        <CardContent>
-          <div className="hidden md:block border-b mb-6">
-            <div className="flex space-x-6">
-                <Skeleton className="h-9 w-24" />
-                <Skeleton className="h-9 w-24" />
-                <Skeleton className="h-9 w-24" />
-            </div>
+      {/* Secrets card Skeleton */}
+      <div className="rounded-2xl border border-white/5 bg-white/[0.02]">
+        <div className="border-b border-white/5 px-7 pt-6 pb-5 space-y-4">
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-36 rounded bg-white/5" />
+            <Skeleton className="h-3 w-64 rounded bg-white/5" />
           </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-24 rounded-lg bg-white/5" />
+            <Skeleton className="h-8 w-24 rounded-lg bg-white/5" />
+            <Skeleton className="h-8 w-24 rounded-lg bg-white/5" />
+          </div>
+        </div>
+        <div className="p-7">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                    <CardHeader>
-                        <Skeleton className="h-5 w-3/5" />
-                        <Skeleton className="h-3 w-4/5" />
-                    </CardHeader>
-                    <CardContent>
-                        <Skeleton className="h-8 w-full" />
-                    </CardContent>
-                </Card>
+              <div key={i} className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-3/5 rounded bg-white/5" />
+                  <Skeleton className="h-3 w-4/5 rounded bg-white/5" />
+                </div>
+                <Skeleton className="h-16 w-full rounded-xl bg-white/5" />
+                <Skeleton className="h-9 w-full rounded-lg bg-white/5" />
+              </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

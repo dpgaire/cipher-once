@@ -1,59 +1,71 @@
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-import { Metadata } from 'next';
+// ─── ClientSideEncryptionPage ─────────────────────────────────────────────────
+import { ContentPage,Section, Prose, StepList, BulletList, Callout, CtaButton } from "@/components/content-page-layout"
+import { Lock } from "lucide-react"
+import { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Client-Side Encryption Explained | CipherOnce",
   description: "Learn how CipherOnce uses client-side encryption to provide zero-knowledge secret sharing. Your data is encrypted in your browser before it ever reaches our servers.",
-};
+}
 
 export default function ClientSideEncryptionPage() {
   return (
-    <div className="container py-12 max-w-3xl">
-      <h1 className="text-4xl font-bold mb-6">Securing Your Data with Client-Side Encryption</h1>
-      <p className="text-lg text-muted-foreground mb-8">
-        At the heart of CipherOnce's security model is client-side encryption. This means all encryption and decryption of your secrets happens directly in your browser. We never receive your plaintext data, making our platform a true zero-knowledge service.
-      </p>
+    <ContentPage
+      badge="Security Architecture"
+      icon={<Lock className="h-7 w-7" />}
+      title="Client-Side Encryption Explained"
+      lead="At CipherOnce, encryption isn't a feature we added — it's the foundation we built on. Every secret is locked before it leaves your browser, using the same cryptographic primitives trusted by financial institutions worldwide."
+    >
+      <Section title="What Client-Side Encryption Actually Means" borderColor="border-[#C9A84C]/10">
+        <Prose>
+          <p>
+            "Encryption" is one of the most overused and misrepresented words in tech. Many services claim to encrypt your data — but what they mean is that your data is encrypted in transit (HTTPS) or at rest on their servers using keys they control. That's not real privacy. If they have the key, they have your secret.
+          </p>
+          <p>
+            Client-side encryption is fundamentally different. It means the encryption operation — turning your plaintext into unintelligible ciphertext — happens on your device, in your browser, before any data is transmitted. By the time your secret touches our network, it is already locked. We receive a ciphertext we cannot read and a storage task we can fulfill without knowing what we are storing.
+          </p>
+        </Prose>
+        <div className="mt-5">
+          <Callout color="gold">
+            We don't encrypt your secrets — your browser does. We only store the result.
+          </Callout>
+        </div>
+      </Section>
 
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">How Client-Side Encryption Works</h2>
-        <p className="mb-4">
-          The process is simple yet incredibly secure:
-        </p>
-        <ol className="list-decimal list-inside space-y-3 mb-4">
-          <li><strong>You Create a Secret:</strong> You type your sensitive information into the form on our website.</li>
-          <li><strong>In-Browser Encryption:</strong> Before your data is sent, our JavaScript code generates a unique, cryptographically-strong encryption key. This key is used to encrypt your secret right there in your browser.</li>
-          <li><strong>Data Transmission:</strong> Only the encrypted data (ciphertext) is sent to our servers for storage. The encryption key is appended to the share link's URL fragment (#), which is never sent to the server.</li>
-          <li><strong>Recipient Access:</strong> When the recipient opens the link, their browser retrieves the encrypted data from our server. The key, present in the URL fragment, is then used by the browser to decrypt the message locally.</li>
-          <li><strong>Zero Server-Side Knowledge:</strong> At no point does our server have access to the encryption key or the unencrypted data. This guarantees that we, or any third party, cannot read your secrets.</li>
-        </ol>
-      </section>
+      <Section title="The Encryption Flow, Step by Step" borderColor="border-white/5">
+        <StepList items={[
+          { label: "You type your secret", desc: "Your plaintext exists only in your browser's memory. It is never logged, never buffered to disk by our code, and never sent anywhere in its readable form." },
+          { label: "A unique key is generated", desc: "The browser's built-in Web Crypto API generates a cryptographically random AES-256-GCM key. This key is unique per secret — we never reuse keys." },
+          { label: "Your secret is encrypted locally", desc: "Using that key and a random initialization vector (IV), your plaintext is transformed into ciphertext. Without the key and IV, the ciphertext is computationally indistinguishable from random noise." },
+          { label: "Only ciphertext goes to our servers", desc: "The encrypted blob and the IV are transmitted to our servers for storage. The key stays in your browser, appended to the shareable link as the URL fragment (#key). Browsers never include the fragment in HTTP requests." },
+          { label: "Your recipient opens the link", desc: "Their browser parses the URL fragment, extracts the key, fetches the ciphertext from our API, and decrypts it locally. Our server only sees a request for an encrypted record — never the key, never the plaintext." },
+          { label: "After viewing, the record is deleted", desc: "Once the view limit is reached or the expiry passes, the encrypted record is permanently removed from our database. Nothing persists." },
+        ]} />
+      </Section>
 
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">The Benefits of This Approach</h2>
-        <ul className="list-disc list-inside space-y-2 mb-4">
-          <li><strong>Maximum Privacy:</strong> Your data remains confidential from the moment you create it until the moment your recipient views it.</li>
-          <li><strong>Trustless Security:</strong> You don't have to trust us. Our architecture is designed to be "trustless," meaning its security is based on verifiable cryptography, not on our promises.</li>
-          <li><strong>End-to-End Protection:</strong> The encryption covers the entire lifecycle of your secret, from your device to your recipient's device, without any vulnerable points in between.</li>
-          <li><strong>Resilience to Breaches:</strong> Even in the unlikely event of a server breach, your secrets remain secure as they are stored in an encrypted format that is impossible for us or attackers to decipher.</li>
-        </ul>
-      </section>
+      <Section title="Why This Matters More Than You Think" borderColor="border-white/5">
+        <BulletList items={[
+          { label: "Server breach resilience", desc: "If our database were stolen, attackers would find only encrypted blobs — useless without the keys, which we never store." },
+          { label: "No insider threat", desc: "Our own engineers, DBAs, and infrastructure operators cannot read your secrets. It is architecturally impossible, not just policy-prohibited." },
+          { label: "Legal immunity", desc: "Because we hold no decryption keys, no court order or government request can compel us to produce readable content — because we genuinely don't have it." },
+          { label: "Trustless by design", desc: "You don't need to trust our promises. You can verify our open-source code and confirm that the encryption happens before data transmission." },
+        ]} />
+      </Section>
 
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Share with Confidence</h2>
-        <p>
-          Client-side encryption is the gold standard for secure communication on the web. By using CipherOnce, you are leveraging this powerful technology to protect your most sensitive information.
-        </p>
-        <div className="mt-6 text-center">
-        <Link href="/create">
-          <button className="group relative inline-flex items-center justify-center h-14 px-10 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/70 transition-all duration-300 hover:scale-105">
-            <span className="relative z-10">Create a secure secret</span>
-            <ArrowRight className="ml-2 h-5 w-5 relative z-10 transition-transform group-hover:translate-x-1" />
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
-          </button>
-        </Link>
-      </div>
-      </section>
-    </div>
-  );
+      <Section title="The Standard We Use: AES-256-GCM" borderColor="border-emerald-500/10">
+        <Prose>
+          <p>
+            AES-256-GCM (Advanced Encryption Standard, 256-bit key, Galois/Counter Mode) is the encryption algorithm used by the U.S. government for top-secret classified information. It provides both confidentiality (your data cannot be read) and authenticity (tampered ciphertext is detectable). A 256-bit key has 2²⁵⁶ possible values — more than the number of atoms in the observable universe.
+          </p>
+          <p>
+            We use the browser's native <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-xs text-[#C9A84C]">SubtleCrypto</code> API, which is implemented in hardware-accelerated native code — not JavaScript. This means the encryption is both maximally secure and practically instantaneous.
+          </p>
+        </Prose>
+      </Section>
+
+      <CtaButton label="Create an Encrypted Secret" />
+    </ContentPage>
+  )
 }
+
+

@@ -14,10 +14,8 @@ export async function PageViewAnalytics() {
 
   if (!stats || stats.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center border-2 border-dashed rounded-lg">
-        <p className="text-muted-foreground">
-          No page view data available yet.
-        </p>
+     <div className="flex h-24 items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02]">
+        <p className="text-sm text-[#6a6a7a]">No page view data available yet.</p>
       </div>
     )
   }
