@@ -1,137 +1,113 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  Home,
-  Users,
-  Shield,
-  ChevronRight,
-  Menu,
-  X,
-  History,
-} from "lucide-react";
-import type { User } from "@supabase/supabase-js";
-import { useState } from "react";
-import { cn } from "@/lib/utils"; // assuming you have a cn utility (classNames)
-import { UserProfileDropdown } from "@/app/(auth)/_components/user-profile-dropdown";
-
+"use client"
+ 
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Home, Users, History, ChevronRight, X, Shield } from "lucide-react"
+import type { User } from "@supabase/supabase-js"
+import { useState } from "react"
+import { cn } from "@/lib/utils"
+import { UserProfileDropdown } from "@/app/(auth)/_components/user-profile-dropdown"
+ 
 interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  href: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
 }
-
+ 
 interface AdminNavProps {
-  user: User;
-  isMobileOpen: boolean;
-  toggleSidebar: () => void;
+  user: User
+  isMobileOpen: boolean
+  toggleSidebar: () => void
 }
-
+ 
 const navItems: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: Home },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/logs", label: "Access Logs", icon: History },
-];
-
+]
+ 
 export function AdminNav({ user, isMobileOpen, toggleSidebar }: AdminNavProps) {
-  const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  // Better active detection: exact match or starts with href (but not if parent is longer)
+  const pathname = usePathname()
+  const [isCollapsed, setIsCollapsed] = useState(false)
+ 
   const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin";
-    return pathname.startsWith(href) && pathname[href.length] === "/";
-  };
-
+    if (href === "/admin") return pathname === "/admin"
+    return pathname.startsWith(href) && pathname[href.length] === "/"
+  }
+ 
   return (
-    <aside
-      className={cn(
-        "fixed lg:static h-screen inset-y-0 left-0 z-50 flex flex-col bg-card border-r shadow-lg transition-all duration-300",
-        "lg:translate-x-0",
-        isMobileOpen ? "translate-x-0" : "-translate-x-full",
-        isCollapsed ? "w-16" : "w-64"
-      )}
-    >
+    <aside className={cn(
+      "flex h-screen flex-col border-r border-white/5 bg-[#0a0a0f] transition-all duration-300",
+      isCollapsed ? "w-16" : "w-64"
+    )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-3">
-          <Shield className="h-7 w-7 text-primary" />
+      <div className="flex h-14 items-center justify-between border-b border-white/5 px-4">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#C9A84C]/20 bg-[#C9A84C]/10">
+            <Shield className="h-4 w-4 text-[#C9A84C]" />
+          </div>
           {!isCollapsed && (
-            <h2 className="text-xl font-bold tracking-tight">Admin Panel</h2>
+            <span className="truncate text-sm font-bold text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Admin Panel
+            </span>
           )}
         </div>
-
-        {/* Toggle Buttons */}
+ 
+        {/* Desktop collapse toggle */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:block p-1.5 bg-blue-500 text-white mr-2 rounded-full  hover:scale-95 transition-colors"
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="hidden lg:flex h-7 w-7 items-center justify-center rounded-lg border border-white/5 bg-white/[0.03] text-[#4a4a5a] transition-all hover:border-[#C9A84C]/20 hover:text-[#C9A84C]"
         >
-          {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", !isCollapsed && "rotate-180")} />
         </button>
-
+ 
+        {/* Mobile close */}
         <button
           onClick={toggleSidebar}
-          className="lg:hidden p-1.5 rounded-md hover:bg-muted"
-          aria-label="Close sidebar"
+          className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/5 bg-white/[0.03] text-[#4a4a5a] transition-all hover:text-white lg:hidden"
         >
-          <X className="h-5 w-5" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 overflow-y-auto">
-        <ul className="space-y-2">
+ 
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-2 py-4">
+        <ul className="space-y-1">
           {navItems.map((item) => {
-            const active = isActive(item.href);
-            const Icon = item.icon;
-
+            const active = isActive(item.href)
+            const Icon = item.icon
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={toggleSidebar}
-                  className={cn(
-                    "group relative flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    active
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
-                    isCollapsed && "justify-center"
-                  )}
                   aria-current={active ? "page" : undefined}
-                >
-                  {/* Active Indicator */}
-                  {active && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-9 w-1 bg-primary-foreground rounded-r-full" />
+                  className={cn(
+                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200",
+                    isCollapsed && "justify-center px-2",
+                    active
+                      ? "border border-[#C9A84C]/20 bg-[#C9A84C]/10 text-[#C9A84C] shadow-[0_0_20px_rgba(201,168,76,0.08)]"
+                      : "border border-transparent text-[#6a6a7a] hover:border-white/5 hover:bg-white/[0.03] hover:text-white"
                   )}
-
-                  <Icon
-                    className={cn(
-                      "h-5 w-5 shrink-0 transition-transform duration-200",
-                      active ? "scale-110" : "group-hover:scale-110"
-                    )}
-                  />
-
+                >
+                  <Icon className={cn("h-4 w-4 shrink-0", active ? "text-[#C9A84C]" : "text-current")} />
                   {!isCollapsed && (
                     <>
-                      <span className="ml-3 flex-1">{item.label}</span>
-                      {active && (
-                        <ChevronRight className="h-4 w-4 opacity-80 translate-x-0 group-hover:translate-x-1 transition-transform" />
-                      )}
+                      <span className="flex-1">{item.label}</span>
+                      {active && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
                     </>
                   )}
                 </Link>
               </li>
-            );
+            )
           })}
         </ul>
       </nav>
-
-      {/* User Profile Footer */}
-      <div className={cn("border-t p-3", isCollapsed && "px-2")}>
-        <UserProfileDropdown user={user}  />
+ 
+      {/* Footer */}
+      <div className={cn("border-t border-white/5 p-3", isCollapsed && "px-2")}>
+        <UserProfileDropdown user={user} />
       </div>
     </aside>
-  );
+  )
 }

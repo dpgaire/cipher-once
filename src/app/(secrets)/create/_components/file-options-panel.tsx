@@ -1,4 +1,3 @@
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 interface FileOptionsPanelProps {
@@ -6,31 +5,29 @@ interface FileOptionsPanelProps {
   onAllowFileDownloadChange: (allow: boolean) => void;
 }
 
-/**
- * Panel for configuring file download options
- */
-export function FileOptionsPanel({
-  allowFileDownload,
-  onAllowFileDownloadChange,
-}: FileOptionsPanelProps) {
+export function FileOptionsPanel({ allowFileDownload, onAllowFileDownloadChange }: FileOptionsPanelProps) {
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <Label className="flex items-center gap-2">Allow file download</Label>
-          <p className="text-xs text-muted-foreground">
-            If disabled, recipients can preview the file but cannot download it.
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="mb-1 text-sm font-semibold text-white">Allow file download</p>
+          <p className="text-xs text-[#4a4a5a]">
+            If disabled, recipients can preview but cannot download.
           </p>
         </div>
         <Switch
           checked={allowFileDownload}
           onCheckedChange={onAllowFileDownloadChange}
+          className="data-[state=checked]:bg-[#C9A84C]"
         />
       </div>
 
       {!allowFileDownload && (
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
-          🔒 Download is disabled. The file can only be viewed inside CipherOnce.
+        <div className="flex items-center gap-3 rounded-lg border border-amber-500/15 bg-amber-500/5 px-4 py-3">
+          <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+          <p className="text-xs text-amber-400/80">
+            Download disabled. The file can only be viewed inside CipherOnce.
+          </p>
         </div>
       )}
     </>

@@ -1,22 +1,11 @@
-"use client"
-
-import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { SECRET_EXPIRATION_OPTIONS } from "@/lib/utils"
-import {  Trash2, Flame, PlusCircle } from "lucide-react"
+import { Trash2, PlusCircle, Flame } from "lucide-react"
 
 interface SecretCardActionsProps {
   secretUrl: string
@@ -29,102 +18,94 @@ interface SecretCardActionsProps {
   onExtend: (hours: number) => void
   isBurning: boolean
   isExtending: boolean
-  showLogsDialog: boolean // Removed as logs dialog is no longer here
-  onToggleLogsDialog: (open: boolean) => void // Removed
+  showLogsDialog: boolean
+  onToggleLogsDialog: (open: boolean) => void
   showBurnDialog: boolean
   onToggleBurnDialog: (open: boolean) => void
   showExtendExpiryDialog: boolean
   onToggleExtendExpiryDialog: (open: boolean) => void
-  newExpirationHours: number,
-  setNewExpirationHours: (hours: number) => void,
+  newExpirationHours: number
+  setNewExpirationHours: (hours: number) => void
 }
 
 export function SecretCardActions({
-  secretUrl,
-  secretId,
-  status,
-  showQR,
-  onToggleQR,
-  onDelete,
-  onBurn,
-  onExtend,
-  isBurning,
-  isExtending,
-  showLogsDialog, 
-  onToggleLogsDialog, 
-  showBurnDialog,
-  onToggleBurnDialog,
-  showExtendExpiryDialog,
-  onToggleExtendExpiryDialog,
-  newExpirationHours,
-  setNewExpirationHours,
+  secretId, status, onDelete, onBurn, onExtend, isBurning, isExtending,
+  showBurnDialog, onToggleBurnDialog, showExtendExpiryDialog, onToggleExtendExpiryDialog,
+  newExpirationHours, setNewExpirationHours,
 }: SecretCardActionsProps) {
   return (
-    <div className="flex items-center justify-between w-full rounded-md border-t bg-muted/20 p-4">
+    <div className="flex items-center justify-between border-t border-white/5 bg-white/[0.01] px-5 py-3">
       <div className="flex gap-2">
         {status === "active" && (
           <>
+            {/* Burn dialog */}
             <Dialog open={showBurnDialog} onOpenChange={onToggleBurnDialog}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-red-500 hover:bg-red-500/10">
-                  <Flame className="h-4 w-4" />
-                </Button>
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-500/15 bg-red-500/5 text-red-400 transition-all hover:border-red-500/30 hover:bg-red-500/10">
+                  <Flame className="h-3.5 w-3.5" />
+                </button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="border-white/5 bg-[#0d0d14] text-white">
                 <DialogHeader>
-                  <DialogTitle>Burn Secret Now?</DialogTitle>
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10">
+                    <Flame className="h-5 w-5 text-red-400" />
+                  </div>
+                  <DialogTitle className="text-center text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    Burn Secret Now?
+                  </DialogTitle>
                 </DialogHeader>
-                <p className="text-sm text-muted-foreground">
-                  Are you sure you want to burn this secret immediately? This action cannot be undone, and the secret will no longer be viewable.
+                <p className="text-center text-sm text-[#6a6a7a]">
+                  This action cannot be undone. The secret will be permanently destroyed and no longer viewable.
                 </p>
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => onToggleBurnDialog(false)}>
+                <div className="mt-2 flex gap-3">
+                  <button onClick={() => onToggleBurnDialog(false)} className="flex-1 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/10">
                     Cancel
-                  </Button>
-                  <Button variant="destructive" onClick={onBurn} disabled={isBurning}>
+                  </button>
+                  <button onClick={onBurn} disabled={isBurning} className="flex-1 rounded-lg border border-red-500/20 bg-red-500/10 py-2.5 text-sm font-bold text-red-400 transition-all hover:bg-red-500/20 disabled:opacity-50">
                     {isBurning ? "Burning..." : "Burn Now"}
-                  </Button>
+                  </button>
                 </div>
               </DialogContent>
             </Dialog>
 
+            {/* Extend expiry dialog */}
             <Dialog open={showExtendExpiryDialog} onOpenChange={onToggleExtendExpiryDialog}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-blue-500 hover:bg-blue-500/10">
-                  <PlusCircle className="h-4 w-4" />
-                </Button>
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#C9A84C]/15 bg-[#C9A84C]/5 text-[#C9A84C] transition-all hover:border-[#C9A84C]/30 hover:bg-[#C9A84C]/10">
+                  <PlusCircle className="h-3.5 w-3.5" />
+                </button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="border-white/5 bg-[#0d0d14] text-white">
                 <DialogHeader>
-                  <DialogTitle>Extend Secret Expiry</DialogTitle>
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#C9A84C]/20 bg-[#C9A84C]/10">
+                    <PlusCircle className="h-5 w-5 text-[#C9A84C]" />
+                  </div>
+                  <DialogTitle className="text-center text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    Extend Secret Expiry
+                  </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Choose a new expiration time for this secret.
-                  </p>
-                  <Select
-                    value={newExpirationHours.toString()}
-                    onValueChange={(v) => setNewExpirationHours(Number(v))}
-                  >
-                    <SelectTrigger id="new-expiration">
+                <p className="text-center text-sm text-[#6a6a7a]">Choose a new expiration time for this secret.</p>
+                <div className="mt-2 space-y-4">
+                  <Select value={newExpirationHours.toString()} onValueChange={(v) => setNewExpirationHours(Number(v))}>
+                    <SelectTrigger className="rounded-lg border-white/5 bg-white/[0.03] text-white focus:border-[#C9A84C]/40 focus:ring-0">
                       <SelectValue placeholder="Select new expiration" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="border-white/5 bg-[#0d0d14] text-white">
                       {SECRET_EXPIRATION_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value.toString()}>
+                        <SelectItem key={option.value} value={option.value.toString()} className="text-[#8a8a9a] focus:bg-[#C9A84C]/10 focus:text-white">
                           {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => onToggleExtendExpiryDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="default" onClick={() => onExtend(newExpirationHours)} disabled={isExtending}>
-                    {isExtending ? "Extending..." : "Extend"}
-                  </Button>
+                  <div className="flex gap-3">
+                    <button onClick={() => onToggleExtendExpiryDialog(false)} className="flex-1 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/10">
+                      Cancel
+                    </button>
+                    <button onClick={() => onExtend(newExpirationHours)} disabled={isExtending} className="flex-1 rounded-lg bg-[#C9A84C] py-2.5 text-sm font-bold text-[#0a0a0f] transition-all hover:shadow-[0_0_20px_rgba(201,168,76,0.3)] disabled:opacity-50">
+                      {isExtending ? "Extending..." : "Extend"}
+                    </button>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
@@ -133,9 +114,9 @@ export function SecretCardActions({
       </div>
 
       {onDelete && (
-        <Button variant="ghost" size="sm" onClick={() => onDelete(secretId)} className="text-destructive hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <button onClick={() => onDelete(secretId)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 text-[#4a4a5a] transition-all hover:border-red-500/20 hover:bg-red-500/5 hover:text-red-400">
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       )}
     </div>
   )

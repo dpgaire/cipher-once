@@ -7,17 +7,13 @@ export async function EngagementCharts() {
         engagementStats = await getEngagementOverTimeStats();
     } catch (error) {
         return (
-            <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-                <p className="text-destructive">Could not load engagement stats.</p>
-            </div>
+          <div className="flex h-24 items-center justify-center rounded-2xl border border-red-500/15 bg-red-500/[0.03]"><p className="text-sm text-red-400">Could not load engagement stats.</p></div>
         );
     }
 
     if (!engagementStats) {
         return (
-             <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-                <p>No engagement stats available.</p>
-            </div>
+            <div className="flex h-24 items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02]"><p className="text-sm text-[#6a6a7a]">No engagement stats available.</p></div>
         )
     }
 

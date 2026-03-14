@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
 import { SecretCardHeader } from "./secret-card-header"
 import { SecretCardInfo } from "./secret-card-info"
@@ -73,9 +72,14 @@ export function SecretCard({ secret, onDelete }: SecretCardProps) {
     }
   }
 
+    const borderColor = status === "active" ? "border-white/5 hover:border-[#C9A84C]/15"
+    : status === "expired" ? "border-amber-500/10 hover:border-amber-500/20"
+    : "border-red-500/10 hover:border-red-500/15"
+
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-      <CardHeader className="space-y-3 pb-4">
+    <div className={`overflow-hidden rounded-2xl border bg-white/[0.02] transition-all duration-200 hover:bg-white/[0.03] hover:-translate-y-0.5 hover:shadow-lg ${borderColor}`}>
+      {/* Card body */}
+      <div className="space-y-4 p-5">
         <SecretCardHeader
           shortId={secret.short_id}
           secretUrl={secretUrl}
@@ -85,8 +89,6 @@ export function SecretCard({ secret, onDelete }: SecretCardProps) {
           viewCount={secret.view_count}
           maxViews={secret.max_views}
         />
-      </CardHeader>
-      <CardContent className="space-y-4">
         <SecretCardInfo
           expiresAt={secret.expires_at}
           viewCount={secret.view_count}
@@ -95,38 +97,36 @@ export function SecretCard({ secret, onDelete }: SecretCardProps) {
         />
 
         {showQR && (
-          <div className="mt-4 flex flex-col items-center">
+          <div className="flex flex-col items-center gap-2 rounded-xl border border-white/5 bg-white p-4">
             <QRCodeDisplay value={secretUrl} size={128} />
-            <p className="mt-2 text-xs text-muted-foreground text-center max-w-[128px]">
-              (Public link only, key not included)
+            <p className="text-center text-[10px] text-[#6a6a7a] max-w-[128px]">
+              Public link only — key not included
             </p>
           </div>
         )}
-      </CardContent>
+      </div>
 
-      <CardFooter>
-        <SecretCardActions
-          secretUrl={secretUrl}
-          secretId={secret.id}
-          status={status}
-          showQR={showQR}
-          onToggleQR={() => setShowQR(!showQR)}
-          onDelete={onDelete}
-          onBurn={handleBurnSecret}
-          onExtend={handleExtendExpiry}
-          isBurning={isBurning}
-          isExtending={isExtending}
-          showLogsDialog={showLogsDialog}
-          onToggleLogsDialog={setShowLogsDialog}
-          showBurnDialog={showBurnDialog}
-  
-          onToggleBurnDialog={setShowBurnDialog}
-          showExtendExpiryDialog={showExtendExpiryDialog}
-          onToggleExtendExpiryDialog={setShowExtendExpiryDialog}
-          newExpirationHours={newExpirationHours}
-          setNewExpirationHours={setNewExpirationHours}
-        />
-      </CardFooter>
-    </Card>
+      {/* Footer actions */}
+      <SecretCardActions
+        secretUrl={secretUrl}
+        secretId={secret.id}
+        status={status}
+        showQR={showQR}
+        onToggleQR={() => setShowQR(!showQR)}
+        onDelete={onDelete}
+        onBurn={handleBurnSecret}
+        onExtend={handleExtendExpiry}
+        isBurning={isBurning}
+        isExtending={isExtending}
+        showLogsDialog={showLogsDialog}
+        onToggleLogsDialog={setShowLogsDialog}
+        showBurnDialog={showBurnDialog}
+        onToggleBurnDialog={setShowBurnDialog}
+        showExtendExpiryDialog={showExtendExpiryDialog}
+        onToggleExtendExpiryDialog={setShowExtendExpiryDialog}
+        newExpirationHours={newExpirationHours}
+        setNewExpirationHours={setNewExpirationHours}
+      />
+    </div>
   )
 }

@@ -33,41 +33,39 @@ type AnalyticsCardProps = {
 }
 
 function AnalyticsCard({ title, description, icon, data }: AnalyticsCardProps) {
-    const chartData = data.slice(0, 10).map(item => ({ item: item.name, count: item.count }));
-
+  const max = Math.max(...data.slice(0, 5).map((d) => d.count), 1)
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    {icon} {title}
-                </CardTitle>
-                <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {/* <ChartContainer config={chartConfig} className="w-full h-[200px]">
-                    <BarChart accessibilityLayer data={chartData}>
-                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
-                    </BarChart>
-                </ChartContainer> */}
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>{title}</TableHead>
-                            <TableHead className="text-right">Views</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data.slice(0, 5).map((item) => (
-                            <TableRow key={item.name}>
-                                <TableCell>{item.name}</TableCell>
-                                <TableCell className="text-right">{item.count}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+         <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-[#C9A84C]">
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm font-bold text-white">{title}</p>
+          <p className="text-xs text-[#4a4a5a]">{description}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2.5">
+        {data.slice(0, 5).map((item) => {
+          const pct = Math.round((item.count / max) * 100)
+          return (
+            <div key={item.name}>
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <span className="truncate text-[#8a8a9a]">{item.name}</span>
+                <span className="ml-2 shrink-0 font-semibold text-white">{item.count}</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                <div
+                  className="h-full rounded-full bg-[#C9A84C]/60 transition-all duration-500"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
     )
 }
 

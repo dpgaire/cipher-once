@@ -1,14 +1,12 @@
 "use client"
 
 import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
 
-// Simple SVG for GitHub icon
 const GitHubIcon = (props: React.ComponentProps<"svg">) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -28,17 +26,19 @@ export function GitHubAuthButton({ disabled }: { disabled?: boolean }) {
       provider: "github",
       options: {
         redirectTo: `${window.location.origin}/callback`,
-        queryParams: {
-          terms_accepted: 'true',
-        },
+        queryParams: { terms_accepted: 'true' },
       },
     })
   }
 
   return (
-    <Button variant="outline" className="cursor-pointer w-full" onClick={handleGitHubLogin} disabled={disabled}>
-      <GitHubIcon className="mr-2 h-4 w-4" />
-      Sign in with GitHub
-    </Button>
+    <button
+      onClick={handleGitHubLogin}
+      disabled={disabled}
+      className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-white/5 bg-white/[0.03] px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-white/10 hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <GitHubIcon className="shrink-0 text-white" />
+      Continue with GitHub
+    </button>
   )
 }

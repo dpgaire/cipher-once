@@ -1,117 +1,49 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 
-export function PasswordPatternModal({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
+const patterns = [
+  { num: "01", title: "Capitalize First Letter", input: "apple27", decoded: "Apple27" },
+  { num: "02", title: "Capitalize Last Letter", input: "river42", decoded: "river42R" },
+  { num: "03", title: "Alternate Capitals", input: "planet", decoded: "PlAnEt" },
+  { num: "04", title: "Append Fixed Symbol", input: "cloud55", decoded: "cloud55!" },
+  { num: "05", title: "Double First Letter", input: "stone9", decoded: "sstone9" },
+  { num: "06", title: "Add +1 to Each Digit", input: "key129", decoded: "key230" },
+  { num: "07", title: "Reverse Numbers", input: "moon47", decoded: "moon74" },
+  { num: "08", title: "Multiply Last Digit ×2", input: "star6", decoded: "star12" },
+  { num: "09", title: "Insert Symbol in Middle", input: "house88", decoded: "ho@use88" },
+  { num: "10", title: "Prefix Site Initial", input: "lock33", decoded: "Clock33 (CipherOnce)" },
+];
+
+export function PasswordPatternModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="border-white/5 bg-[#0d0d14] text-white sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Password Pattern Reference</DialogTitle>
-          <DialogDescription>
-            Decode shared passwords using predefined pattern numbers.
+          <DialogTitle className="text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Password Pattern Reference
+          </DialogTitle>
+          <DialogDescription className="text-[#6a6a7a]">
+            Decode shared passwords using predefined pattern numbers. The sender shares a pattern number and password string — the receiver applies the pattern to decode.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-5 max-h-[500px] overflow-y-auto text-sm leading-relaxed">
-          <p>
-            The sender shares:
-            <br />
-            <strong>• Pattern Number</strong>
-            <br />
-            <strong>• Password String</strong>
-          </p>
-
-          <p>
-            The receiver applies the selected pattern to decode the final password.
-            The password string alone is incomplete.
-          </p>
-
-          {/* PATTERN 01 */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 01 — Capitalize First Letter</p>
-            <p className="font-mono">Input: apple27</p>
-            <p className="font-mono">Decoded: Apple27</p>
-          </div>
-
-          {/* PATTERN 02 */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 02 — Capitalize Last Letter</p>
-            <p className="font-mono">Input: river42</p>
-            <p className="font-mono">Decoded: river42R</p>
-          </div>
-
-          {/* PATTERN 03 */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 03 — Alternate Capitals</p>
-            <p className="font-mono">Input: planet</p>
-            <p className="font-mono">Decoded: PlAnEt</p>
-          </div>
-
-          {/* PATTERN 04 */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 04 — Append Fixed Symbol</p>
-            <p className="font-mono">Input: cloud55</p>
-            <p className="font-mono">Decoded: cloud55!</p>
-          </div>
-
-          {/* PATTERN 05 */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 05 — Double First Letter</p>
-            <p className="font-mono">Input: stone9</p>
-            <p className="font-mono">Decoded: sstone9</p>
-          </div>
-
-          {/* PATTERN 06 (Math) */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 06 — Add +1 to Each Digit</p>
-            <p className="font-mono">Input: key129</p>
-            <p className="font-mono">Decoded: key230</p>
-          </div>
-
-          {/* PATTERN 07 (Math) */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 07 — Reverse Numbers</p>
-            <p className="font-mono">Input: moon47</p>
-            <p className="font-mono">Decoded: moon74</p>
-          </div>
-
-          {/* PATTERN 08 (Math) */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 08 — Multiply Last Digit ×2</p>
-            <p className="font-mono">Input: star6</p>
-            <p className="font-mono">Decoded: star12</p>
-          </div>
-
-          {/* PATTERN 09 */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 09 — Insert Symbol in Middle</p>
-            <p className="font-mono">Input: house88</p>
-            <p className="font-mono">Decoded: ho@use88</p>
-          </div>
-
-          {/* PATTERN 10 */}
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-semibold">Pattern 10 — Prefix Site Initial</p>
-            <p className="font-mono">Input: lock33</p>
-            <p className="font-mono">Decoded (CipherOnce): Clock33</p>
-          </div>
-
-          <p className="text-muted-foreground">
-            Same input with different pattern numbers produces different decoded results.
-            Pattern selection is required to reconstruct the final password.
-          </p>
+        <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+          {patterns.map(({ num, title, input, decoded }) => (
+            <div key={num} className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="font-mono text-[10px] text-[#C9A84C]/60">Pattern {num}</span>
+                <span className="text-xs font-semibold text-white">{title}</span>
+              </div>
+              <div className="flex gap-6 font-mono text-xs">
+                <span className="text-[#6a6a7a]">In: <span className="text-white">{input}</span></span>
+                <span className="text-[#6a6a7a]">Out: <span className="text-[#C9A84C]">{decoded}</span></span>
+              </div>
+            </div>
+          ))}
         </div>
+        <p className="text-[10px] leading-relaxed text-[#4a4a5a]">
+          Same input with different pattern numbers produces different decoded results. Pattern selection is required to reconstruct the final password.
+        </p>
       </DialogContent>
     </Dialog>
   );

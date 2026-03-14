@@ -1,65 +1,60 @@
 "use client"
-
+ 
 import { useState, ReactNode } from "react"
 import { AdminNav } from "./admin-nav"
 import type { User } from "@supabase/supabase-js"
-import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
-
+ 
 interface AdminLayoutWrapperProps {
   user: User
   children: ReactNode
 }
-
+ 
 export function AdminLayoutWrapper({ user, children }: AdminLayoutWrapperProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen((pre)=>!pre)
-  }
-
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev)
+ 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar - visible on large screens, hidden on small, toggleable as an overlay */}
-      <div
-        className={`
-          fixed inset-y-0 left-0 z-50 transform 
-          ${isSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full"}
-          lg:relative lg:translate-x-0
-          transition-transform duration-200 ease-in-out
-          max-w-full shrink-0
-        `}
-      >
-        <AdminNav
-          user={user}
-          isMobileOpen={isSidebarOpen}
-          toggleSidebar={toggleSidebar}
-        />
+    <div className="flex min-h-screen bg-[#0a0a0f]">
+ 
+      {/* Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out shrink-0
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        lg:relative lg:translate-x-0
+      `}>
+        <AdminNav user={user} isMobileOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       </div>
-
-      {/* Overlay for mobile when sidebar is open */}
+ 
+      {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={toggleSidebar}
         />
       )}
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top bar for mobile toggle */}
-        <header className="flex items-center justify-between lg:hidden border-b bg-background p-4 shadow-sm z-30">
-          <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-            <Menu className="h-6 w-6" />
-          </Button>
-          <h1 className="text-xl font-bold">Admin</h1>
-          <div className="w-10" /> {/* Placeholder for balance */}
+ 
+      {/* Main */}
+      <div className="flex flex-1 flex-col min-w-0">
+        {/* Mobile top bar */}
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-white/5 bg-[#0a0a0f]/90 px-4 backdrop-blur-xl lg:hidden">
+          <button
+            onClick={toggleSidebar}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/5 bg-white/[0.03] text-[#6a6a7a] transition-all hover:border-white/10 hover:text-white"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="text-base font-bold text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Admin
+          </span>
+          <div className="w-9" />
         </header>
-
-        <main className="flex-1 p-4 md:p-8 bg-muted/20">
+ 
+        <main className="flex-1 overflow-auto p-4 md:p-8">
           {children}
         </main>
       </div>
     </div>
   )
 }
+ 
