@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cipheronce.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cipheronce.com'
 
   // Main pages
   const mainPages: MetadataRoute.Sitemap = [
@@ -17,12 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
-    {
-      url: `${baseUrl}/dashboard`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
-    },
+
   ]
 
   // Marketing pages
