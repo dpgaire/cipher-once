@@ -226,19 +226,23 @@ function SuccessContent() {
               {user && (
                 <div className="mt-4 space-y-3 border-t border-white/[0.06] pt-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-[#4a4a5a]">Send to app inbox</p>
-                  <div className="flex gap-2">
+
+                  {/* Changed flex-col for mobile, sm:flex-row for larger screens */}
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <input
                       type="email"
                       placeholder="Recipient email"
                       value={recipientEmail}
                       onChange={(e) => setRecipientEmail(e.target.value)}
                       disabled={isSending}
-                      className="flex-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-sm text-white placeholder-[#4a4a5a] outline-none transition-all focus:border-[#C9A84C]/30"
+                      /* Added w-full so input takes full width on mobile */
+                      className="w-full flex-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-sm text-white placeholder-[#4a4a5a] outline-none transition-all focus:border-[#C9A84C]/30"
                     />
                     <button
                       onClick={handleSendToInbox}
                       disabled={isSending || !recipientEmail}
-                      className="flex items-center gap-2 rounded-lg bg-[#C9A84C] px-5 py-3 text-sm font-bold text-[#0a0a0f] transition-all hover:shadow-[0_0_20px_rgba(201,168,76,0.25)] disabled:opacity-40"
+                      /* Added w-full sm:w-auto and justify-center to center content nicely on mobile */
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#C9A84C] px-5 py-3 text-sm font-bold text-[#0a0a0f] transition-all hover:shadow-[0_0_20px_rgba(201,168,76,0.25)] disabled:opacity-40 sm:w-auto"
                     >
                       <Send className="h-4 w-4" />
                       Send
